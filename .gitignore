@@ -1,0 +1,36 @@
+# Android / Gradle
+.gradle/
+build/
+*/build/
+local.properties
+
+# Private employee data
+_Data/
+
+# Backup files
+backup/
+docs_before_merge_backup/
+web_before_merge_backup/
+app_before_merge_backup/
+
+# macOS
+.DS_Store
+
+# Temporary APK/output
+*.apk
+*.aab
+
+# Backup JavaScript files
+app/src/main/assets/app_backup_before_create_user.js
+docs/app_backup_before_create_user.js
+
+# V2 local backups and temporary files
+*.zip
+*.backup*
+*.before*
+*.bak
+*.old
+*.tmp
+
+# Employee data exports
+*.csv
