@@ -1,5 +1,5 @@
-const SUPABASE_URL = 'https://' + 'jborzgwqlinwkeiquivy' + '.supabase.co';
-const SUPABASE_KEY = "sb_publishable_W_h2UbIqWWJNGZfRnJSojg_JCpHW7qN";
+const SUPABASE_URL = 'https://' + 'jnkpswbieqoprvvkhxvu' + '.supabase.co';
+const SUPABASE_KEY = "sb_publishable_q0cxNXSQ7iFRmCOqonhWOw_Xnt0FEnP";
 
 const rememberLogin =
     document.getElementById("rememberLogin");
@@ -44,17 +44,17 @@ function isFavorite(employee) {
 }
 
 async function toggleFavorite(employee) {
-
     const employeeNo = String(employee.employee_no);
     const newFavorite = !isFavorite(employee);
 
     if (newFavorite) {
-        favoriteEmployees.push(employeeNo);
+        if (!favoriteEmployees.includes(employeeNo)) {
+            favoriteEmployees.push(employeeNo);
+        }
     } else {
-        favoriteEmployees =
-            favoriteEmployees.filter(
-                id => id !== employeeNo
-            );
+        favoriteEmployees = favoriteEmployees.filter(
+            id => id !== employeeNo
+        );
     }
 
     localStorage.setItem(
@@ -62,32 +62,8 @@ async function toggleFavorite(employee) {
         JSON.stringify(favoriteEmployees)
     );
 
-    try {
-        const response = await fetch(
-            `${SUPABASE_URL}/rest/v1/employee_dekko_v2?employee_no=eq.${encodeURIComponent(employeeNo)}`,
-            {
-                method: "PATCH",
-                headers: {
-                    "apikey": SUPABASE_KEY,
-                    "Authorization": `Bearer ${SUPABASE_KEY}`,
-                    "Content-Type": "application/json",
-                    "Prefer": "return=minimal"
-                },
-                body: JSON.stringify({
-                    favorite: newFavorite
-                })
-            }
-        );
-
-        if (!response.ok) {
-            console.error(
-                "Failed to sync favorite:",
-                await response.text()
-            );
-        }
-    } catch (error) {
-        console.error("Favorite sync error:", error);
-    }
+    // Favorite is device-local; do not update the protected database.
+    employee.favorite = newFavorite;
 }
 
 
@@ -327,7 +303,7 @@ async function loadEmployees() {
     try {
 
         const response = await fetch(
-            `${SUPABASE_URL}/rest/v1/employee_dekko_v2?select=*`,
+            `${SUPABASE_URL}/rest/v1/employee_directory?select=*`,
             {
                 headers: {
                     "apikey": SUPABASE_KEY,
@@ -424,78 +400,26 @@ function getInitials(name) {
 const employeePhotoCache = new Map();
 
 function getPhoto(employee) {
-    if (!employee.photo_path) {
-        return `
-            <div class="employee-photo-placeholder">
-                No Photo
-            </div>
-        `;
+    const employeeNo = String(
+        employee.employee_no || employee.emp_no || employee.employeeNo || ""
+    ).trim();
+
+    if (!employeeNo) {
+        return '<div class="employee-photo-placeholder">No Photo</div>';
     }
 
-    const photoId =
-        "photo_" + employee.employee_no + "_" +
-        Math.random().toString(36).substring(2, 8);
-
-    const cacheKey = employee.photo_path;
     const photoUrl =
-        `${SUPABASE_URL}/storage/v1/object/employee-photos/${employee.photo_path}`;
-
-    setTimeout(async () => {
-        try {
-            if (!employeePhotoCache.has(cacheKey)) {
-                const promise = fetch(photoUrl, {
-                    headers: {
-                        "apikey": SUPABASE_KEY,
-                        "Authorization": "Bearer " + SUPABASE_KEY
-                    }
-                }).then(response => {
-                    if (!response.ok) {
-                        throw new Error("HTTP " + response.status);
-                    }
-                    return response.blob();
-                }).then(blob => URL.createObjectURL(blob));
-
-                employeePhotoCache.set(cacheKey, promise);
-
-                promise.catch(() => {
-                    if (employeePhotoCache.get(cacheKey) === promise) {
-                        employeePhotoCache.delete(cacheKey);
-                    }
-                });
-            }
-
-            const imageUrl = await employeePhotoCache.get(cacheKey);
-            const img = document.getElementById(photoId);
-
-            if (img) {
-                img.src = imageUrl;
-            }
-        } catch (error) {
-            console.error("Photo loading failed:", employee.employee_no, error);
-
-            const img = document.getElementById(photoId);
-            if (img) {
-                img.style.display = "none";
-                if (img.nextElementSibling) {
-                    img.nextElementSibling.style.display = "flex";
-                }
-            }
-        }
-    }, 0);
+        "__PHOTO_SERVER_NOT_CONFIGURED__" +
+        encodeURIComponent(employeeNo) + ".jpg";
 
     return `
         <img
-            id="${photoId}"
-            src=""
-            class="employee-photo"
-            alt="${employee.employee_name || "Employee"}"
+            src="${photoUrl}"
+            alt="Employee photo"
+            loading="lazy"
+            style="width:64px;height:64px;object-fit:cover;border-radius:50%;"
+            onerror="this.outerHTML='<div class=&quot;employee-photo-placeholder&quot;>No Photo</div>'"
         >
-        <div
-            class="employee-photo-placeholder"
-            style="display:none;"
-        >
-            No Photo
-        </div>
     `;
 }
 
@@ -905,14 +829,7 @@ function showDetails(employee, previousPage = "list") {
                 </strong>
             </div>
 
-            <div class="detail-row">
-                <span>
-                    Personal No.
-                </span>
-                <strong>
-                    ${employee.personal_no || "-"}
-                </strong>
-            </div>
+            
 
             <div class="detail-row">
                 <span>
@@ -950,32 +867,11 @@ function showDetails(employee, previousPage = "list") {
                 </strong>
             </div>
 
-            <div class="detail-row">
-                <span>
-                    Date of Birth
-                </span>
-                <strong>
-                    ${employee.date_of_birth || "-"}
-                </strong>
-            </div>
+            
 
-            <div class="detail-row">
-                <span>
-                    NID No.
-                </span>
-                <strong>
-                    ${employee.nid || "-"}
-                </strong>
-            </div>
+            
 
-            <div class="detail-row">
-                <span>
-                    TIN No.
-                </span>
-                <strong>
-                    ${employee.tin_no || "-"}
-                </strong>
-            </div>
+            
 
             <div class="detail-row">
                 <span>
@@ -2483,7 +2379,7 @@ if (saveNewEmployeeButton) {
 (function () {
     "use strict";
 
-    const ADMIN_UID = "e5090917-b885-41b4-8062-e208fd6ab287";
+    const ADMIN_UID = "f0fcbd2e-003e-4fc2-bc2e-51b13c5f0814";
 
     document.addEventListener("DOMContentLoaded", function () {
         const $ = id => document.getElementById(id);
