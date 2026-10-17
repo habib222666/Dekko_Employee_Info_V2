@@ -207,11 +207,13 @@ button:active {
 }
 
 .profile-card h2 {
+    color: #1D4ED8;
     margin: 0;
-    font-size: 24px;
+    font-size: 15.33px;
 }
 
 .profile-designation {
+    color: #0F766E;
     margin: 7px 0 3px;
     font-size: 16px;
     font-weight: 600;
