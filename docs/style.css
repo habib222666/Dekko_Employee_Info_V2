@@ -89,13 +89,14 @@ h1 {
 
 .employee-card-info h3 {
     margin: 0 0 5px;
-    font-size: 18px;
+    font-size: 15.33px;
+    color: #1D4ED8;
 }
 
 .employee-card-info p {
     margin: 0 0 5px;
     font-size: 14px;
-    color: #4b5563;
+    color: #0F766E;
 }
 
 .employee-card-info span {
@@ -2894,4 +2895,63 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
         padding: 32px 18px;
         border-radius: 18px;
     }
+}
+
+
+/* Keep QR Code label on the left and QR image on the right */
+.detail-row:has(#employeeQRCode) {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    text-align: left;
+}
+
+.detail-row:has(#employeeQRCode) > span {
+    width: auto;
+    text-align: left;
+}
+
+.detail-row:has(#employeeQRCode) > strong {
+    margin-left: auto;
+    text-align: right;
+}
+
+#employeeQRCode {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+#employeeQRCode img {
+    display: block;
+    margin-left: auto;
+}
+
+/* QR label left, QR image right */
+.detail-row.qr-code-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    text-align: left;
+}
+
+.detail-row.qr-code-row > span {
+    flex: 0 0 auto;
+    width: auto;
+    text-align: left;
+}
+
+.detail-row.qr-code-row > #employeeQRCode {
+    margin-left: auto;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    flex: 0 0 auto;
+}
+
+.detail-row.qr-code-row #employeeQRCode img {
+    display: block;
+    margin-left: auto;
 }
