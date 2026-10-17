@@ -2957,3 +2957,40 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
     display: block;
     margin-left: auto;
 }
+
+/* Blood Group filter: same width as Designation filter */
+#bloodGroupFilterBox {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+#bloodGroupFilter {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Blood Group filter: match Designation filter dimensions */
+#bloodGroupFilterBox {
+    width: 100%;
+    max-width: 600px;
+    margin: 12px auto 16px;
+    box-sizing: border-box;
+}
+
+#bloodGroupFilter {
+    width: 100%;
+    height: 44px;
+    padding: 0 14px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background: #fff;
+    font-size: 16px;
+    font-family: "Trebuchet MS", sans-serif !important;
+    box-sizing: border-box;
+    cursor: pointer;
+}
+
+#bloodGroupFilter:focus {
+    outline: none;
+    border-color: #999;
+}

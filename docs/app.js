@@ -397,8 +397,6 @@ function getInitials(name) {
    PHOTO URL
 ========================= */
 
-const employeePhotoCache = new Map();
-
 function getPhoto(employee) {
     const employeeNo = String(
         employee.employee_no || employee.emp_no || employee.employeeNo || ""
@@ -409,13 +407,14 @@ function getPhoto(employee) {
     }
 
     const photoUrl =
-        "__PHOTO_SERVER_NOT_CONFIGURED__" +
+        "http://192.168.2.205:8766/photos/" +
         encodeURIComponent(employeeNo) + ".jpg";
 
     return `
         <img
             src="${photoUrl}"
             alt="Employee photo"
+            class="employee-photo"
             loading="lazy"
             style="width:64px;height:64px;object-fit:cover;border-radius:50%;"
             onerror="this.outerHTML='<div class=&quot;employee-photo-placeholder&quot;>No Photo</div>'"
@@ -803,83 +802,96 @@ function showDetails(employee, previousPage = "list") {
         <div class="details-card">
 
             <div class="detail-row">
-                <span>
-                    Employee ID
-                </span>
-                <strong>
-                    ${employee.employee_no || "-"}
-                </strong>
+                <span>Employee ID</span>
+                <strong>${employee.employee_no || "-"}</strong>
             </div>
 
             <div class="detail-row">
-                <span>
-                    Department
-                </span>
-                <strong>
-                    ${employee.department || "-"}
-                </strong>
+                <span>Department</span>
+                <strong>${employee.department || "-"}</strong>
             </div>
 
             <div class="detail-row">
-                <span>
-                    Official No.
-                </span>
-                <strong>
-                    ${employee.phone_official || "-"}
-                </strong>
-            </div>
-
-            
-
-            <div class="detail-row">
-                <span>
-                    Email Address
-                </span>
-                <strong>
-                    ${employee.email_official || "-"}
-                </strong>
+                <span>Official No.</span>
+                <strong>${employee.phone_official || "-"}</strong>
             </div>
 
             <div class="detail-row">
-                <span>
-                    PABX No.
-                </span>
-                <strong>
-                    ${employee.pabx_number || "-"}
-                </strong>
+                <span>Personal No.</span>
+                <strong>${employee.personal_no || "-"}</strong>
             </div>
 
             <div class="detail-row">
-                <span>
-                    Blood Group
-                </span>
-                <strong>
-                    ${employee.blood_group || "-"}
-                </strong>
+                <span>Email Address</span>
+                <strong>${employee.email_official || "-"}</strong>
             </div>
 
             <div class="detail-row">
-                <span>
-                    Joining Date
-                </span>
-                <strong>
-                    ${employee.joining_date || "-"}
-                </strong>
+                <span>PABX No.</span>
+                <strong>${employee.pabx_number || "-"}</strong>
             </div>
 
-            
-
-            
-
-            
+            <div class="detail-row">
+                <span>Blood Group</span>
+                <strong>${employee.blood_group || "-"}</strong>
+            </div>
 
             <div class="detail-row">
-                <span>
-                    QR Code
-                </span>
-                <strong>
-                    <div id="employeeQRCode"></div>
-                </strong>
+                <span>Joining Date</span>
+                <strong>${employee.joining_date || "-"}</strong>
+            </div>
+
+            <div class="detail-row">
+                <span>Service Duration</span>
+                <strong>${(() => {
+                    const raw = employee.joining_date;
+                    if (!raw) return "-";
+
+                    const parts = String(raw).slice(0, 10).split("-").map(Number);
+                    if (parts.length !== 3 || parts.some(n => !n)) return "-";
+
+                    const start = new Date(parts[0], parts[1] - 1, parts[2]);
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+
+                    if (start > today) return "-";
+
+                    let years = today.getFullYear() - start.getFullYear();
+                    let months = today.getMonth() - start.getMonth();
+                    let days = today.getDate() - start.getDate();
+
+                    if (days < 0) {
+                        months--;
+                        days += new Date(today.getFullYear(), today.getMonth(), 0).getDate();
+                    }
+
+                    if (months < 0) {
+                        years--;
+                        months += 12;
+                    }
+
+                    return years + " Years, " + months + " Months, " + days + " Days";
+                })()}</strong>
+            </div>
+
+            <div class="detail-row">
+                <span>Date of Birth</span>
+                <strong>${employee.birthday || "-"}</strong>
+            </div>
+
+            <div class="detail-row">
+                <span>NID No.</span>
+                <strong>${employee.nid || "-"}</strong>
+            </div>
+
+            <div class="detail-row">
+                <span>TIN No.</span>
+                <strong>${employee.tin_no || "-"}</strong>
+            </div>
+
+            <div class="detail-row qr-code-row">
+                <span>QR Code</span>
+                <div id="employeeQRCode"></div>
             </div>
 
         </div>
@@ -1767,6 +1779,8 @@ searchInput.addEventListener(
                 ? designationFilter.value
                 : "";
 
+        const selectedBloodGroup = bloodGroupFilter ? bloodGroupFilter.value : "";
+
         const filtered =
             employees.filter(employee => {
 
@@ -1788,8 +1802,11 @@ searchInput.addEventListener(
                     text.toLowerCase()
                         .includes(searchText);
 
-                return matchesDesignation &&
-                       matchesSearch;
+                const matchesBloodGroup =
+                    !selectedBloodGroup ||
+                    String(employee.blood_group || "").trim().toUpperCase() === selectedBloodGroup;
+
+                return matchesDesignation && matchesBloodGroup && matchesSearch;
             });
 
         showEmployees(filtered);
@@ -1811,6 +1828,10 @@ clearSearch.addEventListener(
 
         if (designationFilter) {
             designationFilter.value = "";
+        }
+
+        if (bloodGroupFilter) {
+            bloodGroupFilter.value = "";
         }
 
         showEmployees(employees);
@@ -2026,6 +2047,8 @@ if (birthdayMonths) {
 const designationFilter =
     document.getElementById("designationFilter");
 
+const bloodGroupFilter = document.getElementById("bloodGroupFilter");
+
 if (designationFilter) {
 
     designationFilter.addEventListener(
@@ -2034,6 +2057,7 @@ if (designationFilter) {
 
             const selectedDesignation =
                 this.value;
+            const selectedBloodGroup = bloodGroupFilter ? bloodGroupFilter.value : "";
 
             const searchText =
                 searchInput.value
@@ -2061,8 +2085,11 @@ if (designationFilter) {
                         text.toLowerCase()
                             .includes(searchText);
 
-                    return matchesDesignation &&
-                           matchesSearch;
+                    const matchesBloodGroup =
+                        !selectedBloodGroup ||
+                        String(employee.blood_group || "").trim().toUpperCase() === selectedBloodGroup;
+
+                    return matchesDesignation && matchesBloodGroup && matchesSearch;
                 });
 
             showEmployees(filtered);
@@ -3479,3 +3506,24 @@ if (slipEmployee) {
         }
     });
 })();
+
+
+if (bloodGroupFilter) {
+    bloodGroupFilter.addEventListener("change", function () {
+        const selectedBloodGroup = this.value;
+        const selectedDesignation = designationFilter ? designationFilter.value : "";
+        const searchText = searchInput.value.toLowerCase().trim();
+
+        const filtered = employees.filter(employee => {
+            const matchesDesignation = !selectedDesignation ||
+                normalizeDesignation(employee.designation) === selectedDesignation;
+            const matchesBloodGroup = !selectedBloodGroup ||
+                String(employee.blood_group || "").trim().toUpperCase() === selectedBloodGroup;
+            const text = `${employee.employee_name || ""} ${employee.employee_no || ""} ${employee.company || ""} ${employee.department || ""} ${employee.designation || ""}`;
+            const matchesSearch = !searchText || text.toLowerCase().includes(searchText);
+            return matchesDesignation && matchesBloodGroup && matchesSearch;
+        });
+
+        showEmployees(filtered);
+    });
+}
