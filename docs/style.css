@@ -2994,3 +2994,18 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
     outline: none;
     border-color: #999;
 }
+
+/* FIX: Restore consistent spacing between six dashboard cards */
+@media (max-width: 600px) {
+    #departmentHeader {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        column-gap: 12px !important;
+        row-gap: 12px !important;
+        gap: 12px !important;
+    }
+
+    #departmentHeader > button {
+        margin: 0 !important;
+    }
+}
