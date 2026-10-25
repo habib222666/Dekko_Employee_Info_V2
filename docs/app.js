@@ -1948,8 +1948,8 @@ function showBirthdayEmployees(month) {
                    birthday.split("-")[1].padStart(2, "0") === monthNumber;
         })
         .sort((a, b) => {
-            const dayA = parseInt(String(a.birthday).split("-")[0], 10);
-            const dayB = parseInt(String(b.birthday).split("-")[0], 10);
+            const dayA = parseInt(String(a.birthday_text || "").split("-")[0], 10);
+            const dayB = parseInt(String(b.birthday_text || "").split("-")[0], 10);
             return dayA - dayB;
         });
 
