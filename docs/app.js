@@ -407,7 +407,7 @@ function getPhoto(employee) {
     }
 
     const photoUrl =
-        "http://192.168.2.205:8766/photos/" +
+        "http://192.168.61.26:8765/photos/" +
         encodeURIComponent(employeeNo) + ".jpg";
 
     return `
