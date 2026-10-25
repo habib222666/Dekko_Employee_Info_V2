@@ -3009,3 +3009,12 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
         margin: 0 !important;
     }
 }
+
+/* FIX: Increase spacing between six mobile dashboard cards */
+@media (max-width: 600px) {
+    #departmentHeader {
+        column-gap: 16px !important;
+        row-gap: 16px !important;
+        gap: 16px !important;
+    }
+}
