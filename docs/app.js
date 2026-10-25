@@ -406,10 +406,9 @@ function getPhoto(employee) {
         return '<div class="employee-photo-placeholder">No Photo</div>';
     }
 
-    const photoUrl =
-        "http://192.168.61.26:8765/photos/" +
-        encodeURIComponent(employeeNo) + ".jpg";
-
+        const photoUrl =
+        "https://photos-casting-highly-necklace.trycloudflare.com/photos/" +
+    encodeURIComponent(employeeNo) + ".jpg";
     return `
         <img
             src="${photoUrl}"
