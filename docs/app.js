@@ -875,7 +875,7 @@ function showDetails(employee, previousPage = "list") {
 
             <div class="detail-row">
                 <span>Date of Birth</span>
-                <strong>${employee.birthday || "-"}</strong>
+                <strong>${employee.date_of_birth || employee.birthday || "-"}</strong>
             </div>
 
             <div class="detail-row">
@@ -2589,7 +2589,7 @@ if (saveNewEmployeeButton) {
         async function loadEmployees() {
             const response = await fetch(
                 SUPABASE_URL +
-                "/rest/v1/employee_dekko_v2?select=employee_no,employee_name,department,designation,joining_date,bank_name,account_no&order=employee_name.asc",
+                "/rest/v1/employee_dekko_v2?select=employee_no,employee_name,department,designation,joining_date,birthday,date_of_birth,nid,tin_no,bank_name,account_no&order=employee_name.asc",
                 { headers: apiHeaders() }
             );
 
