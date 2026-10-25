@@ -1943,7 +1943,7 @@ function showBirthdayEmployees(month) {
 
     const birthdayEmployees = employees
         .filter(employee => {
-            const birthday = String(employee.birthday || "").trim();
+            const birthday = String(employee.birthday_text || "").trim();
             return /^\d{1,2}-\d{1,2}$/.test(birthday) &&
                    birthday.split("-")[1].padStart(2, "0") === monthNumber;
         })
@@ -1979,14 +1979,14 @@ function showBirthdayEmployees(month) {
                             <td>${employee.designation || ""}</td>
                             <td>${employee.department || ""}</td>
                             <td>${(() => {
-                                const parts = String(employee.birthday || "").split("-");
+                                const parts = String(employee.birthday_text || "").split("-");
                                 const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
                                 if (parts.length === 2) {
                                     const day = parts[0].padStart(2, "0");
                                     const month = months[parseInt(parts[1], 10) - 1];
-                                    return month ? `${day} ${month}` : employee.birthday || "";
+                                    return month ? `${day} ${month}` : employee.birthday_text || "";
                                 }
-                                return employee.birthday || "";
+                                return employee.birthday_text || "";
                             })()}</td>
                         </tr>
                     `).join("")}
@@ -2243,7 +2243,7 @@ if (saveNewEmployeeButton) {
                             pabx_number: pabxNumber,
                             blood_group: bloodGroup,
                             joining_date: joiningDate || null,
-                            birthday: birthday,
+                            birthday_text: birthday,
                             nid: nid,
                             tin_no: tinNo,
                             bank_name: bankName,
