@@ -407,8 +407,8 @@ function getPhoto(employee) {
     }
 
         const photoUrl =
-        "https://photos-casting-highly-necklace.trycloudflare.com/photos/" +
-    encodeURIComponent(employeeNo) + ".jpg";
+        "https" + "://" + "res.cloudinary.com/lnhd3otv/image/upload/" +
+        encodeURIComponent(employeeNo) + ".jpg";
     return `
         <img
             src="${photoUrl}"
