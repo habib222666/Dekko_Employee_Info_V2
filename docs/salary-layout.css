@@ -294,7 +294,7 @@
 }
 
 .payslip-net span {
-    font-size: 14px;
+    font-size: 20px;
     font-weight: 700;
     letter-spacing: .6px;
 }
@@ -543,7 +543,7 @@
 }
 
 .payslip-net span {
-    font-size: 12px;
+    font-size: 17px;
 }
 
 .payslip-net strong {
@@ -569,7 +569,7 @@
     }
 
     .payslip-net span {
-        font-size: 11px;
+        font-size: 16px;
     }
 
     .payslip-net strong {
