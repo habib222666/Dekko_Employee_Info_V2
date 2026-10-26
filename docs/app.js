@@ -3348,7 +3348,7 @@ if (slipEmployee) {
                         if (number >= 20) {
                             result += tens[Math.floor(number / 10)];
                             number %= 10;
-                            if (number) result += "-" + ones[number];
+                            if (number) result += " " + ones[number];
                         } else if (number > 0 || !result) {
                             result += ones[number];
                         }
@@ -3379,7 +3379,7 @@ if (slipEmployee) {
                             }
                         }
 
-                        return parts.join(" ") + " Taka Only";
+                        return parts.join(" ") + " Taka Only.";
                     }
 
                     const optionalDetails = [
@@ -3505,7 +3505,7 @@ if (slipEmployee) {
                             </section>
 
                             <section class="payslip-words">
-                                <p><strong>Net Pay (in Words):</strong> ${Number(netPay) ? safe(amountInWords(netPay)) : "-"}</p>
+                                <p><strong>Net Pay (In Words):</strong> ${Number(netPay) ? safe(amountInWords(netPay)) : "-"}</p>
                             </section>
 
                             <footer class="payslip-footer">
