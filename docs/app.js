@@ -415,7 +415,7 @@ function getPhoto(employee) {
             alt="Employee photo"
             class="employee-photo"
             loading="lazy"
-            style="width:64px;height:64px;object-fit:cover;border-radius:50%;"
+
             onerror="this.outerHTML='<div class=&quot;employee-photo-placeholder&quot;>No Photo</div>'"
         >
     `;
