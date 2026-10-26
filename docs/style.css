@@ -201,8 +201,8 @@ button:active {
 
 .profile-photo .employee-photo,
 .profile-photo .employee-photo-placeholder {
-    width: 110px;
-    height: 110px;
+    width: 150px;
+    height: 150px;
     font-size: 32px;
 }
 
