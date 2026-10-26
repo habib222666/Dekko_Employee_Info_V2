@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LIVE TEST - Employee App</title>
-<link rel="stylesheet" href="style.css?v=20261026detailsgap1">
+<link rel="stylesheet" href="style.css?v=20261026payslipyearmonth1">
 <link rel="stylesheet" href="salary-layout.css?v=20261015removeattendance1">
 </head>
 
@@ -477,8 +477,14 @@
                 <option value="">Select employee</option>
             </select>
 
-            <label for="paySlipMonth">Salary Month</label>
-            <input type="month" id="paySlipMonth" required>
+            <label for="paySlipYear">Year</label>
+            <select id="paySlipYear" aria-label="Pay slip year"></select>
+
+            <label>Salary Month</label>
+            <div id="paySlipMonthGrid" class="payslip-month-grid"
+                 role="group" aria-label="Select salary month"></div>
+            <input type="month" id="paySlipMonth" required
+                   style="display:none;" aria-hidden="true" tabindex="-1">
 
             <button id="viewPaySlipButton" type="button">View Pay Slip</button>
             <button id="printPaySlipButton" type="button"

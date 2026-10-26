@@ -2557,6 +2557,71 @@ if (saveNewEmployeeButton) {
         if (monthInput) monthInput.value = currentMonth;
         if (slipMonth) slipMonth.value = currentMonth;
 
+        // Monthly Pay Slip year and month selector
+        const paySlipYearSelect = $("paySlipYear");
+        const paySlipMonthGrid = $("paySlipMonthGrid");
+
+        if (paySlipYearSelect && paySlipMonthGrid && slipMonth) {
+            const currentYear = new Date().getFullYear();
+            const monthNames = [
+                "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+            ];
+
+            for (let year = 2011; year <= currentYear + 10; year++) {
+                const option = document.createElement("option");
+                option.value = String(year);
+                option.textContent = String(year);
+                paySlipYearSelect.appendChild(option);
+            }
+
+            const initialYear = Number(slipMonth.value.slice(0, 4));
+            const initialMonth = slipMonth.value.slice(5, 7);
+            paySlipYearSelect.value = String(
+                initialYear >= 2011 && initialYear <= currentYear
+                    ? initialYear : currentYear
+            );
+
+            monthNames.forEach((name, index) => {
+                const monthNumber = String(index + 1).padStart(2, "0");
+                const button = document.createElement("button");
+                button.type = "button";
+                button.className = "payslip-month-button";
+                button.textContent = name;
+                button.dataset.month = monthNumber;
+                button.setAttribute("aria-pressed", "false");
+
+                button.addEventListener("click", function () {
+                    slipMonth.value =
+                        paySlipYearSelect.value + "-" + monthNumber;
+                    updatePaySlipMonthSelection();
+                });
+
+                paySlipMonthGrid.appendChild(button);
+            });
+
+            function updatePaySlipMonthSelection() {
+                const selectedMonth = slipMonth.value.slice(5, 7);
+                paySlipMonthGrid.querySelectorAll(".payslip-month-button")
+                    .forEach(button => {
+                        const selected = button.dataset.month === selectedMonth;
+                        button.classList.toggle("selected", selected);
+                        button.setAttribute("aria-pressed", String(selected));
+                    });
+            }
+
+            paySlipYearSelect.addEventListener("change", function () {
+                const selectedMonth = slipMonth.value.slice(5, 7) || "01";
+                slipMonth.value = paySlipYearSelect.value + "-" + selectedMonth;
+                updatePaySlipMonthSelection();
+            });
+
+            slipMonth.value =
+                paySlipYearSelect.value + "-" +
+                (initialMonth || String(new Date().getMonth() + 1).padStart(2, "0"));
+            updatePaySlipMonthSelection();
+        }
+
         let employeeNumbers = new Set();
         let employeeInfo = new Map();
 
