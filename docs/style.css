@@ -25,7 +25,7 @@ background: #f5f7fb;
 }
 
 h1 {
-    margin: 0 0 20px;
+    margin: 0 0 8px;
     font-size: 28px;
 }
 
@@ -190,7 +190,7 @@ button:active {
 
 .profile-card {
     text-align: center;
-    padding: 10px 10px 24px;
+    padding: 4px 10px 24px;
 }
 
 .profile-photo {
