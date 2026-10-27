@@ -4018,7 +4018,7 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
     color: #1e3a8a !important;
 }
 
-.holiday-calendar-day:not(.empty) {
+.holiday-calendar-day:not(.empty):not(.government):not(.office):not(.weekly):not(.special-working):not(.mixed) {
     background: #fff !important;
     border-color: #e2e8f0 !important;
     color: #334155 !important;
