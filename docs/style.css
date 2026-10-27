@@ -4443,3 +4443,11 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
     height: 32px;
     flex: 0 0 auto;
 }
+
+/* Organization Chart dashboard icon */
+#departmentHeader .organogram-dashboard-icon {
+    display: block;
+    width: 38px;
+    height: 32px;
+    flex: 0 0 auto;
+}
