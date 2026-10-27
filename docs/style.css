@@ -4434,3 +4434,12 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
     background: #455a64 !important;
     color: #ffffff !important;
 }
+
+
+/* People icons for Head Office and Factory dashboard cards */
+#departmentHeader .employee-group-icon {
+    display: block;
+    width: 38px;
+    height: 32px;
+    flex: 0 0 auto;
+}
