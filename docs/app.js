@@ -4184,13 +4184,18 @@ if (bloodGroupFilter) {
     }
 })();
 
-/* Show today's date in the Dashboard Holiday Calendar icon */
+/* Show today's date and month in the Dashboard Holiday Calendar icon */
 (function () {
     function updateHolidayTodayDate() {
         const dateElement = document.getElementById("holidayTodayDate");
         if (!dateElement) return;
 
-        dateElement.textContent = String(new Date().getDate());
+        const now = new Date();
+        dateElement.innerHTML =
+            '<span class="holiday-today-day">' + now.getDate() + '</span>' +
+            '<span class="holiday-today-month">' +
+            now.toLocaleString("en-US", { month: "short" }).toUpperCase() +
+            '</span>';
     }
 
     updateHolidayTodayDate();

@@ -4111,3 +4111,35 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
 #holidayCalendarButton .holiday-today-icon #holidayTodayDate {
     padding-top: 5px;
 }
+
+/* Day and month inside the Holiday Calendar dashboard icon */
+#holidayCalendarButton .holiday-today-icon {
+    flex-direction: column;
+    gap: 0;
+    overflow: hidden;
+}
+
+#holidayCalendarButton .holiday-today-icon::before {
+    height: 7px;
+}
+
+#holidayCalendarButton .holiday-today-icon #holidayTodayDate {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding-top: 7px;
+    line-height: 1;
+}
+
+#holidayCalendarButton .holiday-today-day {
+    font-size: 15px;
+    font-weight: 800;
+}
+
+#holidayCalendarButton .holiday-today-month {
+    margin-top: 3px;
+    font-size: 8px;
+    font-weight: 800;
+}
