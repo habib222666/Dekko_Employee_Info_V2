@@ -324,15 +324,11 @@ async function loadEmployees() {
 
         employees = await response.json();
 
-        // Load favorite status from Supabase
-        favoriteEmployees = employees
-            .filter(employee => employee.favorite === true)
-            .map(employee => String(employee.employee_no));
-
-        localStorage.setItem(
-            "favoriteEmployees",
-            JSON.stringify(favoriteEmployees)
-        );
+        // Restore favorites saved on this device.
+        // Do not overwrite local favorites with Supabase employee data.
+        favoriteEmployees = JSON.parse(
+            localStorage.getItem("favoriteEmployees") || "[]"
+        ).map(id => String(id));
 
 
         showDepartmentCards();
