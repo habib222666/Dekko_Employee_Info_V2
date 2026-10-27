@@ -4079,3 +4079,35 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
     border: 1px solid #EAB308 !important;
     color: #422006 !important;
 }
+
+/* Today's date inside the Dashboard Holiday Calendar icon */
+#holidayCalendarButton .holiday-today-icon {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: #ffffff;
+    border: 2px solid #dc2626;
+    color: #1e3a8a;
+    font-size: 17px;
+    font-weight: 800;
+    box-sizing: border-box;
+}
+
+#holidayCalendarButton .holiday-today-icon::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 7px;
+    background: #dc2626;
+    border-radius: 5px 5px 0 0;
+}
+
+#holidayCalendarButton .holiday-today-icon #holidayTodayDate {
+    padding-top: 5px;
+}

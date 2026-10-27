@@ -4183,3 +4183,16 @@ if (bloodGroupFilter) {
         });
     }
 })();
+
+/* Show today's date in the Dashboard Holiday Calendar icon */
+(function () {
+    function updateHolidayTodayDate() {
+        const dateElement = document.getElementById("holidayTodayDate");
+        if (!dateElement) return;
+
+        dateElement.textContent = String(new Date().getDate());
+    }
+
+    updateHolidayTodayDate();
+    setInterval(updateHolidayTodayDate, 60000);
+})();
