@@ -3950,7 +3950,7 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
 }
 
 .holiday-calendar-grid {
-    row-gap: 4px;
+    row-gap: 8px;
 }
 
 /* Restore original date-box colors */
@@ -3999,7 +3999,7 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
 
 @media (max-width: 600px) {
     .holiday-calendar-grid {
-        row-gap: 4px;
+        row-gap: 8px;
     }
 
     #holidayCalendarStatus {
@@ -4062,3 +4062,13 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
 
 
 #holidayCalendarStatus { display: none !important; }
+
+
+/* Holiday calendar: more space between date rows and legend */
+.holiday-calendar-grid {
+    row-gap: 8px !important;
+}
+
+.holiday-calendar-legend {
+    margin-top: 20px !important;
+}
