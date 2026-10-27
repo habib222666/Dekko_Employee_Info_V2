@@ -4325,3 +4325,97 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
         gap: 3px 4px;
     }
 }
+
+
+/* Home Page: Birthday Celebrations */
+#homeBirthdaySection {
+    margin: 22px auto 26px;
+    padding: 18px;
+    width: 100%;
+    box-sizing: border-box;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.07);
+}
+#homeBirthdayTitle {
+    margin: 0;
+    color: #1d4ed8;
+    font-size: 22px;
+    font-weight: 750;
+}
+#homeBirthdaySection .home-birthday-subtitle {
+    margin: 5px 0 16px;
+    color: #475569;
+    font-size: 15px;
+    font-weight: 600;
+}
+.home-birthday-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(245px, 1fr));
+    gap: 12px;
+}
+.home-birthday-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+    padding: 12px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+}
+.home-birthday-photo-wrap {
+    flex: 0 0 58px;
+    width: 58px;
+    height: 58px;
+    overflow: hidden;
+    border-radius: 50%;
+    background: #e2e8f0;
+}
+.home-birthday-card .employee-photo,
+.home-birthday-card .employee-photo-placeholder {
+    display: flex;
+    width: 58px !important;
+    height: 58px !important;
+    min-width: 58px;
+    object-fit: cover;
+    border-radius: 50% !important;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+}
+.home-birthday-card .employee-photo-placeholder {
+    font-size: 10px;
+    text-align: center;
+}
+.home-birthday-info { min-width: 0; }
+.home-birthday-name {
+    color: #1e293b;
+    font-size: 15px;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+.home-birthday-role {
+    margin-top: 3px;
+    color: #0f766e;
+    font-size: 12px;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+.home-birthday-date {
+    margin-top: 5px;
+    color: #b45309;
+    font-size: 12px;
+    font-weight: 700;
+}
+.home-birthday-empty {
+    margin: 0;
+    color: #64748b;
+    font-size: 14px;
+}
+@media (max-width: 480px) {
+    #homeBirthdaySection { padding: 14px; }
+    #homeBirthdayTitle { font-size: 20px; }
+    .home-birthday-list { grid-template-columns: 1fr; }
+}

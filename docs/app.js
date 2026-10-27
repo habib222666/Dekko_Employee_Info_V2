@@ -338,6 +338,7 @@ async function loadEmployees() {
         showDepartmentCards();
 
         showEmployees(employees);
+        renderHomeBirthdayCelebrations();
 
         populateDesignationFilter();
         loadEmployeeSelect();
@@ -1935,6 +1936,97 @@ document.addEventListener("DOMContentLoaded", function () {
 /* =========================
    BIRTHDAY FEATURE
 ========================= */
+
+function renderHomeBirthdayCelebrations() {
+    const list = document.getElementById("homeBirthdayList");
+    if (!list) return;
+
+    const monthNames = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    ];
+
+    // Current calendar week: Monday through Sunday.
+    const today = new Date();
+    const monday = new Date(
+        today.getFullYear(), today.getMonth(), today.getDate()
+    );
+    monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7));
+
+    const weekDates = new Map();
+
+    for (let i = 0; i < 7; i++) {
+        const date = new Date(
+            monday.getFullYear(), monday.getMonth(), monday.getDate() + i
+        );
+        const key =
+            String(date.getMonth() + 1).padStart(2, "0") + "-" +
+            String(date.getDate()).padStart(2, "0");
+
+        weekDates.set(key, {
+            order: i,
+            label: date.getDate() + " " + monthNames[date.getMonth()]
+        });
+    }
+
+    const upcoming = (Array.isArray(employees) ? employees : [])
+        .map(employee => {
+            const raw = String(employee.birthday_text || "").trim();
+            const parts = raw.match(/^(\d{1,2})-(\d{1,2})$/);
+
+            if (!parts) return null;
+
+            const day = Number(parts[1]);
+            const month = Number(parts[2]);
+
+            if (
+                month < 1 || month > 12 ||
+                day < 1 || day > new Date(2024, month, 0).getDate()
+            ) return null;
+
+            const key =
+                String(month).padStart(2, "0") + "-" +
+                String(day).padStart(2, "0");
+
+            const weekDate = weekDates.get(key);
+            if (!weekDate) return null;
+
+            return {
+                employee,
+                order: weekDate.order,
+                dateLabel: weekDate.label
+            };
+        })
+        .filter(Boolean)
+        .sort((a, b) => a.order - b.order);
+
+    if (!upcoming.length) {
+        list.innerHTML =
+            '<p class="home-birthday-empty">No birthdays this week.</p>';
+        return;
+    }
+
+    list.innerHTML = upcoming.map(({ employee, dateLabel }) => {
+        const name = employee.employee_name || employee.name || "Unnamed Employee";
+        const designation = employee.designation || "";
+        const department = employee.department || "";
+        const role = designation && department
+            ? `${designation} - ${department}`
+            : designation || department;
+
+        return `
+            <article class="home-birthday-card">
+                <div class="home-birthday-photo-wrap">
+                    ${getPhoto(employee)}
+                </div>
+                <div class="home-birthday-info">
+                    <div class="home-birthday-name">${name}</div>
+                    <div class="home-birthday-role">${role}</div>
+                    <div class="home-birthday-date">${dateLabel}</div>
+                </div>
+            </article>`;
+    }).join("");
+}
 
 function showBirthdayEmployees(month) {
     if (!birthdayEmployeeList) return;
