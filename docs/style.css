@@ -3228,7 +3228,7 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
 .holiday-calendar-months {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 9px;
+    gap: 5px;
     margin: 16px 0 22px;
 }
 
@@ -3483,7 +3483,7 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
 @media (max-width: 600px) {
     .holiday-calendar-months {
         grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 7px;
+        gap: 5px;
     }
 
     .holiday-calendar-summary {
@@ -3950,7 +3950,7 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
 }
 
 .holiday-calendar-grid {
-    row-gap: 1px;
+    row-gap: 4px;
 }
 
 /* Restore original date-box colors */
@@ -3999,7 +3999,7 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
 
 @media (max-width: 600px) {
     .holiday-calendar-grid {
-        row-gap: 1px;
+        row-gap: 4px;
     }
 
     #holidayCalendarStatus {
@@ -4059,3 +4059,6 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
     padding: 4px 8px !important;
     line-height: 1.2 !important;
 }
+
+
+#holidayCalendarStatus { display: none !important; }
