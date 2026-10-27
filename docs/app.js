@@ -3920,7 +3920,7 @@ if (bloodGroupFilter) {
 
             calendarRecords = Array.isArray(records) ? records : [];
             renderCalendar();
-            status.textContent = "Calendar loaded for " + year + ".";
+            status.textContent = "";
         } catch (error) {
             if (requestId !== loadRequest) return;
             calendarRecords = [];
