@@ -27,6 +27,7 @@
         <button id="birthdayButton"><span class="dashboard-icon">🎂</span><span class="dashboard-label">Birthday</span></button>
         <button id="salaryButton"><span class="dashboard-icon">💰</span><span class="dashboard-label">Salary 🔒</span></button>
         <button id="organogramButton"><span class="dashboard-icon">🌳</span><span class="dashboard-label">Organogram</span></button>
+        <button id="holidayCalendarButton"><span class="dashboard-icon">📅</span><span class="dashboard-label">Holiday Calendar</span></button>
     </div>
 </div>
 
@@ -59,6 +60,92 @@
     </main>
 </div>
 
+<div id="holidayCalendarPage" class="holiday-calendar-page" style="display:none;">
+    <header class="holiday-calendar-header">
+        <button id="holidayCalendarBackButton" class="holiday-calendar-back">
+            <span aria-hidden="true">←</span> Back
+        </button>
+        <div class="holiday-calendar-heading">
+            <div class="holiday-calendar-icon" aria-hidden="true">📅</div>
+            <div>
+                <h1>Holiday Calendar</h1>
+                <p>Government &amp; Office Holidays</p>
+            </div>
+        </div>
+    </header>
+    <main class="holiday-calendar-content">
+        <section class="holiday-calendar-card">
+            <div class="holiday-calendar-controls">
+                <label for="holidayCalendarYear">Calendar year</label>
+                <select id="holidayCalendarYear" aria-label="Calendar year"></select>
+            </div>
+
+            <div id="holidayCalendarMonths" class="holiday-calendar-months"
+                 aria-label="Select month"></div>
+
+            <div id="holidayCalendarStatus" role="status" aria-live="polite">
+                Loading holiday calendar...
+            </div>
+
+            <div id="holidayCalendarSummary" class="holiday-calendar-summary"></div>
+
+            <div class="holiday-calendar-legend">
+                <span><i class="holiday-dot government"></i> Government Holiday</span>
+                <span><i class="holiday-dot office"></i> Office Holiday</span>
+                <span><i class="holiday-dot weekly"></i> Weekly Holiday</span>
+                <span><i class="holiday-dot special-working"></i> Special Working Day</span>
+            </div>
+
+            <div class="holiday-calendar-weekdays" aria-hidden="true">
+                <span>Sun</span><span>Mon</span><span>Tue</span>
+                <span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+            </div>
+
+            <div id="holidayCalendarGrid" class="holiday-calendar-grid"
+                 aria-label="Monthly calendar"></div>
+
+            <section class="holiday-calendar-events">
+                <h2 id="holidayCalendarMonthTitle">Monthly Holidays</h2>
+                <div id="holidayCalendarEventList"></div>
+            </section>
+
+            <section id="holidayCalendarAdmin" class="holiday-calendar-admin"
+                     style="display:none;">
+                <h2 id="holidayCalendarFormTitle">Manage Holiday</h2>
+                <form id="holidayCalendarForm">
+                    <input type="hidden" id="holidayCalendarRecordId">
+
+                    <label for="holidayCalendarEventDate">Date</label>
+                    <input type="date" id="holidayCalendarEventDate" required>
+
+                    <label for="holidayCalendarEventType">Holiday type</label>
+                    <select id="holidayCalendarEventType" required>
+                        <option value="Government">Government Holiday</option>
+                        <option value="Office">Office Holiday</option>
+                        <option value="Weekly">Weekly Holiday</option>
+                        <option value="Special Working Day">Special Working Day</option>
+                    </select>
+
+                    <label for="holidayCalendarEventTitle">Title</label>
+                    <input type="text" id="holidayCalendarEventTitle"
+                           maxlength="150" placeholder="Holiday title" required>
+
+                    <label for="holidayCalendarEventDescription">Description</label>
+                    <textarea id="holidayCalendarEventDescription"
+                              maxlength="1000" rows="3"
+                              placeholder="Optional description"></textarea>
+
+                    <div class="holiday-calendar-admin-actions">
+                        <button type="submit" id="holidayCalendarSaveButton">Save Holiday</button>
+                        <button type="button" id="holidayCalendarCancelEdit"
+                                style="display:none;">Cancel Edit</button>
+                    </div>
+                    <p id="holidayCalendarAdminStatus" role="status"></p>
+                </form>
+            </section>
+        </section>
+    </main>
+</div>
 <img id="homeBottomLogo" src="assets/icons/Dekko-bottom-uddate.png" alt="Dekko logo">
 </div>
 

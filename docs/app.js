@@ -2401,6 +2401,40 @@ if (saveNewEmployeeButton) {
     });
 })();
 
+
+
+/* HOLIDAY CALENDAR PAGE NAVIGATION */
+(function () {
+    const button = document.getElementById("holidayCalendarButton");
+    const page = document.getElementById("holidayCalendarPage");
+    const backButton = document.getElementById("holidayCalendarBackButton");
+    const dashboard = document.getElementById("departmentSection");
+    const appTitle = document.getElementById("appTitle");
+    const bottomLogo = document.getElementById("homeBottomLogo");
+    const employeeList = document.getElementById("employeeList");
+
+    if (!button || !page || !backButton) return;
+
+    button.addEventListener("click", function () {
+        if (dashboard) dashboard.style.display = "none";
+        if (appTitle) appTitle.style.display = "none";
+        if (bottomLogo) bottomLogo.style.display = "none";
+        if (employeeList) employeeList.style.display = "none";
+
+        page.style.display = "block";
+        window.scrollTo(0, 0);
+    });
+
+    backButton.addEventListener("click", function () {
+        page.style.display = "none";
+        if (dashboard) dashboard.style.display = "";
+        if (appTitle) appTitle.style.display = "";
+        if (bottomLogo) bottomLogo.style.display = "";
+        if (employeeList) employeeList.style.display = "";
+        window.scrollTo(0, 0);
+    });
+})();
+
 /* SALARY MANAGEMENT - ADMIN ONLY */
 (function () {
     "use strict";
@@ -3591,3 +3625,555 @@ if (bloodGroupFilter) {
         showEmployees(filtered);
     });
 }
+
+
+
+/* HOLIDAY CALENDAR DATA AND DISPLAY LOGIC */
+(function () {
+    "use strict";
+
+    const $ = id => document.getElementById(id);
+    const yearSelect = $("holidayCalendarYear");
+    const monthButtons = $("holidayCalendarMonths");
+    const status = $("holidayCalendarStatus");
+    const summary = $("holidayCalendarSummary");
+    const grid = $("holidayCalendarGrid");
+    const monthTitle = $("holidayCalendarMonthTitle");
+    const eventList = $("holidayCalendarEventList");
+
+    if (!yearSelect || !monthButtons || !grid || !summary || !eventList) return;
+
+    const MONTHS = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    ];
+
+    let selectedYear = new Date().getFullYear();
+    let selectedMonth = new Date().getMonth();
+    let calendarRecords = [];
+    let loadRequest = 0;
+
+    function escapeHTML(value) {
+        return String(value ?? "").replace(/[&<>"']/g, char => ({
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;"
+        })[char]);
+    }
+
+    function dateKey(year, month, day) {
+        return year + "-" +
+            String(month + 1).padStart(2, "0") + "-" +
+            String(day).padStart(2, "0");
+    }
+
+    function recordsForDate(key) {
+        return calendarRecords.filter(record => record.event_date === key);
+    }
+
+    function dayInfo(year, month, day) {
+        const key = dateKey(year, month, day);
+        const records = recordsForDate(key);
+        const date = new Date(year, month, day);
+        const special = records.some(r => r.event_type === "Special Working Day");
+        const government = !special &&
+            records.some(r => r.event_type === "Government");
+        const office = !special && (
+            records.some(r => r.event_type === "Office") ||
+            (
+                date.getDay() === 6 &&
+                day !== 8 &&
+                (day === 1 || day > 8)
+            )
+        );
+        const weekly = !special && (
+            date.getDay() === 5 ||
+            (records.some(r => r.event_type === "Weekly") &&
+             date.getDay() !== 6)
+        );
+        return {
+            key,
+            records,
+            special,
+            government,
+            office,
+            weekly,
+            holiday: !special && (government || office || weekly)
+        };
+    }
+
+    function buildYearSelector() {
+        yearSelect.replaceChildren();
+        for (let year = selectedYear - 2; year <= selectedYear + 2; year++) {
+            const option = document.createElement("option");
+            option.value = String(year);
+            option.textContent = String(year);
+            yearSelect.appendChild(option);
+        }
+        yearSelect.value = String(selectedYear);
+    }
+
+    function buildMonthButtons() {
+        monthButtons.innerHTML = MONTHS.map((name, index) =>
+            '<button type="button" class="holiday-calendar-month' +
+            (index === selectedMonth ? ' active' : '') +
+            '" data-month="' + index + '">' + name + '</button>'
+        ).join("");
+
+        monthButtons.querySelectorAll("[data-month]").forEach(button => {
+            button.addEventListener("click", () => {
+                selectedMonth = Number(button.dataset.month);
+                renderCalendar();
+            });
+        });
+    }
+
+    function renderSummary(daysInMonth) {
+        let governmentDays = 0;
+        let officeDays = 0;
+        let weeklyDays = 0;
+        let totalHolidays = 0;
+
+        for (let day = 1; day <= daysInMonth; day++) {
+            const info = dayInfo(selectedYear, selectedMonth, day);
+            if (info.government) governmentDays++;
+            if (info.office) officeDays++;
+            if (info.weekly) weeklyDays++;
+            if (info.holiday) totalHolidays++;
+        }
+
+        const items = [
+            ["Government Holidays", governmentDays],
+            ["Office Holidays", officeDays],
+            ["Weekly Holidays", weeklyDays],
+            ["Working Days", daysInMonth - totalHolidays],
+            ["Total Holidays", totalHolidays]
+        ];
+
+        summary.innerHTML = items.map(item =>
+            '<div class="holiday-summary-item"><strong>' + item[1] +
+            '</strong><span>' + item[0] + '</span></div>'
+        ).join("");
+    }
+
+    function renderGrid(daysInMonth) {
+        const firstWeekday = new Date(
+            selectedYear, selectedMonth, 1
+        ).getDay();
+
+        const cells = [];
+        for (let i = 0; i < firstWeekday; i++) {
+            cells.push('<div class="holiday-calendar-day empty" aria-hidden="true"></div>');
+        }
+
+        for (let day = 1; day <= daysInMonth; day++) {
+            const info = dayInfo(selectedYear, selectedMonth, day);
+            let classes = "holiday-calendar-day";
+            const labels = [];
+
+            if (info.special) {
+                classes += " special-working";
+                labels.push("Special Working Day");
+            } else {
+                if (info.government) {
+                    classes += " government";
+                    labels.push("Government Holiday");
+                }
+                if (info.office) {
+                    classes += " office";
+                    labels.push("Office Holiday");
+                }
+                if (info.weekly) {
+                    if (!info.government && !info.office) {
+                        classes += " weekly";
+                    } else {
+                        classes += " mixed";
+                    }
+
+                }
+            }
+
+            cells.push(
+                '<div class="' + classes + '" data-date="' + info.key + '">' +
+                '<span class="day-number">' + day + '</span>' +
+                labels.map(label =>
+                    '<span class="day-label">' + escapeHTML(label) + '</span>'
+                ).join("") +
+                '</div>'
+            );
+        }
+
+        grid.innerHTML = cells.join("");
+    }
+
+    function renderEvents(daysInMonth) {
+        const entries = [];
+
+        for (let day = 1; day <= daysInMonth; day++) {
+            const info = dayInfo(selectedYear, selectedMonth, day);
+            if (!info.holiday && !info.special && !info.records.length) continue;
+
+            const titles = info.records.map(record => record.title).filter(Boolean);
+            const categories = [];
+
+            if (info.special) {
+                categories.push("Special Working Day");
+            } else {
+                if (info.government) categories.push("Government Holiday");
+                if (info.office) categories.push("Office Holiday");
+                if (info.weekly) categories.push("Weekly Holiday");
+            }
+
+            if (categories.length || titles.length) {
+                entries.push({
+                    date: info.key,
+                    categories,
+                    titles,
+                    records: info.records
+                });
+            }
+        }
+
+        if (!entries.length) {
+            eventList.innerHTML = '<p>No holidays or calendar entries for this month.</p>';
+            return;
+        }
+
+        eventList.innerHTML = entries.map(entry => {
+            const date = new Date(entry.date + "T00:00:00");
+            const readableDate = date.toLocaleDateString("en-GB", {
+                day: "numeric", month: "long", year: "numeric"
+            });
+            const title = entry.titles.length
+                ? entry.titles.join(" · ")
+                : entry.categories.join(" · ");
+
+            const descriptions = entry.records
+                .map(record => record.description)
+                .filter(Boolean)
+                .map(text => '<p>' + escapeHTML(text) + '</p>')
+                .join("");
+
+            const actions = window.holidayCalendarIsAdmin
+                ? entry.records.map(record =>
+                    '<div class="holiday-calendar-event-actions">' +
+                    '<button type="button" data-calendar-edit="' +
+                    escapeHTML(record.id) + '">Edit</button>' +
+                    '<button type="button" data-calendar-delete="' +
+                    escapeHTML(record.id) + '">Delete</button>' +
+                    '</div>'
+                ).join("")
+                : "";
+
+            return '<article class="holiday-calendar-event">' +
+                '<strong>' + escapeHTML(readableDate) + ' — ' +
+                escapeHTML(title) + '</strong>' +
+                '<p>' + escapeHTML(entry.categories.join(" · ")) + '</p>' +
+                descriptions + actions + '</article>';
+        }).join("");
+    }
+
+    function renderCalendar() {
+        const daysInMonth = new Date(
+            selectedYear, selectedMonth + 1, 0
+        ).getDate();
+
+        monthTitle.textContent = MONTHS[selectedMonth] + " " + selectedYear;
+        buildMonthButtons();
+        renderSummary(daysInMonth);
+        renderGrid(daysInMonth);
+        renderEvents(daysInMonth);
+    }
+
+    async function loadYearRecords() {
+        const requestId = ++loadRequest;
+        const year = selectedYear;
+        status.textContent = "Loading calendar data...";
+
+        try {
+            const response = await fetch(
+                SUPABASE_URL + "/rest/v1/office_calendar?select=*&event_date=gte." +
+                year + "-01-01&event_date=lte." + year + "-12-31&order=event_date.asc",
+                {
+                    headers: {
+                        apikey: SUPABASE_KEY,
+                        Authorization: "Bearer " + SUPABASE_KEY
+                    }
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error("Could not load calendar data (HTTP " +
+                    response.status + ").");
+            }
+
+            const records = await response.json();
+            if (requestId !== loadRequest) return;
+
+            calendarRecords = Array.isArray(records) ? records : [];
+            renderCalendar();
+            status.textContent = "Calendar loaded for " + year + ".";
+        } catch (error) {
+            if (requestId !== loadRequest) return;
+            calendarRecords = [];
+            renderCalendar();
+            status.textContent =
+                "Could not load saved holidays. " + error.message;
+        }
+    }
+
+    yearSelect.addEventListener("change", () => {
+        selectedYear = Number(yearSelect.value);
+        loadYearRecords();
+    });
+
+    buildYearSelector();
+    renderCalendar();
+
+    const calendarButton = $("holidayCalendarButton");
+    if (calendarButton) {
+        calendarButton.addEventListener("click", loadYearRecords);
+    }
+
+    window.addEventListener("holidayCalendarRefresh", loadYearRecords);
+})();
+
+
+
+/* HOLIDAY CALENDAR ADMIN CRUD */
+(function () {
+    "use strict";
+
+    const ADMIN_UID = "f0fcbd2e-003e-4fc2-bc2e-51b13c5f0814";
+    const $ = id => document.getElementById(id);
+
+    const adminPanel = $("holidayCalendarAdmin");
+    const form = $("holidayCalendarForm");
+    const formTitle = $("holidayCalendarFormTitle");
+    const recordId = $("holidayCalendarRecordId");
+    const dateInput = $("holidayCalendarEventDate");
+    const typeInput = $("holidayCalendarEventType");
+    const titleInput = $("holidayCalendarEventTitle");
+    const descriptionInput = $("holidayCalendarEventDescription");
+    const saveButton = $("holidayCalendarSaveButton");
+    const cancelButton = $("holidayCalendarCancelEdit");
+    const adminStatus = $("holidayCalendarAdminStatus");
+    const eventList = $("holidayCalendarEventList");
+    const calendarButton = $("holidayCalendarButton");
+    const logoutButton = $("logoutButton");
+
+    if (!adminPanel || !form || !eventList) return;
+
+    window.holidayCalendarIsAdmin = false;
+    adminPanel.style.display = "none";
+
+    async function verifyAdmin() {
+        if (!accessToken) return false;
+
+        const response = await fetch(SUPABASE_URL + "/auth/v1/user", {
+            headers: {
+                apikey: SUPABASE_KEY,
+                Authorization: "Bearer " + accessToken
+            }
+        });
+
+        if (!response.ok) return false;
+
+        const user = await response.json();
+        return user && user.id === ADMIN_UID;
+    }
+
+    function resetForm() {
+        form.reset();
+        recordId.value = "";
+        formTitle.textContent = "Manage Holiday";
+        saveButton.textContent = "Save Holiday";
+        cancelButton.style.display = "none";
+    }
+
+    function showAdminStatus(message) {
+        adminStatus.textContent = message;
+    }
+
+    async function refreshCalendar() {
+        window.dispatchEvent(new Event("holidayCalendarRefresh"));
+    }
+
+    async function requestCalendar(url, options) {
+        const response = await fetch(url, options);
+        const body = await response.text();
+        let data = null;
+
+        try {
+            data = body ? JSON.parse(body) : null;
+        } catch (_) {
+            data = null;
+        }
+
+        if (!response.ok) {
+            throw new Error(
+                (data && (data.message || data.error_description || data.error)) ||
+                ("Request failed (HTTP " + response.status + ").")
+            );
+        }
+
+        return data;
+    }
+
+    function authHeaders() {
+        return {
+            apikey: SUPABASE_KEY,
+            Authorization: "Bearer " + accessToken,
+            "Content-Type": "application/json",
+            Prefer: "return=representation"
+        };
+    }
+
+    async function enableAdminIfValid() {
+        try {
+            const validAdmin = await verifyAdmin();
+            window.holidayCalendarIsAdmin = validAdmin;
+            adminPanel.style.display = validAdmin ? "block" : "none";
+
+            if (validAdmin) {
+                await refreshCalendar();
+            }
+        } catch (error) {
+            window.holidayCalendarIsAdmin = false;
+            adminPanel.style.display = "none";
+        }
+    }
+
+    if (calendarButton) {
+        calendarButton.addEventListener("click", enableAdminIfValid);
+    }
+
+    eventList.addEventListener("click", async function (event) {
+        const editButton = event.target.closest("[data-calendar-edit]");
+        const deleteButton = event.target.closest("[data-calendar-delete]");
+
+        if (!editButton && !deleteButton) return;
+
+        try {
+            if (!(await verifyAdmin())) {
+                window.holidayCalendarIsAdmin = false;
+                adminPanel.style.display = "none";
+                showAdminStatus("Admin verification failed. Please log in again.");
+                return;
+            }
+
+            const id = (editButton || deleteButton).dataset[
+                editButton ? "calendarEdit" : "calendarDelete"
+            ];
+
+            const response = await requestCalendar(
+                SUPABASE_URL + "/rest/v1/office_calendar?select=*&id=eq." +
+                encodeURIComponent(id),
+                { headers: authHeaders() }
+            );
+
+            const record = Array.isArray(response) ? response[0] : response;
+            if (!record) throw new Error("Calendar record was not found.");
+
+            if (editButton) {
+                recordId.value = String(record.id);
+                dateInput.value = record.event_date;
+                typeInput.value = record.event_type;
+                titleInput.value = record.title || "";
+                descriptionInput.value = record.description || "";
+                formTitle.textContent = "Edit Calendar Entry";
+                saveButton.textContent = "Update Entry";
+                cancelButton.style.display = "inline-block";
+                showAdminStatus("Editing selected entry.");
+                adminPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+                return;
+            }
+
+            if (!window.confirm(
+                'Delete "' + (record.title || "this calendar entry") +
+                '" on ' + record.event_date + '?'
+            )) return;
+
+            await requestCalendar(
+                SUPABASE_URL + "/rest/v1/office_calendar?id=eq." +
+                encodeURIComponent(id),
+                {
+                    method: "DELETE",
+                    headers: authHeaders()
+                }
+            );
+
+            resetForm();
+            showAdminStatus("Calendar entry deleted.");
+            await refreshCalendar();
+        } catch (error) {
+            showAdminStatus(error.message);
+        }
+    });
+
+    form.addEventListener("submit", async function (event) {
+        event.preventDefault();
+        saveButton.disabled = true;
+        showAdminStatus("Verifying Admin and saving...");
+
+        try {
+            if (!(await verifyAdmin())) {
+                window.holidayCalendarIsAdmin = false;
+                adminPanel.style.display = "none";
+                throw new Error("Admin verification failed. Please log in again.");
+            }
+
+            const eventType = typeInput.value;
+            const payload = {
+                event_date: dateInput.value,
+                event_type: eventType,
+                title: titleInput.value.trim(),
+                description: descriptionInput.value.trim() || null,
+                is_working_day: eventType === "Special Working Day",
+                updated_at: new Date().toISOString()
+            };
+
+            if (!payload.event_date || !payload.title) {
+                throw new Error("Please enter a date and title.");
+            }
+
+            let url = SUPABASE_URL + "/rest/v1/office_calendar";
+            let method = "POST";
+
+            if (recordId.value) {
+                url += "?id=eq." + encodeURIComponent(recordId.value);
+                method = "PATCH";
+            } else {
+                payload.created_by = ADMIN_UID;
+            }
+
+            await requestCalendar(url, {
+                method,
+                headers: authHeaders(),
+                body: JSON.stringify(payload)
+            });
+
+            resetForm();
+            showAdminStatus("Calendar entry saved successfully.");
+            await refreshCalendar();
+        } catch (error) {
+            showAdminStatus(error.message);
+        } finally {
+            saveButton.disabled = false;
+        }
+    });
+
+    cancelButton.addEventListener("click", function () {
+        resetForm();
+        showAdminStatus("");
+    });
+
+    if (logoutButton) {
+        logoutButton.addEventListener("click", function () {
+            window.holidayCalendarIsAdmin = false;
+            adminPanel.style.display = "none";
+        });
+    }
+})();
