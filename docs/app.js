@@ -303,7 +303,7 @@ async function loadEmployees() {
     try {
 
         const response = await fetch(
-            `${SUPABASE_URL}/rest/v1/employee_directory?select=*`,
+            `${SUPABASE_URL}/rest/v1/employee_directory_public?select=*`,
             {
                 headers: {
                     "apikey": SUPABASE_KEY,
