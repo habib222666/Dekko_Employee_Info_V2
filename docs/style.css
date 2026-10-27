@@ -4253,3 +4253,34 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
     font-weight: 800 !important;
     line-height: 1 !important;
 }
+
+/* Today's date icon beside the Holiday Calendar page heading */
+.holiday-page-today-icon {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex: 0 0 60px !important;
+    width: 60px !important;
+    height: 60px !important;
+    gap: 3px !important;
+    box-sizing: border-box !important;
+    border: 2px solid #dc2626 !important;
+    border-radius: 12px !important;
+    background: #ffffff !important;
+    color: #1e3a8a !important;
+    font-size: inherit !important;
+    line-height: 1 !important;
+}
+
+#holidayPageTodayDay {
+    font-size: 23px !important;
+    font-weight: 800 !important;
+    color: #1e3a8a !important;
+}
+
+#holidayPageTodayMonth {
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    color: #dc2626 !important;
+}

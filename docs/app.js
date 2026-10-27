@@ -4201,3 +4201,19 @@ if (bloodGroupFilter) {
     updateHolidayTodayDate();
     setInterval(updateHolidayTodayDate, 60000);
 })();
+
+/* Show today's date and month beside the Holiday Calendar page heading */
+(function () {
+    function updateHolidayPageTodayDate() {
+        const day = document.getElementById("holidayPageTodayDay");
+        const month = document.getElementById("holidayPageTodayMonth");
+        if (!day || !month) return;
+
+        const now = new Date();
+        day.textContent = now.getDate();
+        month.textContent = now.toLocaleString("en-US", { month: "short" }).toUpperCase();
+    }
+
+    updateHolidayPageTodayDate();
+    setInterval(updateHolidayPageTodayDate, 60000);
+})();
