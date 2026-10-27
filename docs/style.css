@@ -4072,3 +4072,10 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
 .holiday-calendar-legend {
     margin-top: 20px !important;
 }
+
+/* Weekday heading boxes: yellow */
+.holiday-calendar-weekdays span {
+    background: #FACC15 !important;
+    border: 1px solid #EAB308 !important;
+    color: #422006 !important;
+}
