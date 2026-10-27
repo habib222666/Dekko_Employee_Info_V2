@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LIVE TEST - Employee App</title>
-<link rel="stylesheet" href="style.css?v=20261027holiday-page-date3">
+<link rel="stylesheet" href="style.css?v=20261027-month-boxes1">
 <link rel="stylesheet" href="salary-layout.css?v=20261015removeattendance1">
 </head>
 
@@ -80,10 +80,14 @@
                 <select id="holidayCalendarYear" aria-label="Calendar year"></select>
             </div>
 
-            <div id="holidayCalendarMonths" class="holiday-calendar-months"
+            <section class="holiday-calendar-month-box" aria-label="Choose a month">
+  <h2 class="holiday-calendar-box-title">Select Month</h2>
+  <div id="holidayCalendarMonths" class="holiday-calendar-months"
                  aria-label="Select month"></div>
+</section>
 
-            <div id="holidayCalendarStatus" role="status" aria-live="polite">
+            <section class="holiday-calendar-month-box holiday-calendar-date-box" aria-label="Monthly calendar">
+<div id="holidayCalendarStatus" role="status" aria-live="polite">
                 Loading holiday calendar...
             </div>
 
@@ -102,6 +106,7 @@
                 <span><i class="holiday-dot weekly"></i> Weekly Holiday</span>
                 <span><i class="holiday-dot special-working"></i> Special Working Day</span>
             </div>
+</section>
 
             <div id="holidayCalendarSummary" class="holiday-calendar-summary"></div>
 
