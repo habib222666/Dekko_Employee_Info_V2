@@ -4290,38 +4290,38 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
 .holiday-calendar-month-box {
     box-sizing: border-box;
     width: 100%;
-    margin: 0 0 20px;
-    padding: 20px;
+    margin: 0 0 8px;
+    padding: 10px;
     border: 1px solid #cbd5e1;
-    border-radius: 16px;
+    border-radius: 12px;
     background: #ffffff;
     box-shadow: 0 5px 18px rgba(15, 23, 42, 0.06);
 }
 .holiday-calendar-box-title {
-    margin: 0 0 14px;
+    margin: 0 0 6px;
     color: #1e3a8a;
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 800;
 }
 .holiday-calendar-month-box .holiday-calendar-months {
     margin: 0;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 8px;
+    gap: 4px 6px;
 }
 .holiday-calendar-date-box .holiday-calendar-weekdays {
-    margin-top: 16px;
+    margin-top: 6px;
 }
 .holiday-calendar-date-box .holiday-calendar-legend {
-    margin-top: 16px;
+    margin-top: 6px;
 }
 @media (max-width: 600px) {
     .holiday-calendar-month-box {
-        padding: 14px;
-        margin-bottom: 16px;
-        border-radius: 14px;
+        padding: 8px;
+        margin-bottom: 8px;
+        border-radius: 10px;
     }
     .holiday-calendar-month-box .holiday-calendar-months {
         grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 6px;
+        gap: 3px 4px;
     }
 }
