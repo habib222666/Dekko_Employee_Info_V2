@@ -3937,29 +3937,125 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
 }
 
 
-/* Holiday calendar final requested styling 20261027 */
+/* Holiday calendar final styling 20261027 */
+
 .holiday-calendar-weekdays {
     font-size: 14px;
 }
 
 .holiday-calendar-weekdays span {
-    background: #FACC15;
-    border-color: #EAB308;
-    color: #222222;
+    background: #e2e8f0;
+    border-color: #cbd5e1;
+    color: #1e3a8a;
 }
 
 .holiday-calendar-grid {
     row-gap: 1px;
 }
 
+/* Restore original date-box colors */
 .holiday-calendar-day:not(.empty) {
-    background: #FACC15;
-    border-color: #EAB308;
-    color: #222222;
+    background: #fff;
+    border-color: #e2e8f0;
+    color: #334155;
+}
+
+.holiday-calendar-day.government {
+    background: #dc2626;
+    border-color: #b91c1c;
+    color: #fff;
+}
+
+.holiday-calendar-day.office {
+    background: #1e3a8a;
+    border-color: #172554;
+    color: #fff;
+}
+
+.holiday-calendar-day.weekly {
+    background: #92400e;
+    border-color: #78350f;
+    color: #fff;
+}
+
+.holiday-calendar-day.special-working {
+    background: #166534;
+    border-color: #14532d;
+    color: #fff;
+}
+
+.holiday-calendar-day.mixed {
+    background: #475569;
+    border-color: #334155;
+    color: #fff;
+}
+
+/* Make the calendar status box shorter */
+#holidayCalendarStatus {
+    min-height: 0;
+    padding: 5px 10px;
+    line-height: 1.2;
 }
 
 @media (max-width: 600px) {
     .holiday-calendar-grid {
         row-gap: 1px;
     }
+
+    #holidayCalendarStatus {
+        padding: 4px 8px;
+    }
+}
+
+/* Final override: restore calendar colors and compact status */
+.holiday-calendar-weekdays {
+    font-size: 14px !important;
+}
+
+.holiday-calendar-weekdays span {
+    background: #e2e8f0 !important;
+    border-color: #cbd5e1 !important;
+    color: #1e3a8a !important;
+}
+
+.holiday-calendar-day:not(.empty) {
+    background: #fff !important;
+    border-color: #e2e8f0 !important;
+    color: #334155 !important;
+}
+
+.holiday-calendar-day.government {
+    background: #dc2626 !important;
+    border-color: #b91c1c !important;
+    color: #fff !important;
+}
+
+.holiday-calendar-day.office {
+    background: #1e3a8a !important;
+    border-color: #172554 !important;
+    color: #fff !important;
+}
+
+.holiday-calendar-day.weekly {
+    background: #92400e !important;
+    border-color: #78350f !important;
+    color: #fff !important;
+}
+
+.holiday-calendar-day.special-working {
+    background: #166534 !important;
+    border-color: #14532d !important;
+    color: #fff !important;
+}
+
+.holiday-calendar-day.mixed {
+    background: #475569 !important;
+    border-color: #334155 !important;
+    color: #fff !important;
+}
+
+#holidayCalendarStatus {
+    min-height: 0 !important;
+    padding: 4px 8px !important;
+    line-height: 1.2 !important;
 }
