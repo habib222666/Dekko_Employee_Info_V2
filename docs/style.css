@@ -4419,3 +4419,18 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
     #homeBirthdayTitle { font-size: 20px; }
     .home-birthday-list { grid-template-columns: 1fr; }
 }
+
+
+/* Home dashboard: Head Office and Factory employee cards */
+#departmentHeader .dashboard-label small {
+    display: block;
+    margin-top: 3px;
+    font-size: 0.78em;
+    font-weight: 600;
+    line-height: 1.1;
+}
+
+#allFactoryEmployeesButton {
+    background: #455a64 !important;
+    color: #ffffff !important;
+}
