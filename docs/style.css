@@ -3935,3 +3935,31 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
 .holiday-calendar-legend .holiday-dot.office {
     background-color: #2563eb !important;
 }
+
+
+/* Holiday calendar final requested styling 20261027 */
+.holiday-calendar-weekdays {
+    font-size: 14px;
+}
+
+.holiday-calendar-weekdays span {
+    background: #FACC15;
+    border-color: #EAB308;
+    color: #222222;
+}
+
+.holiday-calendar-grid {
+    row-gap: 1px;
+}
+
+.holiday-calendar-day:not(.empty) {
+    background: #FACC15;
+    border-color: #EAB308;
+    color: #222222;
+}
+
+@media (max-width: 600px) {
+    .holiday-calendar-grid {
+        row-gap: 1px;
+    }
+}
