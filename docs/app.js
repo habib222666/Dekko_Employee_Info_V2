@@ -2385,10 +2385,10 @@ if (saveNewEmployeeButton) {
 
     button.addEventListener("click", function () {
         if (dashboard) dashboard.style.display = "none";
-        if (appTitle) appTitle.style.display = "none";
+        if (appTitle) appTitle.style.setProperty("display", "none", "important");
         if (bottomLogo) bottomLogo.style.display = "none";
         if (employeeList) employeeList.style.display = "none";
-        if (adminButton) adminButton.style.display = "none";
+        if (adminButton) adminButton.style.setProperty("display", "none", "important");
         page.style.display = "block";
         page.style.background = "#fff";
         page.style.minHeight = "100vh";
@@ -2397,10 +2397,10 @@ if (saveNewEmployeeButton) {
     backButton.addEventListener("click", function () {
         page.style.display = "none";
         if (dashboard) dashboard.style.display = "";
-        if (appTitle) appTitle.style.display = "";
+        if (appTitle) appTitle.style.removeProperty("display");
         if (bottomLogo) bottomLogo.style.display = "";
         if (employeeList) employeeList.style.display = "";
-        if (adminButton) adminButton.style.display = "";
+        if (adminButton) adminButton.style.removeProperty("display");
     });
 })();
 
@@ -2421,10 +2421,10 @@ if (saveNewEmployeeButton) {
 
     button.addEventListener("click", function () {
         if (dashboard) dashboard.style.display = "none";
-        if (appTitle) appTitle.style.display = "none";
+        if (appTitle) appTitle.style.setProperty("display", "none", "important");
         if (bottomLogo) bottomLogo.style.display = "none";
         if (employeeList) employeeList.style.display = "none";
-        if (adminButton) adminButton.style.display = "none";
+        if (adminButton) adminButton.style.setProperty("display", "none", "important");
 
         page.style.display = "block";
         window.scrollTo(0, 0);
@@ -2433,10 +2433,10 @@ if (saveNewEmployeeButton) {
     backButton.addEventListener("click", function () {
         page.style.display = "none";
         if (dashboard) dashboard.style.display = "";
-        if (appTitle) appTitle.style.display = "";
+        if (appTitle) appTitle.style.removeProperty("display");
         if (bottomLogo) bottomLogo.style.display = "";
         if (employeeList) employeeList.style.display = "";
-        if (adminButton) adminButton.style.display = "";
+        if (adminButton) adminButton.style.removeProperty("display");
         window.scrollTo(0, 0);
     });
 })();
