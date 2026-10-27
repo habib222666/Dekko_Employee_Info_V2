@@ -2379,6 +2379,7 @@ if (saveNewEmployeeButton) {
     const appTitle = document.getElementById("appTitle");
     const bottomLogo = document.getElementById("homeBottomLogo");
     const employeeList = document.getElementById("employeeList");
+    const adminButton = document.getElementById("adminButton");
 
     if (!button || !page || !backButton) return;
 
@@ -2387,6 +2388,7 @@ if (saveNewEmployeeButton) {
         if (appTitle) appTitle.style.display = "none";
         if (bottomLogo) bottomLogo.style.display = "none";
         if (employeeList) employeeList.style.display = "none";
+        if (adminButton) adminButton.style.display = "none";
         page.style.display = "block";
         page.style.background = "#fff";
         page.style.minHeight = "100vh";
@@ -2398,6 +2400,7 @@ if (saveNewEmployeeButton) {
         if (appTitle) appTitle.style.display = "";
         if (bottomLogo) bottomLogo.style.display = "";
         if (employeeList) employeeList.style.display = "";
+        if (adminButton) adminButton.style.display = "";
     });
 })();
 
@@ -2412,6 +2415,7 @@ if (saveNewEmployeeButton) {
     const appTitle = document.getElementById("appTitle");
     const bottomLogo = document.getElementById("homeBottomLogo");
     const employeeList = document.getElementById("employeeList");
+    const adminButton = document.getElementById("adminButton");
 
     if (!button || !page || !backButton) return;
 
@@ -2420,6 +2424,7 @@ if (saveNewEmployeeButton) {
         if (appTitle) appTitle.style.display = "none";
         if (bottomLogo) bottomLogo.style.display = "none";
         if (employeeList) employeeList.style.display = "none";
+        if (adminButton) adminButton.style.display = "none";
 
         page.style.display = "block";
         window.scrollTo(0, 0);
@@ -2431,6 +2436,7 @@ if (saveNewEmployeeButton) {
         if (appTitle) appTitle.style.display = "";
         if (bottomLogo) bottomLogo.style.display = "";
         if (employeeList) employeeList.style.display = "";
+        if (adminButton) adminButton.style.display = "";
         window.scrollTo(0, 0);
     });
 })();
