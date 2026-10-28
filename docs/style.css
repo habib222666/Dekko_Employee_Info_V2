@@ -4845,3 +4845,1132 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
         flex: 1 1 auto;
     }
 }
+
+
+/* ORGANOGRAM LANDSCAPE LAYOUT UPDATE */
+@media (min-width: 900px) {
+    #organogramPage.organogram-page {
+        padding: 20px;
+    }
+
+    .organogram-header,
+    .organogram-content {
+        max-width: 1800px;
+        width: 100%;
+    }
+
+    .organogram-card {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 320px;
+        grid-template-areas:
+            "toolbar toolbar"
+            "status status"
+            "tree admin";
+        align-items: start;
+        gap: 12px 20px;
+        padding: 24px;
+        text-align: left;
+    }
+
+    .organogram-toolbar { grid-area: toolbar; }
+    #organogramStatus { grid-area: status; width: 100%; box-sizing: border-box; }
+    #organogramTree { grid-area: tree; min-width: 0; }
+    #organogramAdminPanel {
+        grid-area: admin;
+        min-width: 0;
+        margin: 0;
+        padding: 16px;
+    }
+
+    .organogram-tree {
+        align-items: center;
+        overflow: auto;
+        min-width: 0;
+    }
+
+    .organogram-children {
+        gap: 14px;
+    }
+
+    .organogram-staff-grid {
+        justify-content: flex-start;
+        gap: 8px;
+    }
+}
+
+.organogram-person {
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 10px;
+    width: min(100%, 235px);
+    padding: 9px 11px;
+    border-top-width: 3px;
+    border-radius: 10px;
+    text-align: left;
+}
+
+.organogram-person-info {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 2px;
+    min-width: 0;
+}
+
+.organogram-person strong {
+    display: block;
+    font-size: 12px;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+}
+
+.organogram-person > .organogram-person-info > span {
+    display: block;
+    font-size: 11px;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+}
+
+.organogram-person small {
+    font-size: 10px;
+}
+
+.organogram-photo,
+.organogram-photo-placeholder {
+    flex: 0 0 42px;
+    width: 42px;
+    height: 42px;
+}
+
+.organogram-role-employee {
+    width: 205px;
+    padding: 7px 9px;
+}
+
+@media (max-width: 899px) {
+    .organogram-person {
+        width: min(100%, 235px);
+    }
+
+    .organogram-role-employee {
+        width: min(100%, 205px);
+    }
+
+    .organogram-photo,
+    .organogram-photo-placeholder {
+        flex-basis: 40px;
+        width: 40px;
+        height: 40px;
+    }
+}
+
+@media (max-width: 600px) {
+    .organogram-person {
+        width: min(100%, 260px);
+    }
+
+    .organogram-role-employee {
+        width: min(100%, 230px);
+    }
+}
+
+
+
+/* ORGANOGRAM TRUE LANDSCAPE PAN FIX */
+#organogramPage.organogram-page {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+}
+
+#organogramPage .organogram-header,
+#organogramPage .organogram-content {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+}
+
+#organogramPage .organogram-card {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+}
+
+#organogramTree.organogram-tree {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    height: min(72dvh, 760px);
+    min-height: 360px;
+    overflow: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x pan-y;
+    padding: 20px;
+    scroll-behavior: smooth;
+}
+
+#organogramTree .organogram-branch {
+    flex: 0 0 auto;
+    width: max-content;
+    min-width: max-content;
+    align-items: center;
+}
+
+#organogramTree .organogram-children {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    align-items: flex-start;
+    width: max-content;
+    min-width: max-content;
+    gap: 16px;
+}
+
+#organogramTree .organogram-staff {
+    flex: 0 0 auto;
+    width: max-content;
+    min-width: max-content;
+}
+
+#organogramTree .organogram-staff-grid {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    width: max-content;
+    min-width: max-content;
+    gap: 10px;
+}
+
+#organogramTree .organogram-person {
+    flex: 0 0 220px;
+    box-sizing: border-box;
+    width: 220px;
+    min-width: 0;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    text-align: left;
+}
+
+#organogramTree .organogram-role-employee {
+    flex-basis: 200px;
+    width: 200px;
+}
+
+#organogramTree .organogram-person-info {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+#organogramTree .organogram-photo,
+#organogramTree .organogram-photo-placeholder {
+    flex: 0 0 40px;
+    width: 40px;
+    height: 40px;
+}
+
+@media (max-width: 899px) {
+    #organogramPage.organogram-page {
+        padding: 8px;
+    }
+
+    #organogramPage .organogram-card {
+        padding: 10px;
+    }
+
+    #organogramTree.organogram-tree {
+        height: 68dvh;
+        min-height: 300px;
+        padding: 12px;
+    }
+
+    #organogramTree .organogram-person {
+        flex-basis: 210px;
+        width: 210px;
+    }
+
+    #organogramTree .organogram-role-employee {
+        flex-basis: 190px;
+        width: 190px;
+    }
+}
+
+
+/* ORGANOGRAM FULL VIEWPORT LAYOUT FIX */
+#organogramPage.organogram-page {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    width: 100vw;
+    max-width: none;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    overflow: auto;
+    box-sizing: border-box;
+}
+
+#organogramPage .organogram-header,
+#organogramPage .organogram-content {
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+#organogramPage .organogram-card {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+@media (min-width: 900px) {
+    #organogramPage .organogram-card {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 320px;
+        grid-template-areas:
+            "toolbar toolbar"
+            "status status"
+            "tree admin";
+        align-items: start;
+        gap: 12px 20px;
+        text-align: left;
+    }
+
+    #organogramPage .organogram-toolbar { grid-area: toolbar; }
+    #organogramPage #organogramStatus { grid-area: status; }
+    #organogramPage #organogramTree { grid-area: tree; }
+    #organogramPage #organogramAdminPanel {
+        grid-area: admin;
+        min-width: 0;
+        margin: 0;
+    }
+}
+
+@media (max-width: 899px) {
+    #organogramPage .organogram-content {
+        padding: 0;
+    }
+
+    #organogramPage .organogram-card {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    #organogramPage #organogramTree {
+        width: 100%;
+        max-width: 100%;
+    }
+}
+
+
+/* ORGANOGRAM STAFF GRID AND REPORTING ARROWS */
+
+/* Three employees per row beneath each Department Head */
+#organogramTree .organogram-staff {
+    box-sizing: border-box;
+    width: 620px;
+    min-width: 620px;
+    max-width: 620px;
+    padding: 14px;
+    overflow: visible;
+}
+
+#organogramTree .organogram-staff-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: start;
+    justify-content: stretch;
+    width: 100%;
+    min-width: 0;
+    gap: 10px;
+}
+
+#organogramTree .organogram-staff-grid > .organogram-person {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    flex: initial;
+    padding: 7px;
+    gap: 7px;
+}
+
+#organogramTree .organogram-role-employee {
+    flex-basis: auto;
+}
+
+#organogramTree .organogram-staff .organogram-photo,
+#organogramTree .organogram-staff .organogram-photo-placeholder {
+    flex: 0 0 34px;
+    width: 34px;
+    height: 34px;
+}
+
+/* Reporting connectors between hierarchy levels */
+#organogramTree .organogram-branch {
+    position: relative;
+}
+
+#organogramTree .organogram-branch > .organogram-children {
+    position: relative;
+    padding-top: 20px;
+}
+
+#organogramTree .organogram-branch > .organogram-children::before {
+    content: "";
+    position: absolute;
+    top: 9px;
+    left: 0;
+    right: 0;
+    border-top: 2px solid #94a3b8;
+}
+
+#organogramTree .organogram-branch > .organogram-children::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 50%;
+    height: 10px;
+    border-left: 2px solid #94a3b8;
+}
+
+#organogramTree .organogram-children > .organogram-branch::before {
+    content: "";
+    position: absolute;
+    top: -11px;
+    left: 50%;
+    height: 11px;
+    border-left: 2px solid #94a3b8;
+}
+
+#organogramTree .organogram-children > .organogram-branch::after {
+    content: "";
+    position: absolute;
+    top: -2px;
+    left: calc(50% - 4px);
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 6px solid #64748b;
+}
+
+/* Department Head team cards are arranged in their own grid */
+#organogramTree .organogram-branch:has(> .organogram-staff) {
+    align-items: center;
+}
+
+@media (max-width: 899px) {
+    #organogramTree .organogram-staff {
+        width: 620px;
+        min-width: 620px;
+        max-width: 620px;
+    }
+
+    #organogramTree .organogram-staff-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+
+/* ORGANOGRAM TOP LEVEL CARDS COMPACT */
+#organogramTree .organogram-person.organogram-role-chairman,
+#organogramTree .organogram-person.organogram-role-executive_director,
+#organogramTree .organogram-person.organogram-role-department_head {
+    flex: 0 0 170px;
+    width: 170px;
+    min-width: 170px;
+    max-width: 170px;
+    padding: 9px 10px;
+    gap: 5px;
+    border-top-width: 4px;
+}
+
+#organogramTree .organogram-person.organogram-role-chairman .organogram-photo,
+#organogramTree .organogram-person.organogram-role-chairman .organogram-photo-placeholder,
+#organogramTree .organogram-person.organogram-role-executive_director .organogram-photo,
+#organogramTree .organogram-person.organogram-role-executive_director .organogram-photo-placeholder,
+#organogramTree .organogram-person.organogram-role-department_head .organogram-photo,
+#organogramTree .organogram-person.organogram-role-department_head .organogram-photo-placeholder {
+    flex: 0 0 34px;
+    width: 34px;
+    height: 34px;
+}
+
+#organogramTree .organogram-person.organogram-role-chairman strong,
+#organogramTree .organogram-person.organogram-role-executive_director strong,
+#organogramTree .organogram-person.organogram-role-department_head strong {
+    font-size: 12px;
+    line-height: 1.3;
+}
+
+#organogramTree .organogram-person.organogram-role-chairman > span,
+#organogramTree .organogram-person.organogram-role-executive_director > span,
+#organogramTree .organogram-person.organogram-role-department_head > span {
+    font-size: 10px;
+    line-height: 1.3;
+}
+
+#organogramTree .organogram-person.organogram-role-chairman small,
+#organogramTree .organogram-person.organogram-role-executive_director small,
+#organogramTree .organogram-person.organogram-role-department_head small {
+    font-size: 9px;
+}
+
+
+/* ORGANOGRAM MINIMUM CARD HEIGHT AND CONNECTOR ALIGNMENT */
+
+/* Compact top-level hierarchy cards; height follows content */
+#organogramTree .organogram-person.organogram-role-chairman,
+#organogramTree .organogram-person.organogram-role-executive_director,
+#organogramTree .organogram-person.organogram-role-department_head {
+    box-sizing: border-box;
+    flex: 0 0 140px;
+    width: 140px;
+    min-width: 140px;
+    max-width: 140px;
+    height: auto;
+    min-height: 0;
+    padding: 6px 7px;
+    gap: 3px;
+    border-top-width: 3px;
+    border-radius: 10px;
+    box-shadow: 0 2px 7px rgba(30, 50, 75, 0.07);
+}
+
+#organogramTree .organogram-person.organogram-role-chairman .organogram-photo,
+#organogramTree .organogram-person.organogram-role-chairman .organogram-photo-placeholder,
+#organogramTree .organogram-person.organogram-role-executive_director .organogram-photo,
+#organogramTree .organogram-person.organogram-role-executive_director .organogram-photo-placeholder,
+#organogramTree .organogram-person.organogram-role-department_head .organogram-photo,
+#organogramTree .organogram-person.organogram-role-department_head .organogram-photo-placeholder {
+    flex: 0 0 28px;
+    width: 28px;
+    height: 28px;
+}
+
+#organogramTree .organogram-person.organogram-role-chairman strong,
+#organogramTree .organogram-person.organogram-role-executive_director strong,
+#organogramTree .organogram-person.organogram-role-department_head strong {
+    font-size: 11px;
+    line-height: 1.2;
+}
+
+#organogramTree .organogram-person.organogram-role-chairman > span,
+#organogramTree .organogram-person.organogram-role-executive_director > span,
+#organogramTree .organogram-person.organogram-role-department_head > span {
+    font-size: 9px;
+    line-height: 1.2;
+}
+
+#organogramTree .organogram-person.organogram-role-chairman small,
+#organogramTree .organogram-person.organogram-role-executive_director small,
+#organogramTree .organogram-person.organogram-role-department_head small {
+    font-size: 8px;
+    line-height: 1.2;
+}
+
+/* Keep connectors visible and evenly spaced between hierarchy levels */
+#organogramTree .organogram-branch > .organogram-children {
+    position: relative;
+    padding-top: 18px;
+}
+
+#organogramTree .organogram-branch > .organogram-children::before {
+    top: 8px;
+    border-top: 1.5px solid #94a3b8;
+}
+
+#organogramTree .organogram-branch > .organogram-children::after {
+    top: 0;
+    height: 9px;
+    border-left: 1.5px solid #94a3b8;
+}
+
+#organogramTree .organogram-children > .organogram-branch::before {
+    top: -10px;
+    height: 10px;
+    border-left: 1.5px solid #94a3b8;
+}
+
+#organogramTree .organogram-children > .organogram-branch::after {
+    top: -2px;
+    border-left-width: 4px;
+    border-right-width: 4px;
+    border-top: 5px solid #64748b;
+}
+
+/* Do not impose a fixed minimum height on any person card */
+#organogramTree .organogram-person {
+    min-height: 0;
+    height: auto;
+}
+
+/* FORCE SMALLER ORGANOGRAM TOP CARDS */
+#organogramPage #organogramTree .organogram-person.organogram-role-chairman,
+#organogramPage #organogramTree .organogram-person.organogram-role-executive_director,
+#organogramPage #organogramTree .organogram-person.organogram-role-department_head {
+    box-sizing: border-box !important;
+    flex: 0 0 110px !important;
+    width: 110px !important;
+    min-width: 110px !important;
+    max-width: 110px !important;
+    min-height: 0 !important;
+    height: auto !important;
+    padding: 5px !important;
+    gap: 3px !important;
+    border-radius: 8px !important;
+}
+
+#organogramPage #organogramTree .organogram-person.organogram-role-chairman .organogram-photo,
+#organogramPage #organogramTree .organogram-person.organogram-role-chairman .organogram-photo-placeholder,
+#organogramPage #organogramTree .organogram-person.organogram-role-executive_director .organogram-photo,
+#organogramPage #organogramTree .organogram-person.organogram-role-executive_director .organogram-photo-placeholder,
+#organogramPage #organogramTree .organogram-person.organogram-role-department_head .organogram-photo,
+#organogramPage #organogramTree .organogram-person.organogram-role-department_head .organogram-photo-placeholder {
+    flex: 0 0 24px !important;
+    width: 24px !important;
+    height: 24px !important;
+}
+
+#organogramPage #organogramTree .organogram-person.organogram-role-chairman strong,
+#organogramPage #organogramTree .organogram-person.organogram-role-executive_director strong,
+#organogramPage #organogramTree .organogram-person.organogram-role-department_head strong {
+    font-size: 10px !important;
+    line-height: 1.15 !important;
+    overflow-wrap: anywhere;
+}
+
+#organogramPage #organogramTree .organogram-person.organogram-role-chairman > span,
+#organogramPage #organogramTree .organogram-person.organogram-role-executive_director > span,
+#organogramPage #organogramTree .organogram-person.organogram-role-department_head > span {
+    font-size: 8px !important;
+    line-height: 1.15 !important;
+    overflow-wrap: anywhere;
+}
+
+#organogramPage #organogramTree .organogram-person.organogram-role-chairman small,
+#organogramPage #organogramTree .organogram-person.organogram-role-executive_director small,
+#organogramPage #organogramTree .organogram-person.organogram-role-department_head small {
+    font-size: 7px !important;
+    line-height: 1.15 !important;
+    overflow-wrap: anywhere;
+}
+
+/* FINAL FIX: TOP CARDS SAME WIDTH AS EMPLOYEE CARDS */
+#organogramPage #organogramTree .organogram-person.organogram-role-chairman,
+#organogramPage #organogramTree .organogram-person.organogram-role-executive_director,
+#organogramPage #organogramTree .organogram-person.organogram-role-department_head {
+    box-sizing: border-box !important;
+    flex: 0 0 200px !important;
+    width: 200px !important;
+    min-width: 200px !important;
+    max-width: 200px !important;
+    height: auto !important;
+    min-height: 0 !important;
+    padding: 7px 9px !important;
+    gap: 8px !important;
+}
+
+#organogramPage #organogramTree .organogram-person.organogram-role-chairman .organogram-photo,
+#organogramPage #organogramTree .organogram-person.organogram-role-chairman .organogram-photo-placeholder,
+#organogramPage #organogramTree .organogram-person.organogram-role-executive_director .organogram-photo,
+#organogramPage #organogramTree .organogram-person.organogram-role-executive_director .organogram-photo-placeholder,
+#organogramPage #organogramTree .organogram-person.organogram-role-department_head .organogram-photo,
+#organogramPage #organogramTree .organogram-person.organogram-role-department_head .organogram-photo-placeholder {
+    flex: 0 0 40px !important;
+    width: 40px !important;
+    height: 40px !important;
+}
+
+#organogramPage #organogramTree .organogram-person.organogram-role-chairman strong,
+#organogramPage #organogramTree .organogram-person.organogram-role-executive_director strong,
+#organogramPage #organogramTree .organogram-person.organogram-role-department_head strong {
+    font-size: 12px !important;
+    line-height: 1.3 !important;
+}
+
+#organogramPage #organogramTree .organogram-person.organogram-role-chairman > span,
+#organogramPage #organogramTree .organogram-person.organogram-role-executive_director > span,
+#organogramPage #organogramTree .organogram-person.organogram-role-department_head > span {
+    font-size: 11px !important;
+    line-height: 1.3 !important;
+}
+
+#organogramPage #organogramTree .organogram-person.organogram-role-chairman small,
+#organogramPage #organogramTree .organogram-person.organogram-role-executive_director small,
+#organogramPage #organogramTree .organogram-person.organogram-role-department_head small {
+    font-size: 10px !important;
+    line-height: 1.3 !important;
+}
+
+/* CONNECTOR ALIGNMENT: vertical stems, horizontal branch, downward arrows */
+#organogramPage #organogramTree .organogram-branch {
+    position: relative;
+}
+
+#organogramPage #organogramTree .organogram-branch > .organogram-children {
+    position: relative;
+    padding-top: 20px !important;
+}
+
+#organogramPage #organogramTree .organogram-branch > .organogram-children::before {
+    top: 9px !important;
+    left: 0 !important;
+    right: 0 !important;
+    border-top: 2px solid #94a3b8 !important;
+}
+
+#organogramPage #organogramTree .organogram-branch > .organogram-children::after {
+    top: 0 !important;
+    left: 50% !important;
+    height: 10px !important;
+    border-left: 2px solid #94a3b8 !important;
+}
+
+#organogramPage #organogramTree .organogram-children > .organogram-branch::before {
+    top: -11px !important;
+    left: 50% !important;
+    height: 11px !important;
+    border-left: 2px solid #94a3b8 !important;
+}
+
+#organogramPage #organogramTree .organogram-children > .organogram-branch::after {
+    top: -2px !important;
+    left: calc(50% - 4px) !important;
+    width: 0 !important;
+    height: 0 !important;
+    border-left: 4px solid transparent !important;
+    border-right: 4px solid transparent !important;
+    border-top: 6px solid #64748b !important;
+}
+
+/* FINAL FIX: MATCH TOP CARD HEIGHT TO EMPLOYEE CARD */
+#organogramPage #organogramTree .organogram-person.organogram-role-chairman,
+#organogramPage #organogramTree .organogram-person.organogram-role-executive_director,
+#organogramPage #organogramTree .organogram-person.organogram-role-department_head {
+    box-sizing: border-box !important;
+    flex: 0 0 200px !important;
+    width: 200px !important;
+    min-width: 200px !important;
+    max-width: 200px !important;
+    min-height: 57px !important;
+    height: auto !important;
+    padding: 7px 9px !important;
+    gap: 8px !important;
+    align-items: center !important;
+}
+
+#organogramPage #organogramTree .organogram-person.organogram-role-chairman .organogram-photo,
+#organogramPage #organogramTree .organogram-person.organogram-role-chairman .organogram-photo-placeholder,
+#organogramPage #organogramTree .organogram-person.organogram-role-executive_director .organogram-photo,
+#organogramPage #organogramTree .organogram-person.organogram-role-executive_director .organogram-photo-placeholder,
+#organogramPage #organogramTree .organogram-person.organogram-role-department_head .organogram-photo,
+#organogramPage #organogramTree .organogram-person.organogram-role-department_head .organogram-photo-placeholder {
+    flex: 0 0 40px !important;
+    width: 40px !important;
+    height: 40px !important;
+}
+
+/* RESET OLD CONNECTOR POSITIONS */
+#organogramPage #organogramTree .organogram-branch > .organogram-children::before,
+#organogramPage #organogramTree .organogram-branch > .organogram-children::after,
+#organogramPage #organogramTree .organogram-children > .organogram-branch::before,
+#organogramPage #organogramTree .organogram-children > .organogram-branch::after {
+    box-sizing: border-box !important;
+}
+
+/* Give each child row room for its connector */
+#organogramPage #organogramTree .organogram-branch > .organogram-children {
+    position: relative !important;
+    padding-top: 20px !important;
+}
+
+/* Horizontal connector: between child branch centers */
+#organogramPage #organogramTree .organogram-branch > .organogram-children::before {
+    top: 9px !important;
+    left: 100px !important;
+    right: 100px !important;
+    border-top: 2px solid #94a3b8 !important;
+}
+
+/* Parent stem down to the horizontal connector */
+#organogramPage #organogramTree .organogram-branch > .organogram-children::after {
+    top: 0 !important;
+    left: calc(50% - 1px) !important;
+    width: 0 !important;
+    height: 10px !important;
+    border-left: 2px solid #94a3b8 !important;
+}
+
+/* Child stem and arrowhead */
+#organogramPage #organogramTree .organogram-children > .organogram-branch::before {
+    top: -11px !important;
+    left: calc(50% - 1px) !important;
+    width: 0 !important;
+    height: 11px !important;
+    border-left: 2px solid #94a3b8 !important;
+}
+
+#organogramPage #organogramTree .organogram-children > .organogram-branch::after {
+    top: -1px !important;
+    left: calc(50% - 4px) !important;
+    width: 0 !important;
+    height: 0 !important;
+    border-left: 4px solid transparent !important;
+    border-right: 4px solid transparent !important;
+    border-top: 6px solid #64748b !important;
+}
+
+/* ORGANOGRAM FINAL OVERRIDES */
+#organogramPage #organogramTree .organogram-person.organogram-role-chairman,
+#organogramPage #organogramTree .organogram-person.organogram-role-executive_director,
+#organogramPage #organogramTree .organogram-person.organogram-role-department_head {
+    box-sizing: border-box !important;
+    flex: 0 0 200px !important;
+    width: 200px !important;
+    min-width: 200px !important;
+    max-width: 200px !important;
+    height: 72px !important;
+    min-height: 72px !important;
+    max-height: 72px !important;
+    padding: 7px 9px !important;
+    gap: 8px !important;
+    flex-direction: row !important;
+    align-items: center !important;
+}
+
+/* TWO EMPLOYEES PER ROW */
+#organogramPage #organogramTree .organogram-staff-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 220px) !important;
+    grid-auto-flow: row !important;
+    justify-content: start !important;
+    align-items: stretch !important;
+    column-gap: 10px !important;
+    row-gap: 10px !important;
+    width: 450px !important;
+    min-width: 450px !important;
+}
+
+/* KEEP CONNECTORS ABOVE CARDS AND CENTERED */
+#organogramPage #organogramTree .organogram-branch {
+    position: relative !important;
+}
+
+#organogramPage #organogramTree .organogram-branch > .organogram-children {
+    position: relative !important;
+    padding-top: 20px !important;
+}
+
+#organogramPage #organogramTree .organogram-branch > .organogram-children::before {
+    top: 9px !important;
+    left: 225px !important;
+    right: 225px !important;
+}
+
+#organogramPage #organogramTree .organogram-branch > .organogram-children::after {
+    top: 0 !important;
+    left: calc(50% - 1px) !important;
+    height: 10px !important;
+}
+
+#organogramPage #organogramTree .organogram-children > .organogram-branch::before {
+    top: -11px !important;
+    left: calc(50% - 1px) !important;
+    height: 11px !important;
+}
+
+#organogramPage #organogramTree .organogram-children > .organogram-branch::after {
+    top: -1px !important;
+    left: calc(50% - 4px) !important;
+    border-left: 4px solid transparent !important;
+    border-right: 4px solid transparent !important;
+    border-top: 6px solid #64748b !important;
+}
+
+/* ORGANOGRAM: COMPACT STAFF BOXES */
+#organogramPage #organogramTree .organogram-staff {
+    width: 420px !important;
+    min-width: 420px !important;
+    max-width: 420px !important;
+    padding: 10px !important;
+}
+
+#organogramPage #organogramTree .organogram-staff-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    column-gap: 8px !important;
+    row-gap: 8px !important;
+}
+
+#organogramPage #organogramTree .organogram-staff-grid > .organogram-person {
+    padding: 5px !important;
+    gap: 5px !important;
+}
+
+#organogramPage #organogramTree .organogram-staff .organogram-person-info strong {
+    font-size: 11px !important;
+}
+
+#organogramPage #organogramTree .organogram-staff .organogram-person-info span {
+    font-size: 10px !important;
+}
+
+
+/* ORGANOGRAM CHART SELECTOR + CONNECTOR-FREE LAYOUT */
+#organogramPage .organogram-create-panel {
+    display: none;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin: 12px 0 16px;
+    padding: 14px;
+    border: 1px solid #dbe3ee;
+    border-radius: 12px;
+    background: #f8fafc;
+}
+
+#organogramPage .organogram-create-panel label {
+    width: 100%;
+    color: #334155;
+    font-weight: 700;
+}
+
+#organogramPage #organogramNewName {
+    box-sizing: border-box;
+    width: min(100%, 360px);
+    min-height: 42px;
+    padding: 9px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    background: #fff;
+    color: #0f172a;
+    font: inherit;
+}
+
+#organogramPage #organogramCreateStatus {
+    flex-basis: 100%;
+    overflow-wrap: anywhere;
+    color: #475569;
+    font-size: 13px;
+}
+
+#organogramPage #organogramCreateButton:disabled {
+    opacity: 0.65;
+    cursor: wait;
+}
+
+#organogramPage .organogram-selector {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin: 14px 0;
+}
+#organogramPage .organogram-selector label {
+    font-weight: 700;
+    color: #334155;
+}
+#organogramPage #organogramSelect {
+    width: min(100%, 360px);
+    min-height: 42px;
+    padding: 9px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    background: #fff;
+    color: #0f172a;
+    font: inherit;
+}
+#organogramPage #organogramTree {
+    width: 100%;
+    min-width: 0;
+    height: auto;
+    min-height: 0;
+    max-height: none;
+    overflow: visible;
+    padding: 12px 0;
+}
+#organogramPage #organogramTree .organogram-branch {
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: 100%;
+}
+#organogramPage #organogramTree .organogram-branch > .organogram-children {
+    display: flex;
+    flex-wrap: wrap !important;
+    justify-content: center;
+    align-items: flex-start;
+    width: 100% !important;
+    min-width: 0 !important;
+    padding-top: 12px !important;
+    gap: 16px;
+}
+#organogramPage #organogramTree .organogram-children > .organogram-branch {
+    flex: 0 1 auto;
+}
+#organogramPage #organogramTree .organogram-staff {
+    width: 100%;
+    min-width: 0;
+}
+#organogramPage #organogramTree .organogram-staff-grid {
+    display: flex;
+    flex-wrap: wrap !important;
+    justify-content: center;
+    width: 100%;
+    min-width: 0;
+    gap: 10px;
+}
+#organogramPage #organogramTree .organogram-branch > .organogram-children::before,
+#organogramPage #organogramTree .organogram-branch > .organogram-children::after,
+#organogramPage #organogramTree .organogram-children > .organogram-branch::before,
+#organogramPage #organogramTree .organogram-children > .organogram-branch::after {
+    display: none !important;
+    content: none !important;
+    border: 0 !important;
+}
+
+
+/* ORGANOGRAM UI REQUEST: create button below edit; center Chairman text */
+#organogramPage .organogram-toolbar-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    flex: 0 0 auto;
+}
+
+#organogramPage .organogram-create-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+}
+
+#organogramPage #organogramCreateStatus {
+    max-width: 220px;
+    overflow-wrap: anywhere;
+}
+
+#organogramPage #organogramTree .organogram-person.organogram-role-chairman {
+    justify-content: center !important;
+}
+
+#organogramPage #organogramTree .organogram-person.organogram-role-chairman strong,
+#organogramPage #organogramTree .organogram-person.organogram-role-chairman > span,
+#organogramPage #organogramTree .organogram-person.organogram-role-chairman small {
+    text-align: center !important;
+}
+
+
+/* ORGANOGRAM ALIGNMENT FIX: center chart and Chairman content */
+@media (min-width: 900px) {
+    #organogramPage .organogram-card {
+        grid-template-columns: minmax(0, 1fr) !important;
+        grid-template-areas:
+            "toolbar"
+            "status"
+            "tree"
+            "admin" !important;
+        text-align: center;
+    }
+
+    #organogramPage #organogramTree {
+        grid-area: tree;
+        justify-self: center;
+        width: 100%;
+        max-width: 100%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    #organogramPage #organogramAdminPanel {
+        grid-area: admin;
+        width: 100%;
+        max-width: 100%;
+    }
+}
+
+#organogramPage #organogramTree .organogram-person.organogram-role-chairman {
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    text-align: center !important;
+}
+
+#organogramPage #organogramTree .organogram-person.organogram-role-chairman strong,
+#organogramPage #organogramTree .organogram-person.organogram-role-chairman > span,
+#organogramPage #organogramTree .organogram-person.organogram-role-chairman small {
+    display: block;
+    width: 100%;
+    text-align: center !important;
+}
+
+#organogramPage .organogram-toolbar-actions {
+    align-items: stretch;
+}
+
+
+/* ORGANOGRAM SELECTOR: keep Choose Organogram at the upper right */
+#organogramPage .organogram-card {
+    position: relative;
+}
+
+#organogramPage .organogram-selector {
+    display: flex !important;
+    flex-direction: column;
+    align-items: flex-end !important;
+    justify-content: flex-start !important;
+    gap: 6px;
+    width: 100%;
+    margin: 10px 0 14px !important;
+    text-align: right;
+}
+
+#organogramPage .organogram-selector label {
+    text-align: right;
+}
+
+#organogramPage #organogramSelect {
+    width: min(100%, 280px);
+}
+
+@media (min-width: 900px) {
+    #organogramPage .organogram-card {
+        grid-template-columns: minmax(0, 1fr) !important;
+        grid-template-areas:
+            "toolbar"
+            "status"
+            "selector"
+            "tree"
+            "admin" !important;
+    }
+
+    #organogramPage .organogram-toolbar {
+        grid-area: toolbar;
+    }
+
+    #organogramPage .organogram-selector {
+        grid-area: selector;
+        justify-self: end;
+        margin-top: 0 !important;
+    }
+}

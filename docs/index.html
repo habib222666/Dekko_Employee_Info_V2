@@ -87,10 +87,30 @@
                     <h2>Organization Structure</h2>
                     <p>Chairman → Executive Director → Department Heads → Employees</p>
                 </div>
-                <button id="organogramEditButton" type="button"
-                    class="organogram-action" style="display:none;">Edit Organogram</button>
+                <div class="organogram-toolbar-actions">
+                    <button id="organogramEditButton" type="button"
+                        class="organogram-action" style="display:none;">Edit Organogram</button>
+                    <div id="organogramCreatePanel" class="organogram-create-panel"
+                        style="display:none;" aria-label="Create a new organogram">
+                        <button id="organogramCreateButton" type="button"
+                            class="organogram-action">Create New Organogram</button>
+                        <button id="organogramRenameButton" type="button"
+                            class="organogram-action">Rename Organogram</button>
+                        <span id="organogramCreateStatus" role="status"
+                            aria-live="polite"></span>
+                    </div>
+                </div>
             </div>
 
+            <div class="organogram-selector">
+                <label for="organogramSelect">Choose Organogram</label>
+                <select id="organogramSelect" aria-label="Choose Organogram">
+                    <option value="Organogram-Marketing">Organogram-Marketing</option>
+                    <option value="Organogram-Admin">Organogram-Admin</option>
+                    <option value="Organogram-CRD">Organogram-CRD</option>
+                    <option value="Organogram-Commercial">Organogram-Commercial</option>
+                </select>
+            </div>
             <div id="organogramStatus" class="organogram-status" role="status"
                 aria-live="polite">Loading organization structure...</div>
 
@@ -109,17 +129,22 @@
                     </select>
 
                     <label for="organogramEmployeeSelect">Select employee (optional for top positions)</label>
-                    <select id="organogramEmployeeSelect">
+                    <input id="organogramEmployeeSearch" type="text"
+                        list="organogramEmployeeSuggestions" autocomplete="off"
+                        placeholder="Type part of an employee name...">
+                    <datalist id="organogramEmployeeSuggestions"></datalist>
+                    <select id="organogramEmployeeSelect" style="display:none;"
+                        aria-hidden="true" tabindex="-1">
                         <option value="">Choose an employee</option>
                     </select>
 
                     <label for="organogramName">Name</label>
                     <input id="organogramName" type="text" maxlength="150"
-                        placeholder="Enter name" required>
+                        placeholder="Leave blank for Chairman">
 
                     <label for="organogramDesignation">Designation</label>
                     <input id="organogramDesignation" type="text" maxlength="150"
-                        placeholder="Enter designation" required>
+                        placeholder="Enter designation">
 
                     <div id="organogramDepartmentField">
                         <label for="organogramDepartment">Department</label>

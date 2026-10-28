@@ -4506,6 +4506,7 @@ if (bloodGroupFilter) {
 
 
 
+/* ORGANOGRAM CHAIRMAN OPTIONAL NAME + EMPLOYEE SEARCH V1 */
 /* ORGANOGRAM TREE MODULE V1 */
 (function () {
     "use strict";
@@ -4524,6 +4525,8 @@ if (bloodGroupFilter) {
     const recordId = $("organogramRecordId");
     const typeInput = $("organogramNodeType");
     const employeeSelect = $("organogramEmployeeSelect");
+    const employeeSearch = $("organogramEmployeeSearch");
+    const employeeSuggestions = $("organogramEmployeeSuggestions");
     const nameInput = $("organogramName");
     const designationInput = $("organogramDesignation");
     const departmentInput = $("organogramDepartment");
@@ -4534,6 +4537,13 @@ if (bloodGroupFilter) {
     const cancelButton = $("organogramCancelButton");
     const adminStatus = $("organogramAdminStatus");
     const adminList = $("organogramAdminList");
+    const chartSelect = $("organogramSelect");
+    const createPanel = $("organogramCreatePanel");
+    const createChartButton = $("organogramCreateButton");
+    const renameChartButton = $("organogramRenameButton");
+    const createChartStatus = $("organogramCreateStatus");
+    const chartsEndpoint = SUPABASE_URL + "/rest/v1/organogram_charts";
+    let currentOrganogramName = "Organogram-Marketing";
 
     const endpoint = SUPABASE_URL + "/rest/v1/organogram_nodes";
     const employeeEndpoint =
@@ -4600,7 +4610,10 @@ if (bloodGroupFilter) {
         if (!response.ok) {
             throw new Error("Organogram load failed (" + response.status + ").");
         }
-        nodes = await response.json();
+        const allNodes = await response.json();
+        nodes = allNodes.filter(node =>
+            String(node.organogram_name || "Organogram-Marketing") === currentOrganogramName
+        );
         renderTree();
         renderAdminList();
         fillParentOptions();
@@ -4614,20 +4627,32 @@ if (bloodGroupFilter) {
         return String(employee && employee.employee_name || "").trim();
     }
 
+    function employeeLabel(employee) {
+        return [
+            displayName(employee),
+            employee.designation || "",
+            employeeNumber(employee)
+        ].filter(Boolean).join(" · ");
+    }
+
     function fillEmployeeOptions(selectedNo = "") {
         if (!employeeSelect) return;
         employeeSelect.replaceChildren(new Option("Choose an employee", ""));
+        employeeSuggestions.replaceChildren();
+
         directory.forEach(employee => {
             const no = employeeNumber(employee);
-            if (!no) return;
-            const label = [
-                displayName(employee),
-                employee.designation || "",
-                no
-            ].filter(Boolean).join(" · ");
-            employeeSelect.add(new Option(label, no));
+            const label = employeeLabel(employee);
+            if (!label) return;
+            if (no) employeeSelect.add(new Option(label, no));
+            employeeSuggestions.appendChild(new Option(label));
         });
+
         employeeSelect.value = selectedNo;
+        const selected = directory.find(
+            employee => employeeNumber(employee) === selectedNo
+        );
+        employeeSearch.value = selected ? employeeLabel(selected) : "";
     }
 
     function fillDepartmentOptions(selected = "") {
@@ -4646,24 +4671,41 @@ if (bloodGroupFilter) {
 
     function fillParentOptions(selected = "") {
         if (!parentInput) return;
+
         const type = typeInput.value;
         let allowed = [];
+        let placeholder = "Choose reporting position";
 
-        if (type === "executive_director") {
+        if (type === "chairman") {
+            placeholder = "Top level";
+        } else if (type === "executive_director") {
             allowed = nodes.filter(node => node.node_type === "chairman");
         } else if (type === "department_head") {
             allowed = nodes.filter(node => node.node_type === "executive_director");
         }
 
-        parentInput.replaceChildren(
-            new Option(type === "chairman" ? "Top level" : "Choose reporting position", "")
-        );
+        parentInput.replaceChildren(new Option(placeholder, ""));
+
         allowed.forEach(node => {
+            const title = String(node.name || node.designation || "Unnamed position");
+            const designation = String(node.designation || "");
             parentInput.add(new Option(
-                node.name + " — " + node.designation,
+                designation && title !== designation
+                    ? title + " — " + designation
+                    : title,
                 String(node.id)
             ));
         });
+
+        if (type !== "chairman" && allowed.length === 0) {
+            parentInput.options[0].textContent =
+                type === "executive_director"
+                    ? "Add a Chairman position first"
+                    : type === "department_head"
+                        ? "Add an Executive Director position first"
+                        : "No reporting position available";
+        }
+
         parentInput.value = selected;
     }
 
@@ -4671,7 +4713,8 @@ if (bloodGroupFilter) {
         const type = typeInput.value;
         const isHead = type === "department_head";
         departmentField.style.display = isHead ? "" : "none";
-        employeeSelect.required = isHead;
+        nameInput.required = type !== "chairman";
+        employeeSelect.required = false;
         departmentInput.required = isHead;
         fillParentOptions();
     }
@@ -4705,23 +4748,30 @@ if (bloodGroupFilter) {
 
         if (employee) card.appendChild(makePhoto(employee));
 
-        const nameEl = document.createElement("strong");
-        nameEl.textContent = name || "Name not set";
-        card.appendChild(nameEl);
+        const info = document.createElement("div");
+        info.className = "organogram-person-info";
+
+        if (name && String(name).trim()) {
+            const nameEl = document.createElement("strong");
+            nameEl.textContent = name;
+            info.appendChild(nameEl);
+        }
 
         const designationEl = document.createElement("span");
         designationEl.textContent = designation || "";
-        card.appendChild(designationEl);
+        info.appendChild(designationEl);
 
         if (employee && employee.employee_no) {
             const idEl = document.createElement("small");
             idEl.textContent = "ID: " + employee.employee_no;
-            card.appendChild(idEl);
+            info.appendChild(idEl);
         }
+
+        card.appendChild(info);
         return card;
     }
 
-    function renderTree() {
+function renderTree() {
         tree.replaceChildren();
 
         if (!nodes.length) {
@@ -4767,7 +4817,8 @@ if (bloodGroupFilter) {
                 const childGroup = document.createElement("div");
                 childGroup.className = "organogram-children";
                 childNodes.forEach(child => {
-                    childGroup.appendChild(renderNode(child, depth + 1));
+                    const childWrapper = renderNode(child, depth + 1);
+                    childGroup.appendChild(childWrapper);
 
                     if (child.node_type === "department_head") {
                         const department = String(child.department || "").trim();
@@ -4776,6 +4827,25 @@ if (bloodGroupFilter) {
                             String(employee.department || "").trim().toLowerCase() === department.toLowerCase() &&
                             employeeNumber(employee) !== headNo
                         );
+
+                        staff.sort((a, b) => {
+                            const rankA = DESIGNATION_RANK.has(
+                                normalizeDesignation(a.designation)
+                            ) ? DESIGNATION_RANK.get(
+                                normalizeDesignation(a.designation)
+                            ) : DESIGNATION_ORDER.length;
+
+                            const rankB = DESIGNATION_RANK.has(
+                                normalizeDesignation(b.designation)
+                            ) ? DESIGNATION_RANK.get(
+                                normalizeDesignation(b.designation)
+                            ) : DESIGNATION_ORDER.length;
+
+                            return rankA - rankB ||
+                                String(a.employee_name || "").localeCompare(
+                                    String(b.employee_name || "")
+                                );
+                        });
 
                         if (staff.length) {
                             const staffGroup = document.createElement("div");
@@ -4796,7 +4866,7 @@ if (bloodGroupFilter) {
                                 ));
                             });
                             staffGroup.appendChild(staffGrid);
-                            childGroup.appendChild(staffGroup);
+                            childWrapper.appendChild(staffGroup);
                         }
                     }
                 });
@@ -4871,6 +4941,10 @@ if (bloodGroupFilter) {
         sortInput.value = String(node.sort_order || 0);
         updateFormForType();
         employeeSelect.value = String(node.employee_no || "");
+        const linkedEmployee = directory.find(
+            employee => employeeNumber(employee) === String(node.employee_no || "")
+        );
+        employeeSearch.value = linkedEmployee ? employeeLabel(linkedEmployee) : "";
         departmentInput.value = String(node.department || "");
         fillParentOptions(String(node.parent_id || ""));
         editing = true;
@@ -4914,6 +4988,32 @@ if (bloodGroupFilter) {
         }
     });
 
+    function syncEmployeeSearchSelection() {
+        const query = employeeSearch.value.trim().toLocaleLowerCase();
+
+        if (!query) {
+            employeeSelect.value = "";
+            return;
+        }
+
+        const match = directory.find(employee => {
+            const name = displayName(employee).toLocaleLowerCase();
+            const label = employeeLabel(employee).toLocaleLowerCase();
+            const no = employeeNumber(employee).toLocaleLowerCase();
+
+            return name === query || label === query || no === query;
+        });
+
+        employeeSelect.value = match ? employeeNumber(match) : "";
+
+        if (match && employeeNumber(match)) {
+            employeeSelect.dispatchEvent(new Event("change"));
+        }
+    }
+
+    employeeSearch.addEventListener("input", syncEmployeeSearchSelection);
+    employeeSearch.addEventListener("change", syncEmployeeSearchSelection);
+
     typeInput.addEventListener("change", function () {
         updateFormForType();
     });
@@ -4955,6 +5055,7 @@ if (bloodGroupFilter) {
         }
 
         const payload = {
+            organogram_name: currentOrganogramName,
             name: nameInput.value.trim(),
             designation: designationInput.value.trim(),
             department: type === "department_head" ? departmentInput.value : null,
@@ -4965,8 +5066,8 @@ if (bloodGroupFilter) {
             updated_at: new Date().toISOString()
         };
 
-        if (!payload.name || !payload.designation) {
-            setAdminStatus("Name and designation are required.");
+        if (type !== "chairman" && !payload.name) {
+            setAdminStatus("Name is required.");
             return;
         }
 
@@ -4995,7 +5096,178 @@ if (bloodGroupFilter) {
             await loadNodes();
         } catch (error) {
             console.error("Organogram save failed:", error);
-            setAdminStatus("Save failed. Verify Admin login, table columns and Supabase RLS.");
+            const detail = String(error && error.message || error || "Unknown error");
+            setAdminStatus("Save failed: " + detail);
+        }
+    });
+
+    async function loadOrganogramCharts(preferredName) {
+        const response = await fetch(
+            chartsEndpoint + "?select=name&order=name.asc",
+            { headers: apiHeaders(false) }
+        );
+        if (!response.ok) {
+            throw new Error("Organogram list load failed (" + response.status + ").");
+        }
+
+        const rows = await response.json();
+        const names = [...new Set(
+            rows.map(row => String(row.name || "").trim()).filter(Boolean)
+        )];
+        if (!names.includes("Organogram-Marketing")) {
+            names.unshift("Organogram-Marketing");
+        }
+
+        chartSelect.replaceChildren();
+        names.forEach(name => {
+            const option = document.createElement("option");
+            option.value = name;
+            option.textContent = name;
+            chartSelect.appendChild(option);
+        });
+
+        currentOrganogramName = names.includes(preferredName)
+            ? preferredName
+            : "Organogram-Marketing";
+        chartSelect.value = currentOrganogramName;
+    }
+
+    createChartButton.addEventListener("click", async function () {
+        if (!isAdmin) return;
+
+        const enteredName = window.prompt(
+            "Enter Organogram Name (e.g. Organogram-Factory):"
+        );
+        if (enteredName === null) return;
+        const name = String(enteredName || "").trim();
+        if (!name) {
+            createChartStatus.textContent = "Please enter an Organogram Name.";
+            return;
+        }
+
+        createChartButton.disabled = true;
+        createChartStatus.textContent = "Creating organogram...";
+        try {
+            const response = await fetch(chartsEndpoint, {
+                method: "POST",
+                headers: {
+                    ...apiHeaders(true),
+                    Prefer: "return=representation"
+                },
+                body: JSON.stringify({ name })
+            });
+            if (!response.ok) {
+                const detail = await response.text();
+                throw new Error("Create failed (" + response.status + "): " + detail);
+            }
+
+            await loadOrganogramCharts(name);
+            panel.style.display = "none";
+            resetForm();
+            await loadNodes();
+            renderAdminList();
+            createChartStatus.textContent = "Created: " + name;
+            setStatus("Loaded " + name + ".");
+        } catch (error) {
+            console.error("Organogram creation failed:", error);
+            createChartStatus.textContent = String(error.message || error);
+        } finally {
+            createChartButton.disabled = false;
+        }
+    });
+
+
+    renameChartButton.addEventListener("click", async function () {
+        if (!isAdmin) return;
+
+        const oldName = currentOrganogramName;
+        const enteredName = window.prompt(
+            "Enter the new name for " + oldName + ":",
+            oldName
+        );
+        if (enteredName === null) return;
+
+        const newName = String(enteredName).trim();
+        if (!newName) {
+            createChartStatus.textContent = "Organogram name cannot be empty.";
+            return;
+        }
+        if (newName === oldName) {
+            createChartStatus.textContent = "The name has not changed.";
+            return;
+        }
+
+        renameChartButton.disabled = true;
+        createChartStatus.textContent = "Renaming organogram...";
+        try {
+            const checkResponse = await fetch(
+                chartsEndpoint + "?select=name&name=eq." +
+                encodeURIComponent(newName),
+                { headers: apiHeaders(false) }
+            );
+            if (!checkResponse.ok) {
+                throw new Error("Could not check the new name (" +
+                    checkResponse.status + ").");
+            }
+            const matches = await checkResponse.json();
+            if (matches.some(row => row.name !== oldName)) {
+                throw new Error("An Organogram with that name already exists.");
+            }
+
+            const chartResponse = await fetch(
+                chartsEndpoint + "?name=eq." + encodeURIComponent(oldName),
+                {
+                    method: "PATCH",
+                    headers: {
+                        ...apiHeaders(true),
+                        Prefer: "return=representation"
+                    },
+                    body: JSON.stringify({ name: newName })
+                }
+            );
+            if (!chartResponse.ok) {
+                throw new Error("Chart rename failed (" +
+                    chartResponse.status + "): " +
+                    await chartResponse.text());
+            }
+
+            const nodesResponse = await fetch(
+                endpoint + "?organogram_name=eq." +
+                encodeURIComponent(oldName),
+                {
+                    method: "PATCH",
+                    headers: {
+                        ...apiHeaders(true),
+                        Prefer: "return=minimal"
+                    },
+                    body: JSON.stringify({ organogram_name: newName })
+                }
+            );
+            if (!nodesResponse.ok) {
+                throw new Error(
+                    "Chart name changed, but position records could not be renamed. " +
+                    "Please report this message. Details: " +
+                    await nodesResponse.text()
+                );
+            }
+
+            currentOrganogramName = newName;
+            await loadOrganogramCharts(newName);
+            await loadNodes();
+            renderAdminList();
+            createChartStatus.textContent = "Renamed to: " + newName;
+            setStatus("Loaded " + newName + ".");
+        } catch (error) {
+            console.error("Organogram rename failed:", error);
+            createChartStatus.textContent = String(error.message || error);
+            try {
+                await loadOrganogramCharts(currentOrganogramName);
+                await loadNodes();
+            } catch (refreshError) {
+                console.error("Organogram refresh failed:", refreshError);
+            }
+        } finally {
+            renameChartButton.disabled = false;
         }
     });
 
@@ -5003,6 +5275,8 @@ if (bloodGroupFilter) {
         setStatus("Loading organization structure...");
         try {
             isAdmin = await verifyOrganogramAdmin();
+            createPanel.style.display = isAdmin ? "flex" : "none";
+            await loadOrganogramCharts(currentOrganogramName);
             editButton.style.display = isAdmin ? "inline-flex" : "none";
             panel.style.display = "none";
             await loadDirectory();
@@ -5014,6 +5288,19 @@ if (bloodGroupFilter) {
             setStatus("Could not load Organogram: " + error.message);
         }
     }
+
+    chartSelect.addEventListener("change", async function () {
+        currentOrganogramName = chartSelect.value || "Organogram-Marketing";
+        panel.style.display = "none";
+        resetForm();
+        setStatus("Loading " + currentOrganogramName + "...");
+        try {
+            await loadNodes();
+        } catch (error) {
+            console.error("Organogram switch failed:", error);
+            setStatus("Could not load Organogram: " + error.message);
+        }
+    });
 
     $("organogramButton").addEventListener("click", openOrganogram);
 
