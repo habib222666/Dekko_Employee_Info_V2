@@ -738,6 +738,75 @@ function showEmployees(list, targetList = employeeList) {
    EMPLOYEE DETAILS
 ========================= */
 
+
+let privateDetailsRequestId = 0;
+
+async function loadPrivateEmployeeDetails(employeeNo) {
+    const requestId = ++privateDetailsRequestId;
+    const fields = {
+        personal_no: "privatePersonalNo",
+        date_of_birth: "privateDateOfBirth",
+        nid: "privateNid",
+        tin_no: "privateTinNo"
+    };
+
+    Object.values(fields).forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = "-";
+    });
+
+    if (!accessToken || !employeeNo) return;
+
+    try {
+        const authResponse = await fetch(SUPABASE_URL + "/auth/v1/user", {
+            headers: {
+                apikey: SUPABASE_KEY,
+                Authorization: "Bearer " + accessToken
+            }
+        });
+        if (!authResponse.ok) return;
+
+        const user = await authResponse.json();
+        if (
+            user.id !== "f0fcbd2e-003e-4fc2-bc2e-51b13c5f0814" ||
+            requestId !== privateDetailsRequestId
+        ) return;
+
+        const params = new URLSearchParams({
+            select: "employee_no,personal_no,date_of_birth,nid,tin_no",
+            employee_no: "eq." + employeeNo,
+            limit: "1"
+        });
+
+        const response = await fetch(
+            SUPABASE_URL + "/rest/v1/employee_dekko_v2?" + params.toString(),
+            {
+                headers: {
+                    apikey: SUPABASE_KEY,
+                    Authorization: "Bearer " + accessToken
+                }
+            }
+        );
+        if (!response.ok || requestId !== privateDetailsRequestId) return;
+
+        const rows = await response.json();
+        const record = rows[0];
+
+        if (
+            !record ||
+            String(record.employee_no) !== String(employeeNo) ||
+            String(employeeDetails.dataset.employeeNo) !== String(employeeNo)
+        ) return;
+
+        Object.entries(fields).forEach(([field, id]) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = record[field] || "-";
+        });
+    } catch (error) {
+        console.error("Unable to load private employee details.");
+    }
+}
+
 let detailsPreviousPage = "list";
 
 function showDetails(employee, previousPage = "list") {
@@ -759,6 +828,8 @@ function showDetails(employee, previousPage = "list") {
 
     detailsPage.style.display =
         "block";
+
+    employeeDetails.dataset.employeeNo = String(employee.employee_no || "");
 
 
     employeeDetails.innerHTML = `
@@ -814,7 +885,7 @@ function showDetails(employee, previousPage = "list") {
 
             <div class="detail-row">
                 <span>Personal No.</span>
-                <strong>${employee.personal_no || "-"}</strong>
+                <strong><span id="privatePersonalNo">-</span></strong>
             </div>
 
             <div class="detail-row">
@@ -872,17 +943,17 @@ function showDetails(employee, previousPage = "list") {
 
             <div class="detail-row">
                 <span>Date of Birth</span>
-                <strong>${employee.date_of_birth || employee.birthday || "-"}</strong>
+                <strong><span id="privateDateOfBirth">-</span></strong>
             </div>
 
             <div class="detail-row">
                 <span>NID No.</span>
-                <strong>${employee.nid || "-"}</strong>
+                <strong><span id="privateNid">-</span></strong>
             </div>
 
             <div class="detail-row">
                 <span>TIN No.</span>
-                <strong>${employee.tin_no || "-"}</strong>
+                <strong><span id="privateTinNo">-</span></strong>
             </div>
 
             <div class="detail-row qr-code-row">
@@ -913,6 +984,8 @@ function showDetails(employee, previousPage = "list") {
         qrContainer.innerHTML = "";
         qrContainer.appendChild(img);
     }
+
+    loadPrivateEmployeeDetails(employee.employee_no);
 }
 
 
