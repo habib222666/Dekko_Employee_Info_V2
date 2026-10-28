@@ -5977,3 +5977,42 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
         margin: 0;
     }
 }
+
+
+/* CMO CARD: MATCH EXECUTIVE DIRECTOR SIZE */
+#organogramPage #organogramTree .organogram-person.organogram-role-chief_marketing_officer {
+    box-sizing: border-box !important;
+    flex: 0 0 200px !important;
+    width: 200px !important;
+    min-width: 200px !important;
+    max-width: 200px !important;
+    height: 72px !important;
+    min-height: 72px !important;
+    max-height: 72px !important;
+    padding: 7px 9px !important;
+    gap: 8px !important;
+    flex-direction: row !important;
+    align-items: center !important;
+}
+
+#organogramPage #organogramTree .organogram-person.organogram-role-chief_marketing_officer .organogram-photo,
+#organogramPage #organogramTree .organogram-person.organogram-role-chief_marketing_officer .organogram-photo-placeholder {
+    flex: 0 0 40px !important;
+    width: 40px !important;
+    height: 40px !important;
+}
+
+#organogramPage #organogramTree .organogram-person.organogram-role-chief_marketing_officer strong {
+    font-size: 12px !important;
+    line-height: 1.3 !important;
+}
+
+#organogramPage #organogramTree .organogram-person.organogram-role-chief_marketing_officer > span {
+    font-size: 11px !important;
+    line-height: 1.3 !important;
+}
+
+#organogramPage #organogramTree .organogram-person.organogram-role-chief_marketing_officer small {
+    font-size: 10px !important;
+    line-height: 1.3 !important;
+}
