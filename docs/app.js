@@ -246,6 +246,22 @@ function normalizeDesignation(designation) {
     return value || "Other";
 }
 
+function populateDepartmentFilter() {
+    const filter = document.getElementById("departmentFilter");
+    if (!filter) return;
+
+    const departments = [...new Set(
+        employees.map(employee =>
+            String(employee.department || "Other").trim()
+        ).filter(Boolean)
+    )].sort((a, b) => a.localeCompare(b));
+
+    filter.replaceChildren(new Option("All Departments", ""));
+    departments.forEach(department => {
+        filter.appendChild(new Option(department, department));
+    });
+}
+
 function populateDesignationFilter() {
 
     const filter = document.getElementById("designationFilter");
@@ -337,6 +353,7 @@ async function loadEmployees() {
         renderHomeBirthdayCelebrations();
 
         populateDesignationFilter();
+        populateDepartmentFilter();
         loadEmployeeSelect();
 
 
@@ -1849,6 +1866,7 @@ searchInput.addEventListener(
                 : "";
 
         const selectedBloodGroup = bloodGroupFilter ? bloodGroupFilter.value : "";
+        const selectedDepartment = departmentFilter ? departmentFilter.value : "";
 
         const filtered =
             employees.filter(employee => {
@@ -1875,7 +1893,11 @@ searchInput.addEventListener(
                     !selectedBloodGroup ||
                     String(employee.blood_group || "").trim().toUpperCase() === selectedBloodGroup;
 
-                return matchesDesignation && matchesBloodGroup && matchesSearch;
+                return matchesDesignation &&
+                    matchesBloodGroup &&
+                    (!selectedDepartment ||
+                        String(employee.department || "Other").trim().toLowerCase() === selectedDepartment.toLowerCase()) &&
+                    matchesSearch;
             });
 
         showEmployees(filtered);
@@ -1901,6 +1923,9 @@ clearSearch.addEventListener(
 
         if (bloodGroupFilter) {
             bloodGroupFilter.value = "";
+        }
+        if (departmentFilter) {
+            departmentFilter.value = "";
         }
 
         showEmployees(employees);
@@ -2208,6 +2233,7 @@ const designationFilter =
     document.getElementById("designationFilter");
 
 const bloodGroupFilter = document.getElementById("bloodGroupFilter");
+const departmentFilter = document.getElementById("departmentFilter");
 
 if (designationFilter) {
 
@@ -2218,6 +2244,7 @@ if (designationFilter) {
             const selectedDesignation =
                 this.value;
             const selectedBloodGroup = bloodGroupFilter ? bloodGroupFilter.value : "";
+            const selectedDepartment = departmentFilter ? departmentFilter.value : "";
 
             const searchText =
                 searchInput.value
@@ -2249,7 +2276,11 @@ if (designationFilter) {
                         !selectedBloodGroup ||
                         String(employee.blood_group || "").trim().toUpperCase() === selectedBloodGroup;
 
-                    return matchesDesignation && matchesBloodGroup && matchesSearch;
+                    return matchesDesignation &&
+                    matchesBloodGroup &&
+                    (!selectedDepartment ||
+                        String(employee.department || "Other").trim().toLowerCase() === selectedDepartment.toLowerCase()) &&
+                    matchesSearch;
                 });
 
             showEmployees(filtered);
@@ -3773,9 +3804,35 @@ if (slipEmployee) {
 })();
 
 
+if (departmentFilter) {
+    departmentFilter.addEventListener("change", function () {
+        const selectedDepartment = this.value;
+        const selectedDesignation = designationFilter ? designationFilter.value : "";
+        const selectedBloodGroup = bloodGroupFilter ? bloodGroupFilter.value : "";
+        const searchText = searchInput.value.toLowerCase().trim();
+
+        const filtered = employees.filter(employee => {
+            const matchesDesignation = !selectedDesignation ||
+                normalizeDesignation(employee.designation) === selectedDesignation;
+            const matchesBloodGroup = !selectedBloodGroup ||
+                String(employee.blood_group || "").trim().toUpperCase() === selectedBloodGroup;
+            const matchesDepartment = !selectedDepartment ||
+                String(employee.department || "Other").trim().toLowerCase() === selectedDepartment.toLowerCase();
+
+            const text = `${employee.employee_name || ""} ${employee.employee_no || ""} ${employee.company || ""} ${employee.department || ""} ${employee.designation || ""}`;
+            const matchesSearch = !searchText || text.toLowerCase().includes(searchText);
+
+            return matchesDesignation && matchesBloodGroup && matchesDepartment && matchesSearch;
+        });
+
+        showEmployees(filtered);
+    });
+}
+
 if (bloodGroupFilter) {
     bloodGroupFilter.addEventListener("change", function () {
         const selectedBloodGroup = this.value;
+        const selectedDepartment = departmentFilter ? departmentFilter.value : "";
         const selectedDesignation = designationFilter ? designationFilter.value : "";
         const searchText = searchInput.value.toLowerCase().trim();
 
@@ -3786,7 +3843,11 @@ if (bloodGroupFilter) {
                 String(employee.blood_group || "").trim().toUpperCase() === selectedBloodGroup;
             const text = `${employee.employee_name || ""} ${employee.employee_no || ""} ${employee.company || ""} ${employee.department || ""} ${employee.designation || ""}`;
             const matchesSearch = !searchText || text.toLowerCase().includes(searchText);
-            return matchesDesignation && matchesBloodGroup && matchesSearch;
+            return matchesDesignation &&
+                matchesBloodGroup &&
+                (!selectedDepartment ||
+                    String(employee.department || "Other").trim().toLowerCase() === selectedDepartment.toLowerCase()) &&
+                matchesSearch;
         });
 
         showEmployees(filtered);
