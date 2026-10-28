@@ -4881,7 +4881,7 @@ function renderTree() {
         if (!roots.length) {
             setStatus("No top-level position found. Check the saved reporting relationships.");
         } else {
-            setStatus("Organization structure loaded. Employee Directory data is updated from Supabase.");
+            setStatus("");
         }
     }
 

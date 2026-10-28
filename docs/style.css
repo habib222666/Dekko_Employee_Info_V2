@@ -5929,48 +5929,51 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
 }
 
 
-/* ORGANOGRAM SELECTOR: keep Choose Organogram at the upper right */
+/* ORGANOGRAM DESKTOP LAYOUT: tree left, admin right, selector upper right */
 #organogramPage .organogram-card {
-    position: relative;
-}
-
-#organogramPage .organogram-selector {
-    display: flex !important;
-    flex-direction: column;
-    align-items: flex-end !important;
-    justify-content: flex-start !important;
-    gap: 6px;
-    width: 100%;
-    margin: 10px 0 14px !important;
-    text-align: right;
-}
-
-#organogramPage .organogram-selector label {
-    text-align: right;
-}
-
-#organogramPage #organogramSelect {
-    width: min(100%, 280px);
+    display: grid;
 }
 
 @media (min-width: 900px) {
     #organogramPage .organogram-card {
-        grid-template-columns: minmax(0, 1fr) !important;
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr) 320px !important;
         grid-template-areas:
-            "toolbar"
-            "status"
-            "selector"
-            "tree"
-            "admin" !important;
+            "toolbar toolbar"
+            "selector selector"
+            "status status"
+            "tree admin" !important;
+        align-items: start;
+        text-align: left;
     }
 
     #organogramPage .organogram-toolbar {
-        grid-area: toolbar;
+        grid-area: toolbar !important;
     }
 
     #organogramPage .organogram-selector {
-        grid-area: selector;
+        grid-area: selector !important;
         justify-self: end;
-        margin-top: 0 !important;
+        align-items: flex-end;
+        margin: 0 0 10px !important;
+    }
+
+    #organogramPage #organogramStatus {
+        grid-area: status !important;
+    }
+
+    #organogramPage #organogramTree {
+        grid-area: tree !important;
+        min-width: 0;
+        width: 100%;
+        margin: 0;
+    }
+
+    #organogramPage #organogramAdminPanel {
+        grid-area: admin !important;
+        min-width: 0;
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
     }
 }
