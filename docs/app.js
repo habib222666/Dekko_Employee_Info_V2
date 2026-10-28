@@ -17,6 +17,7 @@ const departmentSection = document.getElementById("departmentSection");
 const departmentCards = document.getElementById("departmentCards");
 const allDepartmentsButton = document.getElementById("allDepartmentsButton");
 const allEmployeesButton = document.getElementById("allEmployeesButton");
+const allFactoryEmployeesButton = document.getElementById("allFactoryEmployeesButton");
 const favoriteEmployeesButton = document.getElementById("favoriteEmployeesButton");
 const departmentPage = document.getElementById("departmentPage");
 const departmentPageTitle = document.getElementById("departmentPageTitle");
@@ -33,36 +34,46 @@ const birthdayMonths = document.getElementById("birthdayMonths");
 const allEmployeesPage = document.getElementById("allEmployeesPage");
 const allEmployeesBackButton = document.getElementById("allEmployeesBackButton");
 
-let favoriteEmployees = JSON.parse(
-    localStorage.getItem("favoriteEmployees") || "[]"
-);
+let currentEmployeeSource = "headoffice";
 
-function isFavorite(employee) {
-    return favoriteEmployees.includes(
-        String(employee.employee_no)
+function favoriteStorageKey(source = currentEmployeeSource) {
+    return source === "factory"
+        ? "favoriteEmployees_factory"
+        : "favoriteEmployees_headoffice";
+}
+
+// Keep existing web favorites by migrating the old shared list to Head Office.
+if (
+    localStorage.getItem("favoriteEmployees_headoffice") === null &&
+    localStorage.getItem("favoriteEmployees") !== null
+) {
+    localStorage.setItem(
+        "favoriteEmployees_headoffice",
+        localStorage.getItem("favoriteEmployees")
     );
 }
 
-async function toggleFavorite(employee) {
+let favoriteEmployees = JSON.parse(
+    localStorage.getItem(favoriteStorageKey()) || "[]"
+).map(String);
+
+function isFavorite(employee) {
+    return favoriteEmployees.includes(String(employee.employee_no));
+}
+
+async function toggleFavorite(employee, source = currentEmployeeSource) {
     const employeeNo = String(employee.employee_no);
-    const newFavorite = !isFavorite(employee);
+    const key = favoriteStorageKey(source);
+    const sourceFavorites = JSON.parse(localStorage.getItem(key) || "[]").map(String);
+    const newFavorite = !sourceFavorites.includes(employeeNo);
+    const nextFavorites = newFavorite
+        ? [...new Set([...sourceFavorites, employeeNo])]
+        : sourceFavorites.filter(id => id !== employeeNo);
 
-    if (newFavorite) {
-        if (!favoriteEmployees.includes(employeeNo)) {
-            favoriteEmployees.push(employeeNo);
-        }
-    } else {
-        favoriteEmployees = favoriteEmployees.filter(
-            id => id !== employeeNo
-        );
-    }
+    localStorage.setItem(key, JSON.stringify(nextFavorites));
+    if (source === currentEmployeeSource) favoriteEmployees = nextFavorites;
 
-    localStorage.setItem(
-        "favoriteEmployees",
-        JSON.stringify(favoriteEmployees)
-    );
-
-    // Favorite is device-local; do not update the protected database.
+    // Favorites remain device-local; no employee table is updated.
     employee.favorite = newFavorite;
 }
 
@@ -311,15 +322,18 @@ function populateDesignationFilter() {
    LOAD EMPLOYEES
 ========================= */
 
-async function loadEmployees() {
+async function loadEmployees(source = "headoffice") {
+    currentEmployeeSource = source;
 
-    employeeList.innerHTML =
-        "<p>Loading employees...</p>";
+    employeeList.innerHTML = "<p>Loading employees...</p>";
 
     try {
+        const viewName = source === "factory"
+            ? "employee_directory_factory_public"
+            : "employee_directory_public";
 
         const response = await fetch(
-            `${SUPABASE_URL}/rest/v1/employee_directory_public?select=*`,
+            `${SUPABASE_URL}/rest/v1/${viewName}?select=*`,
             {
                 headers: {
                     "apikey": SUPABASE_KEY,
@@ -328,48 +342,39 @@ async function loadEmployees() {
             }
         );
 
-
         if (!response.ok) {
-
-            throw new Error(
-                "Supabase error: " + response.status
-            );
-
+            throw new Error("Supabase error: " + response.status);
         }
-
 
         employees = await response.json();
 
         // Restore favorites saved on this device.
-        // Do not overwrite local favorites with Supabase employee data.
         favoriteEmployees = JSON.parse(
-            localStorage.getItem("favoriteEmployees") || "[]"
+            localStorage.getItem(favoriteStorageKey(source)) || "[]"
         ).map(id => String(id));
 
-
-        showDepartmentCards();
-
         showEmployees(employees);
-        renderHomeBirthdayCelebrations();
-
         populateDesignationFilter();
         populateDepartmentFilter();
-        loadEmployeeSelect();
 
+        const heading = allEmployeesPage.querySelector("h1");
+        if (heading) {
+            heading.textContent = source === "factory"
+                ? "👥 All Employees (Factory)"
+                : "👥 All Employees (Head Office)";
+        }
+
+        if (source === "headoffice") {
+            showDepartmentCards();
+            renderHomeBirthdayCelebrations();
+            loadEmployeeSelect();
+        }
 
     } catch (error) {
-
         console.error(error);
-
-
-        employeeList.innerHTML =
-            "<p>Employee data load হয়নি।</p>";
-
-
+        employeeList.innerHTML = "<p>Employee data load হয়নি।</p>";
         resultCount.textContent = "";
-
     }
-
 }
 
 
@@ -553,68 +558,99 @@ function showDepartmentCards() {
         departmentNames.length ? "block" : "none";
 }
 
-function showFavoriteEmployees() {
+async function showFavoriteEmployees() {
+    favoriteEmployeeList.innerHTML = "<p>Loading favorite employees...</p>";
+
+    const sources = [
+        { key: "headoffice", title: "Employees (Head Office)", view: "employee_directory_public" },
+        { key: "factory", title: "Employees (Factory)", view: "employee_directory_factory_public" }
+    ];
 
     favoriteEmployeeList.innerHTML = "";
 
-    const favorites = employees.filter(function(employee) {
-        return isFavorite(employee);
-    });
+    for (const source of sources) {
+        const section = document.createElement("section");
+        section.className = "favorite-source-section";
 
-    if (favorites.length === 0) {
-        favoriteEmployeeList.innerHTML =
-            "<p>No favorite employees found.</p>";
-        return;
-    }
+        const heading = document.createElement("h2");
+        heading.textContent = source.title;
 
-    favorites.forEach(function(employee) {
+        const list = document.createElement("div");
+        list.className = "favorite-source-list";
 
-        const div = document.createElement("div");
+        section.appendChild(heading);
+        section.appendChild(list);
+        favoriteEmployeeList.appendChild(section);
 
-        div.className = "employee-card";
-
-        div.innerHTML = `
-            <div class="employee-card-top">
-                ${getPhoto(employee)}
-                <div class="employee-card-info">
-                    <h3>${employee.employee_name || "-"}</h3>
-                    <p>${employee.designation || "-"}</p>
-                    <span>${employee.employee_no || "-"}</span>
-                </div>
-            </div>
-
-            <div class="employee-card-actions">
-
-                <button class="favorite-button" type="button">
-                    ❤️
-                </button>
-
-                <button class="view-button" type="button">
-                    View Details
-                </button>
-
-            </div>
-        `;
-
-        div.querySelector(".favorite-button")
-            .addEventListener(
-                "click",
-                function() {
-                    toggleFavorite(employee);
-                    showFavoriteEmployees();
+        try {
+            const response = await fetch(
+                `${SUPABASE_URL}/rest/v1/${source.view}?select=*`,
+                {
+                    headers: {
+                        "apikey": SUPABASE_KEY,
+                        "Authorization": `Bearer ${SUPABASE_KEY}`
+                    }
                 }
             );
+            if (!response.ok) {
+                throw new Error("Supabase error: " + response.status);
+            }
 
-        div.querySelector(".view-button")
-            .addEventListener(
-                "click",
-                function() {
+            const sourceEmployees = await response.json();
+            const ids = JSON.parse(
+                localStorage.getItem(favoriteStorageKey(source.key)) || "[]"
+            ).map(String);
+            const favorites = sourceEmployees.filter(employee =>
+                ids.includes(String(employee.employee_no))
+            );
+
+            if (!favorites.length) {
+                list.innerHTML = "<p>No favorite employees found.</p>";
+                continue;
+            }
+
+            favorites.forEach(function(employee) {
+                const div = document.createElement("div");
+                div.className = "employee-card";
+                div.innerHTML = `
+                    <div class="employee-card-top">
+                        ${getPhoto(employee)}
+                        <div class="employee-card-info">
+                            <h3>${employee.employee_name || "-"}</h3>
+                            <p>${employee.designation || "-"}</p>
+                            <span>${employee.employee_no || "-"}</span>
+                        </div>
+                    </div>
+                    <div class="employee-card-actions">
+                        <button class="favorite-button" type="button">❤️</button>
+                        <button class="view-button" type="button">View Details</button>
+                    </div>`;
+
+                div.querySelector(".favorite-button").addEventListener("click", async function() {
+                    currentEmployeeSource = source.key;
+                    favoriteEmployees = JSON.parse(
+                        localStorage.getItem(favoriteStorageKey(source.key)) || "[]"
+                    ).map(String);
+                    await toggleFavorite(employee, source.key);
+                    await showFavoriteEmployees();
+                });
+
+                div.querySelector(".view-button").addEventListener("click", function() {
+                    currentEmployeeSource = source.key;
+                    favoriteEmployees = JSON.parse(
+                        localStorage.getItem(favoriteStorageKey(source.key)) || "[]"
+                    ).map(String);
+                    employees = sourceEmployees;
                     showDetails(employee, "favorite");
-                }
-            );
+                });
 
-        favoriteEmployeeList.appendChild(div);
-    });
+                list.appendChild(div);
+            });
+        } catch (error) {
+            console.error("Favorite list load failed:", source.key, error);
+            list.innerHTML = "<p>এই তালিকা লোড করা যায়নি। আবার চেষ্টা করুন।</p>";
+        }
+    }
 }
 
 
@@ -796,7 +832,7 @@ async function loadPrivateEmployeeDetails(employeeNo) {
         });
 
         const response = await fetch(
-            SUPABASE_URL + "/rest/v1/employee_dekko_v2?" + params.toString(),
+            SUPABASE_URL + "/rest/v1/all_employee_headoffice?" + params.toString(),
             {
                 headers: {
                     apikey: SUPABASE_KEY,
@@ -1596,7 +1632,7 @@ uploadPhotoButton.addEventListener(
 
             const updateResponse =
                 await fetch(
-                    `${SUPABASE_URL}/rest/v1/employee_dekko_v2?employee_no=eq.${encodeURIComponent(employeeNo)}`,
+                    `${SUPABASE_URL}/rest/v1/all_employee_headoffice?employee_no=eq.${encodeURIComponent(employeeNo)}`,
                     {
                         method: "PATCH",
 
@@ -1821,7 +1857,10 @@ allEmployeesButton.addEventListener(
 
         allEmployeesPage.style.display = "block";
 
-        showEmployees(employees);
+        if (designationFilter) designationFilter.value = "";
+        if (departmentFilter) departmentFilter.value = "";
+        if (bloodGroupFilter) bloodGroupFilter.value = "";
+        loadEmployees("headoffice");
 
         window.scrollTo({
             top: 0,
@@ -1830,6 +1869,25 @@ allEmployeesButton.addEventListener(
     }
 );
 
+if (allFactoryEmployeesButton) {
+    allFactoryEmployeesButton.addEventListener("click", function() {
+        searchInput.value = "";
+        if (designationFilter) designationFilter.value = "";
+        if (departmentFilter) departmentFilter.value = "";
+        if (bloodGroupFilter) bloodGroupFilter.value = "";
+
+        listPage.style.display = "none";
+        departmentPage.style.display = "none";
+        favoritePage.style.display = "none";
+        birthdayPage.style.display = "none";
+        detailsPage.style.display = "none";
+        allEmployeesPage.style.display = "block";
+
+        loadEmployees("factory");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+}
+
 if (allEmployeesBackButton) {
     allEmployeesBackButton.addEventListener(
         "click",
@@ -1837,6 +1895,7 @@ if (allEmployeesBackButton) {
 
             allEmployeesPage.style.display = "none";
             listPage.style.display = "block";
+            loadEmployees("headoffice");
 
             window.scrollTo({
                 top: 0,
@@ -2409,7 +2468,7 @@ if (saveNewEmployeeButton) {
             try {
 
                 const response = await fetch(
-                    `${SUPABASE_URL}/rest/v1/employee_dekko_v2`,
+                    `${SUPABASE_URL}/rest/v1/all_employee_headoffice`,
                     {
                         method: "POST",
 
@@ -2886,7 +2945,7 @@ if (saveNewEmployeeButton) {
         async function loadEmployees() {
             const response = await fetch(
                 SUPABASE_URL +
-                "/rest/v1/employee_dekko_v2?select=employee_no,employee_name,department,designation,joining_date,birthday,date_of_birth,nid,tin_no,bank_name,account_no&order=employee_name.asc",
+                "/rest/v1/all_employee_headoffice?select=employee_no,employee_name,department,designation,joining_date,birthday,date_of_birth,nid,tin_no,bank_name,account_no&order=employee_name.asc",
                 { headers: apiHeaders() }
             );
 
