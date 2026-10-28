@@ -4680,8 +4680,10 @@ if (bloodGroupFilter) {
             placeholder = "Top level";
         } else if (type === "executive_director") {
             allowed = nodes.filter(node => node.node_type === "chairman");
-        } else if (type === "department_head") {
+        } else if (type === "chief_marketing_officer") {
             allowed = nodes.filter(node => node.node_type === "executive_director");
+        } else if (type === "department_head") {
+            allowed = nodes.filter(node => node.node_type === "chief_marketing_officer");
         }
 
         parentInput.replaceChildren(new Option(placeholder, ""));
@@ -4701,9 +4703,11 @@ if (bloodGroupFilter) {
             parentInput.options[0].textContent =
                 type === "executive_director"
                     ? "Add a Chairman position first"
-                    : type === "department_head"
+                    : type === "chief_marketing_officer"
                         ? "Add an Executive Director position first"
-                        : "No reporting position available";
+                        : type === "department_head"
+                            ? "Add a Chief Marketing Officer position first"
+                            : "No reporting position available";
         }
 
         parentInput.value = selected;
