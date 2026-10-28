@@ -256,6 +256,9 @@ button:active {
 .detail-row:nth-child(9) { background: #fffaf8; }
 .detail-row:nth-child(10) { background: #f7fcff; }
 
+.detail-row:nth-child(11) { background: #f8fbff; }
+.detail-row:nth-child(12) { background: #f5fcfc; }
+
 .detail-row:last-child {
     border-bottom: none;
 }
