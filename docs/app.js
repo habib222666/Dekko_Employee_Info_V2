@@ -831,8 +831,13 @@ async function loadPrivateEmployeeDetails(employeeNo) {
             limit: "1"
         });
 
+        const privateTable =
+            currentEmployeeSource === "factory"
+                ? "all_employee_factory"
+                : "all_employee_headoffice";
+
         const response = await fetch(
-            SUPABASE_URL + "/rest/v1/all_employee_headoffice?" + params.toString(),
+            SUPABASE_URL + "/rest/v1/" + privateTable + "?" + params.toString(),
             {
                 headers: {
                     apikey: SUPABASE_KEY,
