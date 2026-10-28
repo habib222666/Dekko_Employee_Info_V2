@@ -4531,3 +4531,8 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
 .holiday-calendar-legend .holiday-dot.special-working {
     background: #16a34a !important;
 }
+
+#privateNid,
+#privateTinNo {
+    color: #000000;
+}
