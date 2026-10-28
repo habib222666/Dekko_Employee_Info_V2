@@ -4503,3 +4503,523 @@ if (bloodGroupFilter) {
     updateHolidayPageTodayDate();
     setInterval(updateHolidayPageTodayDate, 60000);
 })();
+
+
+
+/* ORGANOGRAM TREE MODULE V1 */
+(function () {
+    "use strict";
+
+    const ADMIN_UID = "f0fcbd2e-003e-4fc2-bc2e-51b13c5f0814";
+    const $ = id => document.getElementById(id);
+
+    const page = $("organogramPage");
+    if (!page) return;
+
+    const tree = $("organogramTree");
+    const status = $("organogramStatus");
+    const editButton = $("organogramEditButton");
+    const panel = $("organogramAdminPanel");
+    const form = $("organogramForm");
+    const recordId = $("organogramRecordId");
+    const typeInput = $("organogramNodeType");
+    const employeeSelect = $("organogramEmployeeSelect");
+    const nameInput = $("organogramName");
+    const designationInput = $("organogramDesignation");
+    const departmentInput = $("organogramDepartment");
+    const departmentField = $("organogramDepartmentField");
+    const parentInput = $("organogramParent");
+    const sortInput = $("organogramSortOrder");
+    const saveButton = $("organogramSaveButton");
+    const cancelButton = $("organogramCancelButton");
+    const adminStatus = $("organogramAdminStatus");
+    const adminList = $("organogramAdminList");
+
+    const endpoint = SUPABASE_URL + "/rest/v1/organogram_nodes";
+    const employeeEndpoint =
+        SUPABASE_URL + "/rest/v1/employee_directory_public";
+
+    let nodes = [];
+    let directory = [];
+    let isAdmin = false;
+    let editing = false;
+
+    function apiHeaders(write = false) {
+        const headers = {
+            apikey: SUPABASE_KEY,
+            Authorization: "Bearer " + (write ? accessToken : SUPABASE_KEY)
+        };
+        if (write) headers["Content-Type"] = "application/json";
+        return headers;
+    }
+
+    async function verifyOrganogramAdmin() {
+        if (!accessToken) return false;
+        try {
+            const response = await fetch(SUPABASE_URL + "/auth/v1/user", {
+                headers: {
+                    apikey: SUPABASE_KEY,
+                    Authorization: "Bearer " + accessToken
+                }
+            });
+            if (!response.ok) return false;
+            const user = await response.json();
+            return Boolean(user && user.id === ADMIN_UID);
+        } catch (error) {
+            console.error("Organogram admin verification failed:", error);
+            return false;
+        }
+    }
+
+    function setStatus(message) {
+        if (status) status.textContent = message;
+    }
+
+    function setAdminStatus(message) {
+        if (adminStatus) adminStatus.textContent = message;
+    }
+
+    async function loadDirectory() {
+        const response = await fetch(
+            employeeEndpoint + "?select=employee_no,employee_name,designation,department&order=employee_name.asc",
+            { headers: apiHeaders(false) }
+        );
+        if (!response.ok) {
+            throw new Error("Employee Directory load failed (" + response.status + ").");
+        }
+        directory = await response.json();
+        fillEmployeeOptions();
+        fillDepartmentOptions();
+    }
+
+    async function loadNodes() {
+        const response = await fetch(
+            endpoint + "?select=*&order=sort_order.asc,id.asc",
+            { headers: apiHeaders(false) }
+        );
+        if (!response.ok) {
+            throw new Error("Organogram load failed (" + response.status + ").");
+        }
+        nodes = await response.json();
+        renderTree();
+        renderAdminList();
+        fillParentOptions();
+    }
+
+    function employeeNumber(employee) {
+        return String(employee && employee.employee_no || "").trim();
+    }
+
+    function displayName(employee) {
+        return String(employee && employee.employee_name || "").trim();
+    }
+
+    function fillEmployeeOptions(selectedNo = "") {
+        if (!employeeSelect) return;
+        employeeSelect.replaceChildren(new Option("Choose an employee", ""));
+        directory.forEach(employee => {
+            const no = employeeNumber(employee);
+            if (!no) return;
+            const label = [
+                displayName(employee),
+                employee.designation || "",
+                no
+            ].filter(Boolean).join(" · ");
+            employeeSelect.add(new Option(label, no));
+        });
+        employeeSelect.value = selectedNo;
+    }
+
+    function fillDepartmentOptions(selected = "") {
+        if (!departmentInput) return;
+        const departments = [...new Set(
+            directory.map(employee => String(employee.department || "").trim())
+                .filter(Boolean)
+        )].sort((a, b) => a.localeCompare(b));
+
+        departmentInput.replaceChildren(new Option("Choose department", ""));
+        departments.forEach(department => {
+            departmentInput.add(new Option(department, department));
+        });
+        departmentInput.value = selected;
+    }
+
+    function fillParentOptions(selected = "") {
+        if (!parentInput) return;
+        const type = typeInput.value;
+        let allowed = [];
+
+        if (type === "executive_director") {
+            allowed = nodes.filter(node => node.node_type === "chairman");
+        } else if (type === "department_head") {
+            allowed = nodes.filter(node => node.node_type === "executive_director");
+        }
+
+        parentInput.replaceChildren(
+            new Option(type === "chairman" ? "Top level" : "Choose reporting position", "")
+        );
+        allowed.forEach(node => {
+            parentInput.add(new Option(
+                node.name + " — " + node.designation,
+                String(node.id)
+            ));
+        });
+        parentInput.value = selected;
+    }
+
+    function updateFormForType() {
+        const type = typeInput.value;
+        const isHead = type === "department_head";
+        departmentField.style.display = isHead ? "" : "none";
+        employeeSelect.required = isHead;
+        departmentInput.required = isHead;
+        fillParentOptions();
+    }
+
+    function makePhoto(employee) {
+        const no = employeeNumber(employee);
+        if (!no) {
+            const placeholder = document.createElement("div");
+            placeholder.className = "organogram-photo-placeholder";
+            placeholder.textContent = "No Photo";
+            return placeholder;
+        }
+        const image = document.createElement("img");
+        image.className = "organogram-photo";
+        image.alt = "Employee photo";
+        image.loading = "lazy";
+        image.src = "https://res.cloudinary.com/lnhd3otv/image/upload/" +
+            encodeURIComponent(no) + ".jpg";
+        image.onerror = function () {
+            const placeholder = document.createElement("div");
+            placeholder.className = "organogram-photo-placeholder";
+            placeholder.textContent = "No Photo";
+            image.replaceWith(placeholder);
+        };
+        return image;
+    }
+
+    function makePersonCard(name, designation, employee = null, extraClass = "") {
+        const card = document.createElement("div");
+        card.className = "organogram-person " + extraClass;
+
+        if (employee) card.appendChild(makePhoto(employee));
+
+        const nameEl = document.createElement("strong");
+        nameEl.textContent = name || "Name not set";
+        card.appendChild(nameEl);
+
+        const designationEl = document.createElement("span");
+        designationEl.textContent = designation || "";
+        card.appendChild(designationEl);
+
+        if (employee && employee.employee_no) {
+            const idEl = document.createElement("small");
+            idEl.textContent = "ID: " + employee.employee_no;
+            card.appendChild(idEl);
+        }
+        return card;
+    }
+
+    function renderTree() {
+        tree.replaceChildren();
+
+        if (!nodes.length) {
+            const empty = document.createElement("div");
+            empty.className = "organogram-empty-state";
+            empty.textContent = isAdmin
+                ? "No positions saved yet. Select Edit Organogram to add the Chairman first."
+                : "The organization chart has not been configured yet.";
+            tree.appendChild(empty);
+            setStatus("No organization positions have been saved yet.");
+            return;
+        }
+
+        const childrenByParent = new Map();
+        nodes.forEach(node => {
+            const key = node.parent_id == null ? "root" : String(node.parent_id);
+            if (!childrenByParent.has(key)) childrenByParent.set(key, []);
+            childrenByParent.get(key).push(node);
+        });
+
+        const seen = new Set();
+
+        function renderNode(node, depth) {
+            if (seen.has(String(node.id))) return document.createElement("div");
+            seen.add(String(node.id));
+
+            const wrapper = document.createElement("div");
+            wrapper.className = "organogram-branch depth-" + Math.min(depth, 3);
+
+            let linkedEmployee = directory.find(
+                employee => employeeNumber(employee) === String(node.employee_no || "")
+            ) || null;
+
+            wrapper.appendChild(makePersonCard(
+                node.name,
+                node.designation,
+                linkedEmployee,
+                "organogram-role-" + node.node_type
+            ));
+
+            const childNodes = childrenByParent.get(String(node.id)) || [];
+            if (childNodes.length) {
+                const childGroup = document.createElement("div");
+                childGroup.className = "organogram-children";
+                childNodes.forEach(child => {
+                    childGroup.appendChild(renderNode(child, depth + 1));
+
+                    if (child.node_type === "department_head") {
+                        const department = String(child.department || "").trim();
+                        const headNo = String(child.employee_no || "").trim();
+                        const staff = directory.filter(employee =>
+                            String(employee.department || "").trim().toLowerCase() === department.toLowerCase() &&
+                            employeeNumber(employee) !== headNo
+                        );
+
+                        if (staff.length) {
+                            const staffGroup = document.createElement("div");
+                            staffGroup.className = "organogram-staff";
+                            const staffTitle = document.createElement("h4");
+                            staffTitle.textContent = (department || "Department") +
+                                " — Team (" + staff.length + ")";
+                            staffGroup.appendChild(staffTitle);
+
+                            const staffGrid = document.createElement("div");
+                            staffGrid.className = "organogram-staff-grid";
+                            staff.forEach(employee => {
+                                staffGrid.appendChild(makePersonCard(
+                                    displayName(employee),
+                                    employee.designation || "",
+                                    employee,
+                                    "organogram-role-employee"
+                                ));
+                            });
+                            staffGroup.appendChild(staffGrid);
+                            childGroup.appendChild(staffGroup);
+                        }
+                    }
+                });
+                wrapper.appendChild(childGroup);
+            }
+            return wrapper;
+        }
+
+        const roots = childrenByParent.get("root") || [];
+        roots.forEach(node => tree.appendChild(renderNode(node, 0)));
+
+        if (!roots.length) {
+            setStatus("No top-level position found. Check the saved reporting relationships.");
+        } else {
+            setStatus("Organization structure loaded. Employee Directory data is updated from Supabase.");
+        }
+    }
+
+    function renderAdminList() {
+        if (!adminList) return;
+        adminList.replaceChildren();
+
+        if (!isAdmin) return;
+
+        nodes.forEach(node => {
+            const row = document.createElement("div");
+            row.className = "organogram-admin-row";
+
+            const info = document.createElement("span");
+            info.textContent = node.name + " — " + node.designation +
+                (node.department ? " (" + node.department + ")" : "");
+            row.appendChild(info);
+
+            const edit = document.createElement("button");
+            edit.type = "button";
+            edit.className = "organogram-cancel";
+            edit.textContent = "Edit";
+            edit.addEventListener("click", () => startEdit(node));
+            row.appendChild(edit);
+
+            const remove = document.createElement("button");
+            remove.type = "button";
+            remove.className = "organogram-delete";
+            remove.textContent = "Delete";
+            remove.addEventListener("click", () => deleteNode(node));
+            row.appendChild(remove);
+
+            adminList.appendChild(row);
+        });
+    }
+
+    function resetForm() {
+        form.reset();
+        recordId.value = "";
+        editing = false;
+        saveButton.textContent = "Save Position";
+        typeInput.disabled = false;
+        fillEmployeeOptions();
+        fillDepartmentOptions();
+        updateFormForType();
+        setAdminStatus("");
+    }
+
+    function startEdit(node) {
+        panel.style.display = "block";
+        form.reset();
+        recordId.value = String(node.id);
+        typeInput.value = node.node_type;
+        typeInput.disabled = false;
+        nameInput.value = node.name || "";
+        designationInput.value = node.designation || "";
+        sortInput.value = String(node.sort_order || 0);
+        updateFormForType();
+        employeeSelect.value = String(node.employee_no || "");
+        departmentInput.value = String(node.department || "");
+        fillParentOptions(String(node.parent_id || ""));
+        editing = true;
+        saveButton.textContent = "Update Position";
+        setAdminStatus("Editing " + node.name);
+        panel.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    async function deleteNode(node) {
+        if (!isAdmin || !accessToken) return;
+        if (nodes.some(item => String(item.parent_id) === String(node.id))) {
+            setAdminStatus("Delete child positions first, then delete this position.");
+            return;
+        }
+        if (!window.confirm("Delete " + node.name + " from the Organogram?")) return;
+
+        try {
+            const response = await fetch(endpoint + "?id=eq." + encodeURIComponent(node.id), {
+                method: "DELETE",
+                headers: apiHeaders(true)
+            });
+            if (!response.ok) throw new Error(await response.text());
+            setAdminStatus("Position deleted.");
+            await loadNodes();
+        } catch (error) {
+            console.error(error);
+            setAdminStatus("Delete failed. Check Admin access and Supabase RLS.");
+        }
+    }
+
+    employeeSelect.addEventListener("change", function () {
+        const employee = directory.find(
+            item => employeeNumber(item) === employeeSelect.value
+        );
+        if (!employee) return;
+
+        nameInput.value = displayName(employee);
+        designationInput.value = employee.designation || "";
+        if (typeInput.value === "department_head") {
+            departmentInput.value = String(employee.department || "").trim();
+        }
+    });
+
+    typeInput.addEventListener("change", function () {
+        updateFormForType();
+    });
+
+    editButton.addEventListener("click", function () {
+        if (!isAdmin) return;
+        panel.style.display = panel.style.display === "none" ? "block" : "none";
+        if (panel.style.display === "block") resetForm();
+    });
+
+    cancelButton.addEventListener("click", function () {
+        resetForm();
+        panel.style.display = "none";
+    });
+
+    form.addEventListener("submit", async function (event) {
+        event.preventDefault();
+        if (!isAdmin || !accessToken) {
+            setAdminStatus("Admin login required.");
+            return;
+        }
+
+        const type = typeInput.value;
+        const selectedEmployee = directory.find(
+            employee => employeeNumber(employee) === employeeSelect.value
+        ) || null;
+
+        if (type === "department_head" && !selectedEmployee) {
+            setAdminStatus("Choose the Department Head from Employee Directory.");
+            return;
+        }
+        if (type !== "chairman" && !parentInput.value) {
+            setAdminStatus("Choose the required reporting position.");
+            return;
+        }
+        if (type === "department_head" && !departmentInput.value) {
+            setAdminStatus("Choose the Department.");
+            return;
+        }
+
+        const payload = {
+            name: nameInput.value.trim(),
+            designation: designationInput.value.trim(),
+            department: type === "department_head" ? departmentInput.value : null,
+            employee_no: selectedEmployee ? employeeNumber(selectedEmployee) : null,
+            node_type: type,
+            parent_id: parentInput.value ? Number(parentInput.value) : null,
+            sort_order: Math.max(0, Number(sortInput.value) || 0),
+            updated_at: new Date().toISOString()
+        };
+
+        if (!payload.name || !payload.designation) {
+            setAdminStatus("Name and designation are required.");
+            return;
+        }
+
+        if (type === "chairman") payload.parent_id = null;
+
+        try {
+            const isUpdate = Boolean(recordId.value);
+            const url = isUpdate
+                ? endpoint + "?id=eq." + encodeURIComponent(recordId.value)
+                : endpoint;
+            const response = await fetch(url, {
+                method: isUpdate ? "PATCH" : "POST",
+                headers: {
+                    ...apiHeaders(true),
+                    Prefer: "return=representation"
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                throw new Error(await response.text());
+            }
+
+            setAdminStatus(isUpdate ? "Position updated." : "Position saved.");
+            resetForm();
+            await loadNodes();
+        } catch (error) {
+            console.error("Organogram save failed:", error);
+            setAdminStatus("Save failed. Verify Admin login, table columns and Supabase RLS.");
+        }
+    });
+
+    async function openOrganogram() {
+        setStatus("Loading organization structure...");
+        try {
+            isAdmin = await verifyOrganogramAdmin();
+            editButton.style.display = isAdmin ? "inline-flex" : "none";
+            panel.style.display = "none";
+            await loadDirectory();
+            await loadNodes();
+            renderAdminList();
+        } catch (error) {
+            console.error("Organogram load error:", error);
+            tree.replaceChildren();
+            setStatus("Could not load Organogram: " + error.message);
+        }
+    }
+
+    $("organogramButton").addEventListener("click", openOrganogram);
+
+    $("organogramBackButton").addEventListener("click", function () {
+        panel.style.display = "none";
+    });
+
+    updateFormForType();
+})();

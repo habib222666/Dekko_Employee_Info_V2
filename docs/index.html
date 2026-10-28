@@ -68,29 +68,89 @@
 
 <div id="organogramPage" class="organogram-page" style="display:none;">
     <header class="organogram-header">
-        <button id="organogramBackButton" class="organogram-back">
+        <button id="organogramBackButton" class="organogram-back" type="button">
             <span aria-hidden="true">←</span> Back
         </button>
         <div class="organogram-heading">
             <div class="organogram-icon" aria-hidden="true">🌳</div>
             <div>
                 <h1>Organogram</h1>
-                <p>Organization Structure</p>
+                <p>Dekko Accessories Ltd. · Head Office</p>
             </div>
         </div>
     </header>
 
     <main class="organogram-content">
         <section class="organogram-card">
-            <div class="organogram-card-icon" aria-hidden="true">🏢</div>
-            <h2>Organogram</h2>
-            <p>
-                Explore the organizational structure of
-                Dekko Accessories Ltd.
-            </p>
-            <div class="organogram-empty-state">
-                Organization chart will appear here.
+            <div class="organogram-toolbar">
+                <div>
+                    <h2>Organization Structure</h2>
+                    <p>Chairman → Executive Director → Department Heads → Employees</p>
+                </div>
+                <button id="organogramEditButton" type="button"
+                    class="organogram-action" style="display:none;">Edit Organogram</button>
             </div>
+
+            <div id="organogramStatus" class="organogram-status" role="status"
+                aria-live="polite">Loading organization structure...</div>
+
+            <section id="organogramAdminPanel" class="organogram-admin-panel"
+                style="display:none;" aria-label="Edit organization structure">
+                <h3 id="organogramFormTitle">Manage Organization Structure</h3>
+
+                <form id="organogramForm" class="organogram-form">
+                    <input id="organogramRecordId" type="hidden">
+
+                    <label for="organogramNodeType">Position type</label>
+                    <select id="organogramNodeType" required>
+                        <option value="chairman">Chairman</option>
+                        <option value="executive_director">Executive Director</option>
+                        <option value="department_head">Department Head</option>
+                    </select>
+
+                    <label for="organogramEmployeeSelect">Select employee (optional for top positions)</label>
+                    <select id="organogramEmployeeSelect">
+                        <option value="">Choose an employee</option>
+                    </select>
+
+                    <label for="organogramName">Name</label>
+                    <input id="organogramName" type="text" maxlength="150"
+                        placeholder="Enter name" required>
+
+                    <label for="organogramDesignation">Designation</label>
+                    <input id="organogramDesignation" type="text" maxlength="150"
+                        placeholder="Enter designation" required>
+
+                    <div id="organogramDepartmentField">
+                        <label for="organogramDepartment">Department</label>
+                        <select id="organogramDepartment">
+                            <option value="">Choose department</option>
+                        </select>
+                    </div>
+
+                    <label for="organogramParent">Reports to</label>
+                    <select id="organogramParent">
+                        <option value="">Top level</option>
+                    </select>
+
+                    <label for="organogramSortOrder">Display order</label>
+                    <input id="organogramSortOrder" type="number" value="0" min="0" step="1">
+
+                    <div class="organogram-form-actions">
+                        <button id="organogramSaveButton" class="organogram-action"
+                            type="submit">Save Position</button>
+                        <button id="organogramCancelButton" class="organogram-cancel"
+                            type="button">Cancel</button>
+                    </div>
+                    <p id="organogramAdminStatus" role="status" aria-live="polite"></p>
+                </form>
+
+                <h3>Saved Positions</h3>
+                <div id="organogramAdminList"></div>
+            </section>
+
+            <div id="organogramTree" class="organogram-tree"
+                aria-label="Head Office organization chart"></div>
         </section>
     </main>
 </div>

@@ -4563,3 +4563,285 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
 #privateTinNo {
     color: #000000;
 }
+
+
+
+/* ORGANOGRAM TREE RESPONSIVE DESIGN V1 */
+.organogram-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    text-align: left;
+    margin-bottom: 24px;
+}
+.organogram-toolbar h2 {
+    margin: 0 0 8px;
+    color: #203b32;
+    font-size: 23px;
+}
+.organogram-toolbar p {
+    margin: 0;
+    color: #687789;
+    line-height: 1.6;
+    font-size: 14px;
+}
+.organogram-action,
+.organogram-cancel,
+.organogram-delete {
+    border: 0;
+    border-radius: 10px;
+    padding: 11px 16px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+}
+.organogram-action {
+    background: #176b4d;
+    color: #fff;
+}
+.organogram-action:hover {
+    background: #10553c;
+}
+.organogram-cancel {
+    background: #e8eef3;
+    color: #263746;
+}
+.organogram-delete {
+    background: #fee2e2;
+    color: #991b1b;
+}
+.organogram-status {
+    margin: 16px 0;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: #f1f5f9;
+    color: #475569;
+    text-align: left;
+    font-size: 14px;
+    line-height: 1.5;
+}
+.organogram-admin-panel {
+    margin: 20px 0 28px;
+    padding: 22px;
+    border: 1px solid #cbded4;
+    border-radius: 16px;
+    background: #f7fbf8;
+    text-align: left;
+}
+.organogram-admin-panel h3 {
+    margin: 0 0 16px;
+    color: #203b32;
+}
+.organogram-form {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 9px;
+}
+.organogram-form label {
+    margin-top: 5px;
+    color: #334155;
+    font-size: 13px;
+    font-weight: 700;
+}
+.organogram-form input,
+.organogram-form select {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    padding: 11px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 9px;
+    background: #fff;
+    color: #1e293b;
+    font: inherit;
+}
+.organogram-form-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+}
+#organogramAdminStatus {
+    margin: 6px 0 0;
+    color: #475569;
+    font-size: 13px;
+    line-height: 1.5;
+}
+#organogramAdminList {
+    display: grid;
+    gap: 9px;
+    margin-top: 12px;
+}
+.organogram-admin-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background: #fff;
+    text-align: left;
+}
+.organogram-admin-row > span {
+    flex: 1 1 220px;
+    min-width: 0;
+    color: #334155;
+    overflow-wrap: anywhere;
+}
+.organogram-tree {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+    overflow-x: auto;
+    padding: 18px 0;
+}
+.organogram-branch {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    width: 100%;
+    min-width: 0;
+    position: relative;
+}
+.organogram-person {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    width: min(100%, 280px);
+    min-width: 0;
+    padding: 18px 16px;
+    border: 1px solid #dbe5e0;
+    border-radius: 16px;
+    background: #fff;
+    color: #263746;
+    box-shadow: 0 5px 18px rgba(30, 50, 75, 0.07);
+    text-align: center;
+    overflow-wrap: anywhere;
+}
+.organogram-person strong {
+    color: #203b32;
+    font-size: 15px;
+    line-height: 1.45;
+}
+.organogram-person > span {
+    color: #0f766e;
+    font-size: 13px;
+    line-height: 1.45;
+}
+.organogram-person small {
+    color: #64748b;
+    font-size: 11px;
+}
+.organogram-role-chairman {
+    border-top: 5px solid #b68b24;
+    background: #fffdf6;
+}
+.organogram-role-executive_director {
+    border-top: 5px solid #176b4d;
+    background: #f6fcf8;
+}
+.organogram-role-department_head {
+    border-top: 5px solid #2563eb;
+    background: #f7faff;
+}
+.organogram-role-employee {
+    width: 170px;
+    padding: 12px 10px;
+}
+.organogram-photo {
+    display: block;
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid #e2e8f0;
+    background: #f1f5f9;
+}
+.organogram-photo-placeholder {
+    display: grid;
+    place-items: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: #e2e8f0;
+    color: #64748b;
+    font-size: 10px;
+    text-align: center;
+}
+.organogram-children {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 22px;
+    width: 100%;
+    position: relative;
+}
+.organogram-staff {
+    width: 100%;
+    padding: 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    background: #f8fafc;
+}
+.organogram-staff h4 {
+    margin: 0 0 14px;
+    color: #334155;
+    font-size: 14px;
+}
+.organogram-staff-grid {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+.organogram-empty-state {
+    overflow-wrap: anywhere;
+}
+@media (max-width: 600px) {
+    .organogram-toolbar {
+        align-items: stretch;
+    }
+    .organogram-toolbar h2 {
+        font-size: 20px;
+    }
+    .organogram-admin-panel {
+        padding: 15px;
+    }
+    .organogram-admin-row {
+        align-items: stretch;
+    }
+    .organogram-admin-row > span {
+        flex-basis: 100%;
+    }
+    .organogram-tree {
+        align-items: stretch;
+        overflow-x: visible;
+    }
+    .organogram-person {
+        width: min(100%, 260px);
+    }
+    .organogram-children {
+        flex-direction: column;
+        align-items: center;
+    }
+    .organogram-staff {
+        box-sizing: border-box;
+        padding: 12px 8px;
+    }
+    .organogram-role-employee {
+        width: min(100%, 170px);
+    }
+    .organogram-form-actions > button {
+        flex: 1 1 auto;
+    }
+}
