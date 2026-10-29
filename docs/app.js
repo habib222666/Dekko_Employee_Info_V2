@@ -4744,7 +4744,22 @@ if (bloodGroupFilter) {
         const card = document.createElement("div");
         card.className = "organogram-person " + extraClass;
 
-        if (employee) card.appendChild(makePhoto(employee));
+        if (extraClass.split(/\s+/).includes("organogram-role-chairman")) {
+            const image = document.createElement("img");
+            image.className = "organogram-photo";
+            image.alt = "Chairman photo";
+            image.loading = "lazy";
+            image.src = String.fromCharCode(104,116,116,112,115,58,47,47)+"res.cloudinary.com/lnhd3otv/image/upload/v1793243174/Photo-Chairman_Sir2.jpg";
+            image.onerror = function () {
+                const placeholder = document.createElement("div");
+                placeholder.className = "organogram-photo-placeholder";
+                placeholder.textContent = "No Photo";
+                image.replaceWith(placeholder);
+            };
+            card.appendChild(image);
+        } else if (employee) {
+            card.appendChild(makePhoto(employee));
+        }
 
         const info = document.createElement("div");
         info.className = "organogram-person-info";
