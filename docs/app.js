@@ -425,21 +425,24 @@ function getPhoto(employee) {
         return '<div class="employee-photo-placeholder">No Photo</div>';
     }
 
-        const photoUrl =
-        "https" + "://" + "res.cloudinary.com/lnhd3otv/image/upload/" +
-        encodeURIComponent(employeeNo) + ".jpg";
+    const storedPhotoPath = String(employee.photo_path || "").trim();
+    const cloudinaryPrefix =
+        "https" + "://" + "res.cloudinary.com/lnhd3otv/image/upload/";
+
+    const photoUrl = storedPhotoPath.startsWith(cloudinaryPrefix)
+        ? storedPhotoPath
+        : cloudinaryPrefix + encodeURIComponent(employeeNo) + ".jpg";
+
     return `
         <img
             src="${photoUrl}"
             alt="Employee photo"
             class="employee-photo"
             loading="lazy"
-
             onerror="this.outerHTML='<div class=&quot;employee-photo-placeholder&quot;>No Photo</div>'"
         >
     `;
 }
-
 function showDepartmentCards() {
 
     departmentCards.innerHTML = "";
@@ -1051,33 +1054,127 @@ function showDetails(employee, previousPage = "list") {
    EMPLOYEE SELECT
 ========================= */
 
-function loadEmployeeSelect() {
-
-    employeeSelect.innerHTML = `
-        <option value="">
-            Select employee
-        </option>
-    `;
+const employeeSearchInput = document.getElementById("employeeSearchInput");
+const employeeSearchButton = document.getElementById("employeeSearchButton");
+const employeeSearchSuggestions = document.getElementById("employeeSearchSuggestions");
 
 
-    employees.forEach((employee) => {
+function syncPhotoEmployeeSelection() {
+    if (!employeeSearchInput || !employeeSelect) return;
+    const query = employeeSearchInput.value.trim().toLocaleLowerCase();
+    const options = Array.from(employeeSelect.options).filter(option => option.value);
+    const match = options.find(option =>
+        option.textContent.trim().toLocaleLowerCase() === query
+    );
+    employeeSelect.value = match ? match.value : "";
+}
 
-        const option =
-            document.createElement("option");
+employeeSearchInput?.addEventListener("input", syncPhotoEmployeeSelection);
+employeeSearchInput?.addEventListener("change", syncPhotoEmployeeSelection);
 
+function updateEmployeeSearchSuggestions() {
+    if (!employeeSearchSuggestions) return;
 
-        option.value =
-            employee.employee_no;
+    const seen = new Set();
+    const uniqueOptions = [];
 
+    Array.from(employeeSelect.options).forEach(option => {
+        if (!option.value) return;
 
-        option.textContent =
-            `${employee.employee_no} - ${employee.employee_name}`;
+        if (seen.has(option.value)) {
+            option.remove();
+            return;
+        }
 
-
-        employeeSelect.appendChild(option);
-
+        seen.add(option.value);
+        uniqueOptions.push(option);
     });
 
+    employeeSearchSuggestions.replaceChildren();
+
+    uniqueOptions.forEach(option => {
+        const suggestion = document.createElement("option");
+        suggestion.value = option.textContent;
+        employeeSearchSuggestions.appendChild(suggestion);
+    });
+}
+
+if (employeeSearchButton && employeeSearchInput) {
+    employeeSearchButton.addEventListener("click", () => {
+        const query = employeeSearchInput.value.trim().toLocaleLowerCase();
+
+        if (!query) {
+            uploadStatus.textContent = "Please enter an employee name or ID.";
+            employeeSearchInput.focus();
+            return;
+        }
+
+        const options = Array.from(employeeSelect.options).filter(option => option.value);
+        const match =
+            options.find(option => option.textContent.trim().toLocaleLowerCase() === query) ||
+            options.find(option => String(option.dataset.employeeNo || "").toLocaleLowerCase() === query) ||
+            options.find(option => option.textContent.toLocaleLowerCase().includes(query));
+
+        if (!match) {
+            uploadStatus.textContent = "No matching employee found. Try another name or ID.";
+            return;
+        }
+
+        employeeSelect.value = match.value;
+        employeeSearchInput.value = match.textContent;
+        uploadStatus.textContent = "Selected: " + match.textContent;
+    });
+
+    employeeSearchInput.addEventListener("keydown", event => {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            employeeSearchButton.click();
+        }
+    });
+}
+
+async function loadEmployeeSelect() {
+    employeeSelect.replaceChildren(new Option("Select employee", ""));
+    try {
+        const sources = [
+            { key: "headoffice", label: "Head Office", view: "employee_directory_public" },
+            { key: "factory", label: "Factory", view: "employee_directory_factory_public" }
+        ];
+
+        const results = await Promise.all(sources.map(async source => {
+            const response = await fetch(
+                `${SUPABASE_URL}/rest/v1/${source.view}?select=employee_no,employee_name&order=employee_name.asc`,
+                {
+                    headers: {
+                        apikey: SUPABASE_KEY,
+                        Authorization: `Bearer ${SUPABASE_KEY}`
+                    }
+                }
+            );
+            if (!response.ok) {
+                throw new Error(`${source.label} employee list failed (${response.status}).`);
+            }
+            return { source, list: await response.json() };
+        }));
+
+        results.forEach(({ source, list }) => {
+            list.forEach(employee => {
+                if (employee.employee_no == null) return;
+                const option = document.createElement("option");
+                option.value = `${source.key}::${employee.employee_no}`;
+                option.dataset.source = source.key;
+                option.dataset.employeeNo = String(employee.employee_no);
+                option.textContent =
+                    `${source.label} — ${employee.employee_no} - ${employee.employee_name || ""}`;
+                employeeSelect.appendChild(option);
+            });
+        });
+
+        updateEmployeeSearchSuggestions();
+    } catch (error) {
+        console.error("Photo employee list error:", error);
+        uploadStatus.textContent = "Employee list could not load: " + error.message;
+    }
 }
 
 
@@ -1529,165 +1626,91 @@ logoutButton.addEventListener(
    PHOTO UPLOAD
 ========================= */
 
-uploadPhotoButton.addEventListener(
-    "click",
-    async function() {
+uploadPhotoButton.addEventListener("click", async function() {
+    if (!accessToken) {
+        uploadStatus.textContent = "Please login first.";
+        return;
+    }
 
-        if (!accessToken) {
+    const selected = employeeSelect.selectedOptions[0];
+    const source = selected?.dataset.source;
+    const employeeNo = selected?.dataset.employeeNo;
+    const file = photoInput.files?.[0];
 
-            uploadStatus.textContent =
-                "Please login first.";
+    if (!source || !employeeNo) {
+        uploadStatus.textContent = "Please select an employee.";
+        return;
+    }
 
-            return;
+    if (!file) {
+        uploadStatus.textContent = "Please choose a photo file first.";
+        photoInput.focus();
+        return;
+    }
 
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+        uploadStatus.textContent = "Please choose a JPG, PNG, or WebP image.";
+        return;
+    }
+
+    if (file.size < 1 || file.size > 10 * 1024 * 1024) {
+        uploadStatus.textContent = "Photo size must be 10 MB or less.";
+        return;
+    }
+
+    uploadPhotoButton.disabled = true;
+    uploadStatus.textContent = "Uploading photo...";
+
+    try {
+        const form = new FormData();
+        form.append("file", file, file.name);
+        form.append("source", source);
+        form.append("employeeNo", employeeNo);
+
+        const uploadResponse = await fetch(
+            `${SUPABASE_URL}/functions/v1/upload-employee-photo`,
+            {
+                method: "POST",
+                headers: {
+                    apikey: SUPABASE_KEY,
+                    Authorization: `Bearer ${accessToken}`
+                },
+                body: form
+            }
+        );
+
+        let result = {};
+        try {
+            result = await uploadResponse.json();
+        } catch (_) {
+            // Handle non-JSON responses below.
         }
 
-
-        const employeeNo =
-            employeeSelect.value;
-
-
-        const file =
-            photoInput.files[0];
-
-
-        if (!employeeNo) {
-
-            uploadStatus.textContent =
-                "Please select an employee.";
-
-            return;
-
-        }
-
-
-        if (!file) {
-
-            uploadStatus.textContent =
-                "Please select a photo.";
-
-            return;
-
-        }
-
-
-        const employee =
-            employees.find(
-                e =>
-                    e.employee_no === employeeNo
+        if (!uploadResponse.ok || result.success !== true) {
+            throw new Error(
+                result.error || `Upload failed (HTTP ${uploadResponse.status}).`
             );
-
-
-        if (!employee) {
-
-            uploadStatus.textContent =
-                "Employee not found.";
-
-            return;
-
         }
-
 
         uploadStatus.textContent =
-            "Uploading photo...";
+            `Photo uploaded successfully for ${source === "factory" ? "Factory" : "Head Office"} employee ${employeeNo}.`;
 
-
-        try {
-
-            const extension =
-                file.name
-                    .split(".")
-                    .pop()
-                    .toLowerCase();
-
-
-            const fileName =
-                `${employeeNo}.${extension}`;
-
-
-            const uploadResponse =
-                await fetch(
-                    `${SUPABASE_URL}/storage/v1/object/employee-photos/${fileName}`,
-                    {
-                        method: "POST",
-
-                        headers: {
-                            "apikey": SUPABASE_KEY,
-                            "Authorization": `Bearer ${accessToken}`,
-                            "Content-Type": file.type
-                        },
-
-                        body: file
-                    }
-                );
-
-
-            if (!uploadResponse.ok) {
-
-                const errorText =
-                    await uploadResponse.text();
-
-
-                throw new Error(
-                    errorText
-                );
-
-            }
-
-
-            const updateResponse =
-                await fetch(
-                    `${SUPABASE_URL}/rest/v1/all_employee_headoffice?employee_no=eq.${encodeURIComponent(employeeNo)}`,
-                    {
-                        method: "PATCH",
-
-                        headers: {
-                            "apikey": SUPABASE_KEY,
-                            "Authorization": `Bearer ${accessToken}`,
-                            "Content-Type": "application/json",
-                            "Prefer": "return=minimal"
-                        },
-
-                        body: JSON.stringify({
-                            photo_path: fileName
-                        })
-                    }
-                );
-
-
-            if (!updateResponse.ok) {
-
-                throw new Error(
-                    "Photo uploaded but database update failed."
-                );
-
-            }
-
-
-            uploadStatus.textContent =
-                "Photo uploaded successfully!";
-
-
-            photoInput.value = "";
-
-
-            await loadEmployees();
-
-
-        } catch (error) {
-
-            console.error(error);
-
-
-            uploadStatus.textContent =
-                "Upload failed: " +
-                error.message;
-
-        }
-
+        photoInput.value = "";
+        await loadEmployees(source);
+        await loadEmployeeSelect();
+        employeeSelect.value = `${source}::${employeeNo}`;
+    } catch (error) {
+        console.error("Photo upload error:", error);
+        uploadStatus.textContent =
+            "Upload failed: " + (error?.message || "Unexpected error.");
+    } finally {
+        uploadPhotoButton.disabled = false;
     }
-);
-
+});
+photoInput.addEventListener("change", function() {
+    const file = photoInput.files?.[0];
+    if (file) uploadStatus.textContent = "Selected file: " + file.name;
+});
 
 /* =========================
    BACK BUTTON
@@ -2348,275 +2371,198 @@ if (designationFilter) {
 
 }
 
+
 /* =========================
-   ADD NEW EMPLOYEE
+   ADD / EDIT EMPLOYEES
 ========================= */
 
-const showAddEmployeeButton =
-    document.getElementById("showAddEmployeeButton");
+function setupEmployeeForm(config) {
+    const button = document.getElementById(config.buttonId);
+    const form = document.getElementById(config.formId);
+    const saveButton = document.getElementById(config.saveId);
+    const editButton = document.getElementById(config.editId);
+    const status = document.getElementById(config.statusId);
+    const field = suffix => document.getElementById(config.prefix + suffix);
 
-const addEmployeeForm =
-    document.getElementById("addEmployeeForm");
+    if (!button || !form || !saveButton || !editButton || !status) return;
 
-const saveNewEmployeeButton =
-    document.getElementById("saveNewEmployeeButton");
+    let editingEmployeeNo = null;
+    let lastSavedEmployee = null;
 
-const addEmployeeStatus =
-    document.getElementById("addEmployeeStatus");
+    button.addEventListener("click", function() {
+        const opening = form.style.display === "none";
+        form.style.display = opening ? "block" : "none";
+        button.textContent = opening ? config.closeLabel : config.openLabel;
+    });
 
-if (showAddEmployeeButton && addEmployeeForm) {
+    editButton.addEventListener("click", function() {
+        if (!lastSavedEmployee) return;
 
-    showAddEmployeeButton.addEventListener(
-        "click",
-        function() {
+        const employee = lastSavedEmployee;
+        const values = {
+            Name: employee.employee_name,
+            Designation: employee.designation,
+            Company: employee.company,
+            No: employee.employee_no,
+            Department: employee.department,
+            OfficialNo: employee.phone_official,
+            PersonalNo: employee.personal_no,
+            Email: employee.email_official,
+            Pabx: employee.pabx_number,
+            BloodGroup: employee.blood_group,
+            JoiningDate: employee.joining_date,
+            Birthday: employee.birthday_text,
+            Nid: employee.nid,
+            Tin: employee.tin_no,
+            BankName: employee.bank_name,
+            AccountNo: employee.account_no
+        };
 
-            if (addEmployeeForm.style.display === "none") {
+        Object.entries(values).forEach(([suffix, value]) => {
+            const input = field(suffix);
+            if (input) input.value = value == null ? "" : String(value);
+        });
 
-                addEmployeeForm.style.display = "block";
+        editingEmployeeNo = String(employee.employee_no);
+        saveButton.textContent = "Update Employee";
+        status.textContent = "Edit the details, then select Update Employee to save changes.";
+        form.style.display = "block";
+        button.textContent = config.closeLabel;
+        saveButton.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
 
-                showAddEmployeeButton.textContent =
-                    "− Close Add Employee";
+    saveButton.addEventListener("click", async function() {
+        const read = suffix => {
+            const input = field(suffix);
+            return input ? input.value.trim() : "";
+        };
 
-            } else {
+        const employeeName = read("Name");
+        const employeeNo = read("No");
 
-                addEmployeeForm.style.display = "none";
-
-                showAddEmployeeButton.textContent =
-                    "+ Add New Employee";
-            }
-
+        if (!employeeName) {
+            alert("Employee Name is required.");
+            return;
         }
-    );
-}
+        if (!employeeNo) {
+            alert("Employee ID is required.");
+            return;
+        }
+        if (!accessToken) {
+            alert("Please login first.");
+            return;
+        }
 
-if (saveNewEmployeeButton) {
+        const isEditing = editingEmployeeNo !== null;
+        const payload = {
+            employee_name: employeeName,
+            designation: read("Designation"),
+            company: read("Company"),
+            employee_no: isEditing ? editingEmployeeNo : employeeNo,
+            department: read("Department"),
+            phone_official: read("OfficialNo"),
+            personal_no: read("PersonalNo"),
+            email_official: read("Email"),
+            pabx_number: read("Pabx"),
+            blood_group: read("BloodGroup"),
+            joining_date: read("JoiningDate") || null,
+            birthday_text: read("Birthday"),
+            nid: read("Nid"),
+            tin_no: read("Tin"),
+            bank_name: read("BankName"),
+            account_no: read("AccountNo")
+        };
 
-    saveNewEmployeeButton.addEventListener(
-        "click",
-        async function() {
+        saveButton.disabled = true;
+        saveButton.textContent = isEditing ? "Updating..." : "Saving...";
+        status.textContent = isEditing ? "Updating employee..." : "Saving employee...";
 
-            const employeeName =
-                document.getElementById("newEmployeeName").value.trim();
+        try {
+            const table = config.source === "factory"
+                ? "all_employee_factory"
+                : "all_employee_headoffice";
+            const url = isEditing
+                ? `${SUPABASE_URL}/rest/v1/${table}?employee_no=eq.${encodeURIComponent(editingEmployeeNo)}`
+                : `${SUPABASE_URL}/rest/v1/${table}`;
 
-            const designation =
-                document.getElementById("newEmployeeDesignation").value.trim();
+            const response = await fetch(url, {
+                method: isEditing ? "PATCH" : "POST",
+                headers: {
+                    apikey: SUPABASE_KEY,
+                    Authorization: `Bearer ${accessToken}`,
+                    "Content-Type": "application/json",
+                    Prefer: "return=representation"
+                },
+                body: JSON.stringify(payload)
+            });
 
-            const company =
-                document.getElementById("newEmployeeCompany").value.trim();
-
-            const employeeNo =
-                document.getElementById("newEmployeeNo").value.trim();
-
-            const department =
-                document.getElementById("newEmployeeDepartment").value.trim();
-
-            const officialNo =
-                document.getElementById("newEmployeeOfficialNo").value.trim();
-
-            const personalNo =
-                document.getElementById("newEmployeePersonalNo").value.trim();
-
-            const emailOfficial =
-                document.getElementById("newEmployeeEmail").value.trim();
-
-            const pabxNumber =
-                document.getElementById("newEmployeePabx").value.trim();
-
-            const bloodGroup =
-                document.getElementById("newEmployeeBloodGroup").value.trim();
-
-            const joiningDate =
-                document.getElementById("newEmployeeJoiningDate").value;
-
-            const birthday =
-                document.getElementById("newEmployeeBirthday").value.trim();
-
-            const nid =
-                document.getElementById("newEmployeeNid").value.trim();
-
-            const tinNo =
-                document.getElementById("newEmployeeTin").value.trim();
-
-            const bankName =
-                document.getElementById("newEmployeeBankName").value.trim();
-
-            const accountNo =
-                document.getElementById("newEmployeeAccountNo").value.trim();
-
-            if (!employeeName) {
-                alert("Employee Name is required.");
-                return;
-            }
-
-            if (!employeeNo) {
-                alert("Employee ID is required.");
-                return;
-            }
-
-            if (!accessToken) {
-                alert("Please login first.");
-                return;
-            }
-
-            saveNewEmployeeButton.disabled = true;
-            saveNewEmployeeButton.textContent = "Saving...";
-
-            addEmployeeStatus.textContent =
-                "Saving employee...";
-
+            const responseText = await response.text();
+            let data = null;
             try {
-
-                const response = await fetch(
-                    `${SUPABASE_URL}/rest/v1/all_employee_headoffice`,
-                    {
-                        method: "POST",
-
-                        headers: {
-                            "apikey": SUPABASE_KEY,
-                            "Authorization":
-                                `Bearer ${accessToken}`,
-                            "Content-Type":
-                                "application/json",
-                            "Prefer":
-                                "return=representation"
-                        },
-
-                        body: JSON.stringify({
-                            employee_name: employeeName,
-                            designation: designation,
-                            company: company,
-                            employee_no: employeeNo,
-                            department: department,
-                            phone_official: officialNo,
-                            personal_no: personalNo,
-                            email_official: emailOfficial,
-                            pabx_number: pabxNumber,
-                            blood_group: bloodGroup,
-                            joining_date: joiningDate || null,
-                            birthday_text: birthday,
-                            nid: nid,
-                            tin_no: tinNo,
-                            bank_name: bankName,
-                            account_no: accountNo
-                        })
-                    }
-                );
-
-                const data = await response.json();
-
-                console.log(
-                    "Add Employee Response:",
-                    data
-                );
-
-                if (!response.ok) {
-
-                    throw new Error(
-                        data.message ||
-                        data.details ||
-                        data.hint ||
-                        data.error ||
-                        "Employee could not be added."
-                    );
-                }
-
-                addEmployeeStatus.textContent =
-                    "Employee added successfully.";
-
-                alert(
-                    "Employee added successfully!"
-                );
-
-                document.getElementById(
-                    "newEmployeeName"
-                ).value = "";
-
-                document.getElementById(
-                    "newEmployeeDesignation"
-                ).value = "";
-
-                document.getElementById(
-                    "newEmployeeCompany"
-                ).value = "";
-
-                document.getElementById(
-                    "newEmployeeNo"
-                ).value = "";
-
-                document.getElementById(
-                    "newEmployeeDepartment"
-                ).value = "";
-
-                document.getElementById(
-                    "newEmployeeOfficialNo"
-                ).value = "";
-
-                document.getElementById(
-                    "newEmployeePersonalNo"
-                ).value = "";
-
-                document.getElementById(
-                    "newEmployeeEmail"
-                ).value = "";
-
-                document.getElementById(
-                    "newEmployeePabx"
-                ).value = "";
-
-                document.getElementById(
-                    "newEmployeeBloodGroup"
-                ).value = "";
-
-                document.getElementById(
-                    "newEmployeeJoiningDate"
-                ).value = "";
-
-                document.getElementById(
-                    "newEmployeeBirthday"
-                ).value = "";
-
-                document.getElementById(
-                    "newEmployeeNid"
-                ).value = "";
-
-                document.getElementById(
-                    "newEmployeeTin"
-                ).value = "";
-
-                document.getElementById("newEmployeeBankName").value = "";
-                document.getElementById("newEmployeeAccountNo").value = "";
-
-                await loadEmployees();
-
-            } catch (error) {
-
-                console.error(
-                    "Add Employee Error:",
-                    error
-                );
-
-                addEmployeeStatus.textContent =
-                    "Error: " + error.message;
-
-                alert(
-                    "Employee could not be added:\n\n" +
-                    error.message
-                );
-
-            } finally {
-
-                saveNewEmployeeButton.disabled = false;
-
-                saveNewEmployeeButton.textContent =
-                    "Save Employee";
+                data = responseText ? JSON.parse(responseText) : null;
+            } catch (_) {
+                data = { message: responseText };
             }
 
-        }
-    );
+            if (!response.ok) {
+                throw new Error(
+                    data?.message || data?.details || data?.hint ||
+                    data?.error || responseText || "Employee could not be saved."
+                );
+            }
 
+            const saved = Array.isArray(data) ? data[0] : data;
+            lastSavedEmployee = saved && saved.employee_no
+                ? saved
+                : { ...payload };
+            editingEmployeeNo = null;
+
+            editButton.hidden = false;
+            editButton.style.display = "block";
+            status.textContent = isEditing
+                ? "Employee updated successfully in Supabase."
+                : "Employee added successfully to " + config.label + ".";
+
+            await loadEmployees(config.source);
+            await loadEmployeeSelect();
+        } catch (error) {
+            console.error(config.label + " employee save error:", error);
+            status.textContent = "Error: " + error.message;
+            alert("Employee could not be saved:\n\n" + error.message);
+        } finally {
+            saveButton.disabled = false;
+            saveButton.textContent = editingEmployeeNo
+                ? "Update Employee"
+                : "Save Employee";
+        }
+    });
 }
 
+setupEmployeeForm({
+    source: "headoffice",
+    label: "Head Office",
+    prefix: "newEmployee",
+    buttonId: "showAddEmployeeButton",
+    formId: "addEmployeeForm",
+    saveId: "saveNewEmployeeButton",
+    editId: "editLastSavedEmployeeButton",
+    statusId: "addEmployeeStatus",
+    openLabel: "+ Add New Employee",
+    closeLabel: "− Close Add Employee"
+});
 
+setupEmployeeForm({
+    source: "factory",
+    label: "Factory",
+    prefix: "factoryNewEmployee",
+    buttonId: "showAddFactoryEmployeeButton",
+    formId: "addFactoryEmployeeForm",
+    saveId: "saveNewFactoryEmployeeButton",
+    editId: "editLastSavedFactoryEmployeeButton",
+    statusId: "addFactoryEmployeeStatus",
+    openLabel: "+ Add New Employee (Factory)",
+    closeLabel: "− Close Factory Form"
+});
 
 
 

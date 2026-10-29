@@ -425,9 +425,22 @@
 
 <h2>Employee Photo Upload</h2>
 
-<label>Select Employee</label>
+<label for="employeeSearchInput">Search Employee</label>
 
-<select id="employeeSelect">
+<div style="display:flex;gap:8px;align-items:stretch;margin-bottom:10px;">
+  <input
+    type="search"
+    id="employeeSearchInput"
+    list="employeeSearchSuggestions"
+    placeholder="Type employee name or ID..."
+    autocomplete="off"
+    style="flex:1;min-width:0;"
+  >
+  <datalist id="employeeSearchSuggestions"></datalist>
+  <button type="button" id="employeeSearchButton" style="white-space:nowrap;">Search</button>
+</div>
+
+<select id="employeeSelect" hidden aria-hidden="true">
 <option value="">Select employee</option>
 </select>
 
@@ -540,7 +553,114 @@
     Save Employee
 </button>
 
+<button id="editLastSavedEmployeeButton" type="button" hidden style="display:none;width:100%;margin-top:12px;">Edit Last Saved Employee</button>
 <div id="addEmployeeStatus"
+     style="margin-top:12px;"></div>
+
+</div>
+
+</div>
+<div class="admin-card">
+
+<h2>Add New Employee (Factory)</h2>
+
+<button id="showAddFactoryEmployeeButton"
+        type="button"
+        style="display:block !important;width:100%;background:#0f766e !important;color:white !important;">
+    + Add New Employee (Factory)
+</button>
+
+<div id="addFactoryEmployeeForm"
+     style="display:none;margin-top:20px;">
+
+<div class="add-employee-row">
+<label>Employee Name</label>
+<input type="text" id="factoryNewEmployeeName" placeholder="Md. Habibur Rahman">
+</div>
+
+<div class="add-employee-row">
+<label>Designation</label>
+<input type="text" id="factoryNewEmployeeDesignation" placeholder="Asst. Manager">
+</div>
+
+<div class="add-employee-row">
+<label>Company</label>
+<input type="text" id="factoryNewEmployeeCompany" placeholder="Dekko Accessories Ltd.">
+</div>
+
+<div class="add-employee-row">
+<label>Employee ID</label>
+<input type="text" id="factoryNewEmployeeNo" placeholder="Employee ID">
+</div>
+
+<div class="add-employee-row">
+<label>Department</label>
+<input type="text" id="factoryNewEmployeeDepartment" placeholder="Department">
+</div>
+
+<div class="add-employee-row">
+<label>Official No.</label>
+<input type="text" id="factoryNewEmployeeOfficialNo" placeholder="Official No.">
+</div>
+
+<div class="add-employee-row">
+<label>Personal No.</label>
+<input type="text" id="factoryNewEmployeePersonalNo" placeholder="Personal No.">
+</div>
+
+<div class="add-employee-row">
+<label>Email Address</label>
+<input type="email" id="factoryNewEmployeeEmail" placeholder="Email Address">
+</div>
+
+<div class="add-employee-row">
+<label>PABX No.</label>
+<input type="text" id="factoryNewEmployeePabx" placeholder="PABX No.">
+</div>
+
+<div class="add-employee-row">
+<label>Blood Group</label>
+<input type="text" id="factoryNewEmployeeBloodGroup" placeholder="Blood Group">
+</div>
+
+<div class="add-employee-row">
+<label>Joining Date</label>
+<input type="date" id="factoryNewEmployeeJoiningDate">
+</div>
+
+<div class="add-employee-row">
+<label>Date of Birth</label>
+<input type="text" id="factoryNewEmployeeBirthday" placeholder="DD-MM">
+</div>
+
+<div class="add-employee-row">
+<label>NID No.</label>
+<input type="text" id="factoryNewEmployeeNid" placeholder="NID No.">
+</div>
+
+<div class="add-employee-row">
+<label>TIN No.</label>
+<input type="text" id="factoryNewEmployeeTin" placeholder="TIN No.">
+</div>
+
+<div class="add-employee-row">
+<label>Bank Name</label>
+<input type="text" id="factoryNewEmployeeBankName" placeholder="Bank Name">
+</div>
+
+<div class="add-employee-row">
+<label>Account No.</label>
+<input type="text" id="factoryNewEmployeeAccountNo" placeholder="Account No.">
+</div>
+
+<button id="saveNewFactoryEmployeeButton"
+        type="button"
+        style="display:block !important;width:100%;background:#2563eb !important;color:white !important;margin-top:20px;">
+    Save Employee
+</button>
+
+<button id="editLastSavedFactoryEmployeeButton" type="button" hidden style="display:none;width:100%;margin-top:12px;">Edit Last Saved Employee</button>
+<div id="addFactoryEmployeeStatus"
      style="margin-top:12px;"></div>
 
 </div>
