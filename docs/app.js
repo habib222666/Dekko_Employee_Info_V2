@@ -2104,19 +2104,13 @@ function renderHomeBirthdayCelebrations() {
         "July", "August", "September", "October", "November", "December"
     ];
 
-    // Current calendar week: Monday through Sunday.
+    // Upcoming 7 days: today through the next 6 days.
     const today = new Date();
-    const monday = new Date(
-        today.getFullYear(), today.getMonth(), today.getDate()
-    );
-    monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7));
-
+    today.setHours(0, 0, 0, 0);
     const weekDates = new Map();
-
     for (let i = 0; i < 7; i++) {
-        const date = new Date(
-            monday.getFullYear(), monday.getMonth(), monday.getDate() + i
-        );
+        const date = new Date(today);
+        date.setDate(today.getDate() + i);
         const key =
             String(date.getMonth() + 1).padStart(2, "0") + "-" +
             String(date.getDate()).padStart(2, "0");
