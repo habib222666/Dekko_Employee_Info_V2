@@ -4374,6 +4374,7 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
     box-shadow: 0 4px 14px rgba(15, 23, 42, 0.07);
 }
 #homeBirthdayTitle {
+    font-family: "BrittanySignature", cursive !important;
     margin: 0;
     color: #1d4ed8;
     font-size: 22px;
