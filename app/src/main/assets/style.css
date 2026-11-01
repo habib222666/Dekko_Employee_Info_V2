@@ -200,9 +200,11 @@ button:active {
 
 .profile-photo .employee-photo,
 .profile-photo .employee-photo-placeholder {
-    width: 110px;
-    height: 110px;
+    width: 120px;
+    height: 120px;
     font-size: 32px;
+    border: 1px solid #d1d5db;
+    box-sizing: border-box;
 }
 
 .profile-card h2 {
@@ -226,7 +228,7 @@ button:active {
 /* Details Card */
 
 .details-card {
-    border: 1px solid #e5e7eb;
+    border: 2px solid #e5e7eb;
     border-radius: 14px;
     overflow: hidden;
 }
@@ -236,7 +238,7 @@ button:active {
     justify-content: space-between;
     gap: 20px;
     padding: 9px 12px;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 2px solid #e5e7eb;
 }
 
 /* Light colors for employee detail rows */
@@ -2894,4 +2896,44 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
         padding: 32px 18px;
         border-radius: 18px;
     }
+}
+
+/* FIX: Restore consistent spacing between six dashboard cards */
+@media (max-width: 600px) {
+    #departmentHeader {
+        column-gap: 12px !important;
+        row-gap: 12px !important;
+        gap: 12px !important;
+    }
+
+    #departmentHeader > button {
+        margin: 0 !important;
+    }
+}
+
+/* People icons for Head Office and Factory dashboard cards */
+#departmentHeader .dashboard-label small {
+    display: block;
+    margin-top: 3px;
+    font-size: 0.78em;
+    font-weight: 600;
+    line-height: 1.1;
+}
+#allFactoryEmployeesButton {
+    background: #455a64 !important;
+    color: #ffffff !important;
+}
+#departmentHeader .employee-group-icon {
+    display: block;
+    width: 38px;
+    height: 32px;
+    flex: 0 0 auto;
+}
+
+/* Organization Chart dashboard icon */
+#departmentHeader .organogram-dashboard-icon {
+    display: block;
+    width: 38px;
+    height: 32px;
+    flex: 0 0 auto;
 }

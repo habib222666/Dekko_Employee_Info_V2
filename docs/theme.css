@@ -1,0 +1,205 @@
+
+/* DEKKO GLOBAL DARK MODE */
+html[data-theme="dark"] {
+    color-scheme: dark !important;
+    background: #000 !important;
+    color: #fff !important;
+}
+
+html[data-theme="dark"] body,
+html[data-theme="dark"] body * {
+    background-color: #000 !important;
+    color: #fff !important;
+    border-color: #444 !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+}
+
+html[data-theme="dark"] body {
+    background: #000 !important;
+}
+
+html[data-theme="dark"] body * {
+    background-image: none !important;
+}
+
+html[data-theme="dark"] input,
+html[data-theme="dark"] textarea,
+html[data-theme="dark"] select,
+html[data-theme="dark"] option {
+    background: #000 !important;
+    color: #fff !important;
+    border: 1px solid #666 !important;
+    caret-color: #fff !important;
+}
+
+html[data-theme="dark"] input::placeholder,
+html[data-theme="dark"] textarea::placeholder {
+    color: #aaa !important;
+    opacity: 1 !important;
+}
+
+html[data-theme="dark"] button,
+html[data-theme="dark"] .button,
+html[data-theme="dark"] [role="button"] {
+    background: #000 !important;
+    color: #fff !important;
+    border: 1px solid #fff !important;
+}
+
+html[data-theme="dark"] button:disabled {
+    color: #888 !important;
+    border-color: #555 !important;
+}
+
+html[data-theme="dark"] img {
+    background-color: transparent !important;
+}
+
+html[data-theme="dark"] svg {
+    color: #fff !important;
+}
+
+html[data-theme="dark"] table,
+html[data-theme="dark"] th,
+html[data-theme="dark"] td {
+    background: #000 !important;
+    color: #fff !important;
+    border-color: #555 !important;
+}
+
+/* THEME SWITCH */
+#dekkoThemeToggle {
+    position: fixed !important;
+    top: 12px !important;
+    right: 12px !important;
+    z-index: 999999 !important;
+    width: auto !important;
+    min-width: 105px !important;
+    height: 40px !important;
+    padding: 0 14px !important;
+    border: 1px solid #555 !important;
+    border-radius: 22px !important;
+    background: #fff !important;
+    color: #111 !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+}
+
+html[data-theme="dark"] #dekkoThemeToggle {
+    background: #000 !important;
+    color: #fff !important;
+    border: 1px solid #fff !important;
+}
+
+
+/* ===== DARK MODE: STRONG OVERRIDES ===== */
+html[data-theme="dark"] body button:not(#dekkoThemeToggle),
+html[data-theme="dark"] body input[type="button"],
+html[data-theme="dark"] body input[type="submit"] {
+    background: #000 !important;
+    background-color: #000 !important;
+    background-image: none !important;
+    color: #fff !important;
+    border: 1px solid #fff !important;
+}
+
+/* Department cards: override numbered pastel colors */
+html[data-theme="dark"] body button.department-card,
+html[data-theme="dark"] body button.department-card[class*="department-color-"] {
+    background: #000 !important;
+    background-color: #000 !important;
+    background-image: none !important;
+    color: #fff !important;
+    border: 1px solid #555 !important;
+    box-shadow: none !important;
+}
+
+html[data-theme="dark"] body .department-card .department-name,
+html[data-theme="dark"] body .department-card .department-count {
+    background: transparent !important;
+    color: #fff !important;
+}
+
+/* Admin and other specifically colored buttons */
+html[data-theme="dark"] body button#adminButton,
+html[data-theme="dark"] body button#allDepartmentsButton,
+html[data-theme="dark"] body button#birthdayButton,
+html[data-theme="dark"] body button#createUserButton {
+    background: #000 !important;
+    background-color: #000 !important;
+    background-image: none !important;
+    color: #fff !important;
+    border: 1px solid #fff !important;
+}
+
+/* Theme toggle */
+html[data-theme="dark"] body button#dekkoThemeToggle {
+    background: #000 !important;
+    background-color: #000 !important;
+    color: #fff !important;
+    border: 1px solid #fff !important;
+}
+
+
+/* Dark mode welcome heading and subtitle */
+html[data-theme="dark"] body h1,
+html[data-theme="dark"] body h2,
+html[data-theme="dark"] body p {
+    color: #fff !important;
+}
+
+
+/* DARK MODE: WELCOME TEXT */
+html[data-theme="dark"] body #appTitle .welcome-title,
+html[data-theme="dark"] body #appTitle .welcome-subtitle {
+    color: #fff !important;
+}
+
+/* DARK MODE: HOLIDAY CALENDAR DATES */
+html[data-theme="dark"] body .holiday-calendar-day,
+html[data-theme="dark"] body .holiday-calendar-day .day-number,
+html[data-theme="dark"] body .holiday-calendar-day .day-label,
+html[data-theme="dark"] body .holiday-calendar-weekdays,
+html[data-theme="dark"] body .holiday-calendar-weekdays span {
+    color: #fff !important;
+}
+
+html[data-theme="dark"] body .holiday-calendar-day {
+    background: #000 !important;
+    background-color: #000 !important;
+    border-color: #555 !important;
+}
+
+html[data-theme="dark"] body .holiday-calendar-day.empty {
+    background: transparent !important;
+    border-color: transparent !important;
+}
+
+
+/* DARK MODE: FORCE HOLIDAY CALENDAR DATE TEXT WHITE */
+html[data-theme="dark"] body #holidayCalendarGrid .holiday-calendar-day,
+html[data-theme="dark"] body #holidayCalendarGrid .holiday-calendar-day .day-number,
+html[data-theme="dark"] body #holidayCalendarGrid .holiday-calendar-day .day-label {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+
+/* DARK MODE: DASHBOARD HOLIDAY ICON DATE */
+html[data-theme="dark"] body #holidayCalendarButton .holiday-today-icon,
+html[data-theme="dark"] body #holidayCalendarButton .holiday-today-icon #holidayTodayDate,
+html[data-theme="dark"] body #holidayCalendarButton .holiday-today-icon #holidayTodayDate *,
+html[data-theme="dark"] body #holidayCalendarButton .holiday-today-icon .holiday-today-day,
+html[data-theme="dark"] body #holidayCalendarButton .holiday-today-icon .holiday-today-month {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+/* DARK MODE: MONTHLY CALENDAR DATE NUMBERS */
+html[data-theme="dark"] body #holidayCalendarGrid .day-number,
+html[data-theme="dark"] body #holidayCalendarGrid .day-label {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}

@@ -231,7 +231,7 @@ button:active {
 /* Details Card */
 
 .details-card {
-    border: 1px solid #e5e7eb;
+    border: 2px solid #e5e7eb;
     border-radius: 14px;
     overflow: hidden;
 }
@@ -241,7 +241,7 @@ button:active {
     justify-content: space-between;
     gap: 20px;
     padding: 9px 12px;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 2px solid #e5e7eb;
 }
 
 /* Light colors for employee detail rows */
