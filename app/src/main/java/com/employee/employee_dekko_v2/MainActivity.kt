@@ -70,6 +70,15 @@ class MainActivity : AppCompatActivity() {
                             return window.handleAndroidBack();
                         }
 
+                        const organogramPage = document.getElementById('organogramPage');
+                        if (organogramPage && organogramPage.style.display !== 'none') {
+                            const back = document.getElementById('organogramBackButton');
+                            if (back) {
+                                back.click();
+                                return true;
+                            }
+                        }
+
                         const detailsPage = document.getElementById('detailsPage');
                         const departmentPage = document.getElementById('departmentPage');
                         const listPage = document.getElementById('listPage');
