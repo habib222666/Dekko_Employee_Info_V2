@@ -835,7 +835,7 @@ async function loadPrivateEmployeeDetails(employeeNo) {
         });
 
         const privateTable =
-            currentEmployeeSource === "factory"
+            employeeDetails.dataset.source === "factory"
                 ? "all_employee_factory"
                 : "all_employee_headoffice";
 
@@ -868,6 +868,221 @@ async function loadPrivateEmployeeDetails(employeeNo) {
     }
 }
 
+
+async function setupDetailsEdit(employee, source, previousPage) {
+    const employeeNo = String(employee.employee_no || "");
+    const adminUid = "f0fcbd2e-003e-4fc2-bc2e-51b13c5f0814";
+    const table = source === "factory"
+        ? "all_employee_factory"
+        : "all_employee_headoffice";
+
+    if (!employeeNo || !accessToken) return;
+
+    const isCurrentEmployee = () =>
+        String(employeeDetails.dataset.employeeNo) === employeeNo &&
+        employeeDetails.dataset.source === source;
+
+    async function verifyAdmin() {
+        if (!accessToken) return false;
+        const response = await fetch(SUPABASE_URL + "/auth/v1/user", {
+            headers: {
+                apikey: SUPABASE_KEY,
+                Authorization: "Bearer " + accessToken
+            }
+        });
+        if (!response.ok) return false;
+        const user = await response.json();
+        return user.id === adminUid;
+    }
+
+    try {
+        if (!(await verifyAdmin()) || !isCurrentEmployee()) return;
+
+        const params = new URLSearchParams({
+            select: "employee_no,employee_name,designation,company,department,phone_official,personal_no,email_official,pabx_number,blood_group,joining_date,birthday_text,date_of_birth,nid,tin_no,bank_name,account_no",
+            employee_no: "eq." + employeeNo,
+            limit: "1"
+        });
+
+        const response = await fetch(
+            SUPABASE_URL + "/rest/v1/" + table + "?" + params.toString(),
+            {
+                headers: {
+                    apikey: SUPABASE_KEY,
+                    Authorization: "Bearer " + accessToken
+                }
+            }
+        );
+
+        if (!response.ok) throw new Error("Employee information could not be loaded.");
+
+        const rows = await response.json();
+        const record = rows[0];
+        if (!record || !isCurrentEmployee()) return;
+
+        const wrapper = document.createElement("section");
+        wrapper.className = "details-edit-wrapper";
+
+        const editButton = document.createElement("button");
+        editButton.type = "button";
+        editButton.className = "details-edit-button";
+        editButton.textContent = "✎ Edit Employee";
+
+        const form = document.createElement("form");
+        form.className = "details-edit-form";
+        form.hidden = true;
+
+        const heading = document.createElement("h3");
+        heading.textContent = "Edit Employee Information";
+        form.appendChild(heading);
+
+        const fields = [
+            ["employee_name", "Employee Name", "text"],
+            ["designation", "Designation", "text"],
+            ["company", "Company", "text"],
+            ["department", "Department", "text"],
+            ["phone_official", "Official No.", "text"],
+            ["personal_no", "Personal No.", "text"],
+            ["email_official", "Email Address", "email"],
+            ["pabx_number", "PABX No.", "text"],
+            ["blood_group", "Blood Group", "text"],
+            ["joining_date", "Joining Date", "date"],
+            ["birthday_text", "Birthday", "text"],
+            ["date_of_birth", "Date of Birth", "date"],
+            ["nid", "NID No.", "text"],
+            ["tin_no", "TIN No.", "text"],
+            ["bank_name", "Bank Name", "text"],
+            ["account_no", "Account No.", "text"]
+        ];
+
+        const inputs = {};
+
+        fields.forEach(([key, labelText, type]) => {
+            const label = document.createElement("label");
+            label.className = "details-edit-field";
+            label.textContent = labelText;
+
+            const input = document.createElement("input");
+            input.type = type;
+            input.name = key;
+            input.value = record[key] == null ? "" : String(record[key]);
+
+            if (type === "date" && input.value) {
+                input.value = input.value.slice(0, 10);
+            }
+
+            if (key === "employee_name") input.required = true;
+
+            label.appendChild(input);
+            form.appendChild(label);
+            inputs[key] = input;
+        });
+
+        const employeeId = document.createElement("p");
+        employeeId.className = "details-edit-employee-id";
+        employeeId.textContent = "Employee ID: " + employeeNo + " (cannot be changed)";
+        form.appendChild(employeeId);
+
+        const status = document.createElement("p");
+        status.className = "details-edit-status";
+        form.appendChild(status);
+
+        const actions = document.createElement("div");
+        actions.className = "details-edit-actions";
+
+        const saveButton = document.createElement("button");
+        saveButton.type = "submit";
+        saveButton.textContent = "Update Employee";
+
+        const cancelButton = document.createElement("button");
+        cancelButton.type = "button";
+        cancelButton.textContent = "Cancel";
+        cancelButton.className = "details-edit-cancel";
+
+        actions.append(saveButton, cancelButton);
+        form.appendChild(actions);
+        wrapper.append(editButton, form);
+        employeeDetails.appendChild(wrapper);
+
+        editButton.addEventListener("click", () => {
+            form.hidden = false;
+            editButton.hidden = true;
+        });
+
+        cancelButton.addEventListener("click", () => {
+            form.hidden = true;
+            editButton.hidden = false;
+            status.textContent = "";
+        });
+
+        form.addEventListener("submit", async event => {
+            event.preventDefault();
+            if (saveButton.disabled || !isCurrentEmployee()) return;
+
+            saveButton.disabled = true;
+            saveButton.textContent = "Updating...";
+            status.textContent = "Verifying administrator access...";
+
+            try {
+                if (!(await verifyAdmin())) {
+                    throw new Error("Administrator login is required.");
+                }
+                if (!isCurrentEmployee()) return;
+
+                const payload = {};
+                fields.forEach(([key, labelText, type]) => {
+                    const value = inputs[key].value.trim();
+                    payload[key] = type === "date" ? (value || null) : value;
+                });
+
+                if (!payload.employee_name) {
+                    throw new Error("Employee Name is required.");
+                }
+
+                const updateUrl =
+                    SUPABASE_URL + "/rest/v1/" + table +
+                    "?employee_no=eq." + encodeURIComponent(employeeNo);
+
+                const updateResponse = await fetch(updateUrl, {
+                    method: "PATCH",
+                    headers: {
+                        apikey: SUPABASE_KEY,
+                        Authorization: "Bearer " + accessToken,
+                        "Content-Type": "application/json",
+                        Prefer: "return=representation"
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const responseText = await updateResponse.text();
+                if (!updateResponse.ok) {
+                    throw new Error(responseText || "Supabase update failed.");
+                }
+
+                const updatedRows = responseText ? JSON.parse(responseText) : [];
+                if (!Array.isArray(updatedRows) || updatedRows.length === 0) {
+                    throw new Error("No employee record was updated. Check Supabase permissions.");
+                }
+
+                currentEmployeeSource = source;
+                showDetails(
+                    { ...employee, ...updatedRows[0] },
+                    previousPage
+                );
+            } catch (error) {
+                console.error("Employee details update error:", error);
+                status.textContent = "Update failed: " + error.message;
+                alert("Employee could not be updated:\n\n" + error.message);
+            } finally {
+                saveButton.disabled = false;
+                saveButton.textContent = "Update Employee";
+            }
+        });
+    } catch (error) {
+        console.error("Unable to prepare employee edit form:", error);
+    }
+}
+
 let detailsPreviousPage = "list";
 
 function showDetails(employee, previousPage = "list") {
@@ -891,6 +1106,7 @@ function showDetails(employee, previousPage = "list") {
         "block";
 
     employeeDetails.dataset.employeeNo = String(employee.employee_no || "");
+    employeeDetails.dataset.source = currentEmployeeSource === "factory" ? "factory" : "headoffice";
 
 
     employeeDetails.innerHTML = `
@@ -1047,6 +1263,7 @@ function showDetails(employee, previousPage = "list") {
     }
 
     loadPrivateEmployeeDetails(employee.employee_no);
+    setupDetailsEdit(employee, employeeDetails.dataset.source, previousPage);
 }
 
 

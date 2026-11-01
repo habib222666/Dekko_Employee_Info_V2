@@ -279,6 +279,88 @@ button:active {
 }
 
 
+
+
+/* Admin-only Employee Details Edit Form */
+.details-edit-wrapper {
+    margin-top: 18px;
+}
+
+.details-edit-button,
+.details-edit-actions button {
+    border: 0;
+    border-radius: 9px;
+    padding: 11px 18px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.details-edit-button,
+.details-edit-actions button[type="submit"] {
+    background: #2563eb;
+    color: #fff;
+}
+
+.details-edit-form {
+    margin-top: 14px;
+    padding: 16px;
+    border: 1px solid #dbe3ef;
+    border-radius: 12px;
+    background: #f8fafc;
+}
+
+.details-edit-form[hidden] {
+    display: none;
+}
+
+.details-edit-form h3 {
+    margin: 0 0 14px;
+    color: #1e40af;
+    font-size: 17px;
+}
+
+.details-edit-field {
+    display: block;
+    margin-bottom: 12px;
+    color: #334155;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.details-edit-field input {
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 42px;
+    margin-top: 5px;
+    padding: 9px 11px;
+    border: 1px solid #cbd5e1;
+    border-radius: 7px;
+    background: #fff;
+    color: #111827;
+    font: inherit;
+}
+
+.details-edit-employee-id,
+.details-edit-status {
+    color: #64748b;
+    font-size: 12px;
+    overflow-wrap: anywhere;
+}
+
+.details-edit-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+    margin-top: 14px;
+}
+
+.details-edit-actions .details-edit-cancel {
+    background: #e2e8f0;
+    color: #1e293b;
+}
+
 /* Admin Page */
 
 #adminPage {
