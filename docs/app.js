@@ -923,10 +923,19 @@ async function setupDetailsEdit(employee, source, previousPage) {
         const wrapper = document.createElement("section");
         wrapper.className = "details-edit-wrapper";
 
+        const toolbar = document.createElement("div");
+        toolbar.className = "details-edit-toolbar";
+
         const editButton = document.createElement("button");
         editButton.type = "button";
         editButton.className = "details-edit-button";
         editButton.textContent = "✎ Edit Employee";
+
+        const deleteButton = document.createElement("button");
+        deleteButton.type = "button";
+        deleteButton.className = "details-delete-button";
+        deleteButton.textContent = "Delete Employee";
+        toolbar.append(editButton, deleteButton);
 
         const form = document.createElement("form");
         form.className = "details-edit-form";
@@ -1001,18 +1010,90 @@ async function setupDetailsEdit(employee, source, previousPage) {
 
         actions.append(saveButton, cancelButton);
         form.appendChild(actions);
-        wrapper.append(editButton, form);
+        wrapper.append(toolbar, form);
         employeeDetails.appendChild(wrapper);
 
         editButton.addEventListener("click", () => {
             form.hidden = false;
-            editButton.hidden = true;
+            toolbar.hidden = true;
         });
 
         cancelButton.addEventListener("click", () => {
             form.hidden = true;
-            editButton.hidden = false;
+            toolbar.hidden = false;
             status.textContent = "";
+        });
+
+        deleteButton.addEventListener("click", async () => {
+            if (deleteButton.disabled || !isCurrentEmployee()) return;
+
+            const employeeName =
+                record.employee_name || employee.employee_name || "this employee";
+
+            const confirmed = window.confirm(
+                `Permanently delete ${employeeName} (ID: ${employeeNo}) from ` +
+                `${source === "factory" ? "Factory" : "Head Office"}?\n\n` +
+                "This action cannot be undone."
+            );
+
+            if (!confirmed) return;
+
+            deleteButton.disabled = true;
+            deleteButton.textContent = "Deleting...";
+
+            try {
+                if (!(await verifyAdmin())) {
+                    throw new Error("Administrator login is required.");
+                }
+
+                if (!isCurrentEmployee()) {
+                    throw new Error("Employee details changed. Please try again.");
+                }
+
+                const deleteUrl =
+                    SUPABASE_URL + "/rest/v1/" + table +
+                    "?employee_no=eq." + encodeURIComponent(employeeNo);
+
+                const deleteResponse = await fetch(deleteUrl, {
+                    method: "DELETE",
+                    headers: {
+                        apikey: SUPABASE_KEY,
+                        Authorization: "Bearer " + accessToken,
+                        Prefer: "return=representation"
+                    }
+                });
+
+                const responseText = await deleteResponse.text();
+
+                if (!deleteResponse.ok) {
+                    throw new Error(responseText || "Supabase delete failed.");
+                }
+
+                const deletedRows = responseText
+                    ? JSON.parse(responseText)
+                    : [];
+
+                if (!Array.isArray(deletedRows) || deletedRows.length === 0) {
+                    throw new Error(
+                        "No employee record was deleted. Check Supabase permissions."
+                    );
+                }
+
+                employees = employees.filter(
+                    item => String(item.employee_no) !== employeeNo
+                );
+
+                currentEmployeeSource = source;
+                await loadEmployees(source);
+                backButton.click();
+
+            } catch (error) {
+                console.error("Employee delete error:", error);
+                alert("Employee could not be deleted:\n\n" + error.message);
+            } finally {
+                deleteButton.disabled = false;
+                deleteButton.textContent = "Delete Employee";
+            }
         });
 
         form.addEventListener("submit", async event => {
