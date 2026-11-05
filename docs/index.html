@@ -456,6 +456,38 @@
 
 </div>
 
+<div class="admin-card" id="editExistingEmployeeCard">
+<h2>Edit Existing Employee</h2>
+
+<label for="editExistingEmployeeSource">Employee Category</label>
+<select id="editExistingEmployeeSource">
+<option value="headoffice">Head Office</option>
+<option value="factory">Factory</option>
+</select>
+
+<label for="editExistingEmployeeInput">Search Employee by Name or ID</label>
+<div class="edit-existing-search">
+<input type="search" id="editExistingEmployeeInput"
+       placeholder="Enter employee name or ID..."
+       autocomplete="off">
+<button type="button" id="editExistingEmployeeSearch">Search</button>
+</div>
+
+<label for="editExistingEmployeeResults">Search Results</label>
+<select id="editExistingEmployeeResults" size="5" hidden>
+<option value="">No results</option>
+</select>
+
+<button type="button" id="editExistingEmployeeOpen" disabled>
+View Employee Details &amp; Edit
+</button>
+
+<div id="editExistingEmployeeStatus" role="status"
+     aria-live="polite"></div>
+</div>
+
+</div>
+
 <div class="admin-card">
 
 <h2>Add New Employee (Head Office)</h2>

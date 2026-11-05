@@ -936,6 +936,7 @@ async function setupDetailsEdit(employee, source, previousPage) {
         deleteButton.className = "details-delete-button";
         deleteButton.textContent = "Delete Employee";
         toolbar.append(editButton, deleteButton);
+        if (previousPage === "adminEdit") deleteButton.hidden = true;
 
         const form = document.createElement("form");
         form.className = "details-edit-form";
@@ -1145,6 +1146,7 @@ async function setupDetailsEdit(employee, source, previousPage) {
                     throw new Error("No employee record was updated. Check Supabase permissions.");
                 }
 
+                if (previousPage === "adminEdit") editExistingEmployeeCache[source] = null;
                 currentEmployeeSource = source;
                 showDetails(
                     { ...employee, ...updatedRows[0] },
@@ -1479,6 +1481,158 @@ async function loadEmployeeSelect() {
 /* =========================
    ADMIN BUTTON
 ========================= */
+
+
+/* =========================
+   EDIT EXISTING EMPLOYEE
+========================= */
+
+const editExistingEmployeeSource =
+    document.getElementById("editExistingEmployeeSource");
+const editExistingEmployeeInput =
+    document.getElementById("editExistingEmployeeInput");
+const editExistingEmployeeSearch =
+    document.getElementById("editExistingEmployeeSearch");
+const editExistingEmployeeResults =
+    document.getElementById("editExistingEmployeeResults");
+const editExistingEmployeeOpen =
+    document.getElementById("editExistingEmployeeOpen");
+const editExistingEmployeeStatus =
+    document.getElementById("editExistingEmployeeStatus");
+
+let editExistingEmployeeCache = {
+    headoffice: null,
+    factory: null
+};
+
+let editExistingEmployeeMatches = [];
+
+function resetExistingEmployeeSearch() {
+    editExistingEmployeeMatches = [];
+    editExistingEmployeeResults.replaceChildren(
+        new Option("Select an employee", "")
+    );
+    editExistingEmployeeResults.hidden = true;
+    editExistingEmployeeOpen.disabled = true;
+    editExistingEmployeeStatus.textContent = "";
+}
+
+editExistingEmployeeSource?.addEventListener("change", resetExistingEmployeeSearch);
+
+async function searchExistingEmployee() {
+    const source = editExistingEmployeeSource.value;
+    const query = editExistingEmployeeInput.value.trim().toLocaleLowerCase();
+
+    if (!query) {
+        editExistingEmployeeStatus.textContent =
+            "Please enter an employee name or ID.";
+        editExistingEmployeeInput.focus();
+        return;
+    }
+
+    editExistingEmployeeSearch.disabled = true;
+    editExistingEmployeeStatus.textContent = "Searching employees...";
+    editExistingEmployeeOpen.disabled = true;
+
+    try {
+        if (!editExistingEmployeeCache[source]) {
+            const viewName = source === "factory"
+                ? "employee_directory_factory_public"
+                : "employee_directory_public";
+
+            const response = await fetch(
+                `${SUPABASE_URL}/rest/v1/${viewName}?select=*`,
+                {
+                    headers: {
+                        apikey: SUPABASE_KEY,
+                        Authorization: `Bearer ${SUPABASE_KEY}`
+                    }
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error(`Employee list could not load (${response.status}).`);
+            }
+
+            editExistingEmployeeCache[source] = await response.json();
+        }
+
+        const employeesForSource = editExistingEmployeeCache[source];
+
+        editExistingEmployeeMatches = employeesForSource.filter(employee => {
+            const name = String(employee.employee_name || "").toLocaleLowerCase();
+            const id = String(employee.employee_no || "").toLocaleLowerCase();
+            return name.includes(query) || id.includes(query);
+        });
+
+        editExistingEmployeeResults.replaceChildren(
+            new Option("Select matching employee", "")
+        );
+
+        editExistingEmployeeMatches.forEach((employee, index) => {
+            const label =
+                `${employee.employee_no || "-"} - ${employee.employee_name || "-"}` +
+                ` (${employee.designation || "-"})`;
+
+            editExistingEmployeeResults.appendChild(
+                new Option(label, String(index))
+            );
+        });
+
+        editExistingEmployeeResults.hidden =
+            editExistingEmployeeMatches.length === 0;
+
+        editExistingEmployeeOpen.disabled = true;
+
+        editExistingEmployeeStatus.textContent =
+            editExistingEmployeeMatches.length
+                ? `${editExistingEmployeeMatches.length} matching employee(s) found. Select an employee.`
+                : "No matching employee found. Try another name or ID.";
+
+    } catch (error) {
+        console.error("Edit employee search error:", error);
+        editExistingEmployeeStatus.textContent =
+            "Search failed: " + error.message;
+    } finally {
+        editExistingEmployeeSearch.disabled = false;
+    }
+}
+
+editExistingEmployeeSearch?.addEventListener(
+    "click",
+    searchExistingEmployee
+);
+
+editExistingEmployeeInput?.addEventListener("keydown", event => {
+    if (event.key === "Enter") {
+        event.preventDefault();
+        searchExistingEmployee();
+    }
+});
+
+editExistingEmployeeResults?.addEventListener("change", () => {
+    editExistingEmployeeOpen.disabled =
+        editExistingEmployeeResults.value === "";
+});
+
+editExistingEmployeeOpen?.addEventListener("click", () => {
+    const index = Number(editExistingEmployeeResults.value);
+    const employee = editExistingEmployeeMatches[index];
+
+    if (!employee || !accessToken) {
+        editExistingEmployeeStatus.textContent =
+            "Administrator login is required.";
+        return;
+    }
+
+    const source = editExistingEmployeeSource.value;
+
+    currentEmployeeSource = source;
+
+    adminPage.style.display = "none";
+    showDetails(employee, "adminEdit");
+});
+
 
 if (adminButton) {
     adminButton.addEventListener(
@@ -2023,7 +2177,13 @@ backButton.addEventListener(
         detailsPage.style.display =
             "none";
 
-        if (detailsPreviousPage === "favorite") {
+        if (detailsPreviousPage === "adminEdit") {
+            listPage.style.display = "none";
+            allEmployeesPage.style.display = "none";
+            departmentPage.style.display = "none";
+            favoritePage.style.display = "none";
+            adminPage.style.display = "block";
+        } else if (detailsPreviousPage === "favorite") {
 
             listPage.style.display =
                 "none";

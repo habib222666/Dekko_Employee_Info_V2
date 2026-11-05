@@ -6128,3 +6128,63 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
     font-size: 10px !important;
     line-height: 1.3 !important;
 }
+
+
+/* Edit Existing Employee Admin Card */
+#editExistingEmployeeCard .edit-existing-search {
+    display: flex;
+    gap: 8px;
+    align-items: stretch;
+}
+
+#editExistingEmployeeCard input,
+#editExistingEmployeeCard select {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    min-height: 43px;
+    padding: 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #fff;
+    color: #111827;
+    font: inherit;
+}
+
+#editExistingEmployeeCard .edit-existing-search input {
+    flex: 1;
+}
+
+#editExistingEmployeeCard button {
+    min-height: 43px;
+    padding: 10px 15px;
+    border: 0;
+    border-radius: 8px;
+    background: #2563eb;
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+#editExistingEmployeeCard #editExistingEmployeeOpen {
+    width: 100%;
+    margin-top: 12px;
+}
+
+#editExistingEmployeeCard button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+#editExistingEmployeeStatus {
+    margin-top: 12px;
+    color: #64748b;
+    font-size: 13px;
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 420px) {
+    #editExistingEmployeeCard .edit-existing-search {
+        flex-direction: column;
+    }
+}
