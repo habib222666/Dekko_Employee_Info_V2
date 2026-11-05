@@ -173,88 +173,99 @@ if (hashParams.get("access_token")) {
    DESIGNATION NORMALIZATION
 ========================= */
 
-const DESIGNATION_ORDER = [
-    "Executive Director (ED)",
-    "Chief Financial Officer (CFO)",
-    "Chief Marketing Officer (CMO)",
-    "Head of Operation",
-    "Head of Planning",
-    "Head of Supply Chain Management",
-    "Divisional Head",
-    "Deputy General Manager (DGM)",
-    "Asst. General Manager (AGM)",
-    "Sr. Manager",
-    "Manager",
-    "In Charge",
-    "Deputy Manager",
-    "Asst. Manager",
-    "CS Team Lead",
-    "Team Lead",
-    "Sr. Executive",
-    "Sr. Designer",
-    "Executive",
-    "Designer",
-    "Graphics Designer",
-    "3D Designer",
-    "Fashion Designer",
-    "Interior Designer",
-    "Jr. Executive",
-    "Jr. Merchandiser",
-    "Data Management Officer (DMO)",
-    "Pattern Master",
-    "Messenger",
-    "Office Assistant",
-    "Driver",
-    "Delivery Man",
-    "Intern"
-];
+const DESIGNATION_RANK = new Map([
+    ["Executive Director (ED)", 1],
+    ["Chief Financial Officer (CFO)", 2],
+    ["Chief Marketing Officer (CMO)", 2],
+    ["Head of Operation", 2],
+    ["Head of Planning", 3],
+    ["Head of Supply Chain Management", 3],
+    ["Divisional Head", 3],
+    ["Deputy General Manager (DGM)", 4],
+    ["Asst. General Manager (AGM)", 5],
+    ["Sr. Manager", 6],
+    ["Manager", 7],
+    ["In Charge", 7],
+    ["Deputy Manager", 8],
+    ["Asst. Manager", 9],
+    ["CS Team Lead", 9],
+    ["Team Lead", 9],
+    ["Regional Team Lead", 9],
+    ["Sr. Executive", 10],
+    ["Supply Chain Analyst", 10],
+    ["Sr. Designer", 10],
+    ["Executive", 11],
+    ["Designer", 11],
+    ["Graphics Designer", 11],
+    ["3D Designer", 11],
+    ["Fashion Designer", 11],
+    ["Interior Designer", 11],
+    ["Jr. Executive", 12],
+    ["Jr. Merchandiser", 12],
+    ["Data Management Officer (DMO)", 13],
+    ["Pattern Master", 13],
+    ["Messenger", 14],
+    ["Office Assistant", 14],
+    ["Driver", 15],
+    ["Delivery Man", 16],
+    ["Intern", 17]
+]);
 
-const DESIGNATION_RANK = new Map(
-    DESIGNATION_ORDER.map(
-        (designation, index) => [designation, index]
-    )
-);
+const DESIGNATION_ORDER = [...DESIGNATION_RANK.keys()];
+
+const DESIGNATION_ALIASES = new Map([
+    ["executive director", "Executive Director (ED)"],
+    ["ed", "Executive Director (ED)"],
+    ["chief financial officer", "Chief Financial Officer (CFO)"],
+    ["cfo", "Chief Financial Officer (CFO)"],
+    ["chief marketing officer", "Chief Marketing Officer (CMO)"],
+    ["cmo", "Chief Marketing Officer (CMO)"],
+    ["head of operation", "Head of Operation"],
+    ["head of planning", "Head of Planning"],
+    ["head of supply chain management", "Head of Supply Chain Management"],
+    ["divisional head", "Divisional Head"],
+    ["deputy general manager", "Deputy General Manager (DGM)"],
+    ["regional sales head (dgm)", "Deputy General Manager (DGM)"],
+    ["dgm", "Deputy General Manager (DGM)"],
+    ["asst. general manager", "Asst. General Manager (AGM)"],
+    ["agm", "Asst. General Manager (AGM)"],
+    ["sr. manager", "Sr. Manager"],
+    ["manager", "Manager"],
+    ["in charge", "In Charge"],
+    ["deputy manager", "Deputy Manager"],
+    ["asst. manager", "Asst. Manager"],
+    ["cs team lead", "CS Team Lead"],
+    ["team lead", "Team Lead"],
+    ["regional team lead", "Regional Team Lead"],
+    ["sr. executive", "Sr. Executive"],
+    ["supply chain analyst", "Supply Chain Analyst"],
+    ["sr. designer", "Sr. Designer"],
+    ["executive", "Executive"],
+    ["designer", "Designer"],
+    ["graphics designer", "Graphics Designer"],
+    ["3d designer", "3D Designer"],
+    ["fashion designer", "Fashion Designer"],
+    ["interior designer", "Interior Designer"],
+    ["jr. executive", "Jr. Executive"],
+    ["jr. merchandiser", "Jr. Merchandiser"],
+    ["data management officer", "Data Management Officer (DMO)"],
+    ["dmo", "Data Management Officer (DMO)"],
+    ["pattern master", "Pattern Master"],
+    ["messenger", "Messenger"],
+    ["office assistant", "Office Assistant"],
+    ["driver", "Driver"],
+    ["delivery man", "Delivery Man"],
+    ["intern", "Intern"]
+]);
 
 function normalizeDesignation(designation) {
+    const value = String(designation || "")
+        .trim()
+        .replace(/\s+/g, " ");
 
-    const value = String(designation || "").trim();
-
-    const groups = {
-        "Executive Director (ED)": [
-            "Executive Director",
-            "ED"
-        ],
-        "Chief Financial Officer (CFO)": [
-            "Chief Financial Officer",
-            "CFO"
-        ],
-        "Chief Marketing Officer (CMO)": [
-            "Chief Marketing Officer",
-            "CMO"
-        ],
-        "Deputy General Manager (DGM)": [
-            "Deputy General Manager",
-            "DGM"
-        ],
-        "Asst. General Manager (AGM)": [
-            "Asst. General Manager",
-            "AGM"
-        ],
-        "Data Management Officer (DMO)": [
-            "Data Management Officer",
-            "DMO"
-        ]
-    };
-
-    for (const [groupName, values] of Object.entries(groups)) {
-        if (values.some(item =>
-            item.toLowerCase() === value.toLowerCase()
-        )) {
-            return groupName;
-        }
-    }
-
-    return value || "Other";
+    return DESIGNATION_ALIASES.get(value.toLowerCase())
+        || value
+        || "Other";
 }
 
 function populateDepartmentFilter() {
@@ -1354,6 +1365,7 @@ function showDetails(employee, previousPage = "list") {
    EMPLOYEE SELECT
 ========================= */
 
+
 const employeeSearchInput = document.getElementById("employeeSearchInput");
 const employeeSearchButton = document.getElementById("employeeSearchButton");
 const employeeSearchSuggestions = document.getElementById("employeeSearchSuggestions");
@@ -1840,6 +1852,34 @@ forgotPasswordButton.addEventListener(
 );
 
 
+const EMPLOYEE_ADMIN_UID = "f0fcbd2e-003e-4fc2-bc2e-51b13c5f0814";
+
+async function verifyEmployeeAdminAccess() {
+    if (!accessToken) return false;
+
+    try {
+        const response = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+            headers: {
+                apikey: SUPABASE_KEY,
+                Authorization: "Bearer " + accessToken
+            }
+        });
+
+        if (!response.ok) return false;
+
+        const user = await response.json();
+        return user.id === EMPLOYEE_ADMIN_UID;
+    } catch (error) {
+        console.error("Admin verification failed:", error);
+        return false;
+    }
+}
+
+function setEmployeeAdminPanelVisible(allowed) {
+    const panel = document.getElementById("employeeAddAdminOnly");
+    if (panel) panel.style.display = allowed ? "block" : "none";
+}
+
 /* =========================
    RESTORE SAVED ADMIN SESSION
 ========================= */
@@ -1885,8 +1925,17 @@ async function restoreSavedAdminSession() {
             return;
         }
 
-        accessToken =
-            session.access_token;
+        const sessionUser = await response.json();
+
+        if (sessionUser.id !== EMPLOYEE_ADMIN_UID) {
+            localStorage.removeItem("dekko_admin_session");
+            accessToken = null;
+            setEmployeeAdminPanelVisible(false);
+            return;
+        }
+
+        accessToken = session.access_token;
+        setEmployeeAdminPanelVisible(true);
 
         loginPage.style.display =
             "none";
@@ -1993,8 +2042,16 @@ loginButton.addEventListener(
             }
 
 
-            accessToken =
-                data.access_token;
+            accessToken = data.access_token;
+
+            if (!(await verifyEmployeeAdminAccess())) {
+                accessToken = null;
+                localStorage.removeItem("dekko_admin_session");
+                setEmployeeAdminPanelVisible(false);
+                throw new Error("This account is not authorized. Only the designated Admin can access this panel.");
+            }
+
+            setEmployeeAdminPanelVisible(true);
 
             if (rememberLogin && rememberLogin.checked) {
 
@@ -2885,13 +2942,25 @@ function setupEmployeeForm(config) {
     let editingEmployeeNo = null;
     let lastSavedEmployee = null;
 
-    button.addEventListener("click", function() {
+    button.addEventListener("click", async function() {
+        if (!(await verifyEmployeeAdminAccess())) {
+            setEmployeeAdminPanelVisible(false);
+            alert("Only the designated Admin can add or edit employees.");
+            return;
+        }
+
+        setEmployeeAdminPanelVisible(true);
         const opening = form.style.display === "none";
         form.style.display = opening ? "block" : "none";
         button.textContent = opening ? config.closeLabel : config.openLabel;
     });
 
-    editButton.addEventListener("click", function() {
+    editButton.addEventListener("click", async function() {
+        if (!(await verifyEmployeeAdminAccess())) {
+            setEmployeeAdminPanelVisible(false);
+            alert("Only the designated Admin can add or edit employees.");
+            return;
+        }
         if (!lastSavedEmployee) return;
 
         const employee = lastSavedEmployee;
@@ -2928,6 +2997,12 @@ function setupEmployeeForm(config) {
     });
 
     saveButton.addEventListener("click", async function() {
+        if (!(await verifyEmployeeAdminAccess())) {
+            setEmployeeAdminPanelVisible(false);
+            alert("Only the designated Admin can add or edit employees.");
+            return;
+        }
+
         const read = suffix => {
             const input = field(suffix);
             return input ? input.value.trim() : "";
