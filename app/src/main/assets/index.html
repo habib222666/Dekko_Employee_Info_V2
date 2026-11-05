@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LIVE TEST - Employee App</title>
-<link rel="stylesheet" href="style.css?v=20261014salarygrid2">
-<link rel="stylesheet" href="salary-layout.css?v=20261014salarygrid2">
+<link rel="stylesheet" href="style.css?v=20261028-cmo-card-size">
+<link rel="stylesheet" href="salary-layout.css?v=20261015removeattendance1">
 <link rel="stylesheet" href="theme.css?v=20261101theme5">
 </head>
 
@@ -44,6 +44,7 @@
 <rect x="29" y="24" width="16" height="12" rx="2" fill="currentColor" stroke="none"/>
 </g>
 </svg></span><span class="dashboard-label">Organogram</span></button>
+        <button id="holidayCalendarButton"><span class="dashboard-icon holiday-today-icon"><span id="holidayTodayDate"></span></span><span class="dashboard-label">Holiday Calendar</span></button>
         <button id="allFactoryEmployeesButton" type="button"><span class="dashboard-icon"><svg class="employee-group-icon" viewBox="0 0 48 36" aria-label="5 people" role="img">
 <circle cx="24" cy="7" r="5" fill="currentColor"/>
 <circle cx="15" cy="11" r="3.8" fill="currentColor"/>
@@ -57,37 +58,233 @@
 <path d="M48 30v-3c0-3-2-5-5-5-2 0-3 1-4 2 1 2 2 4 2 6z" fill="currentColor"/>
 </svg></span><span class="dashboard-label">All Employees<br><small>(Factory)</small></span></button>
     </div>
+    <section id="homeBirthdaySection" aria-labelledby="homeBirthdayTitle">
+        <h2 id="homeBirthdayTitle">🎂 Birthday Celebrations</h2>
+        <h3 class="home-birthday-subtitle">Upcoming Next 7 Days</h3>
+        <div id="homeBirthdayList" class="home-birthday-list">
+            <p class="home-birthday-empty">Loading birthdays...</p>
+        </div>
+    </section>
+
 </div>
 
 <div id="organogramPage" class="organogram-page" style="display:none;">
     <header class="organogram-header">
-        <button id="organogramBackButton" class="organogram-back">
+        <button id="organogramBackButton" class="organogram-back" type="button">
             <span aria-hidden="true">←</span> Back
         </button>
         <div class="organogram-heading">
-            <div class="organogram-icon" aria-hidden="true">🌳</div>
+            <div class="organogram-icon" aria-hidden="true">
+    <svg class="organogram-page-icon" viewBox="0 0 48 40" aria-label="Organization Chart" role="img">
+        <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M24 12v7M11 19h26M11 19v5M24 19v5M37 19v5"/>
+            <rect x="17" y="2" width="14" height="10" rx="2" fill="currentColor" stroke="none"/>
+            <rect x="3" y="24" width="16" height="12" rx="2" fill="currentColor" stroke="none"/>
+            <rect x="16" y="24" width="16" height="12" rx="2" fill="currentColor" stroke="none"/>
+            <rect x="29" y="24" width="16" height="12" rx="2" fill="currentColor" stroke="none"/>
+        </g>
+    </svg>
+</div>
             <div>
                 <h1>Organogram</h1>
-                <p>Organization Structure</p>
+                <p>Dekko Accessories Ltd. · Head Office</p>
             </div>
         </div>
     </header>
 
     <main class="organogram-content">
         <section class="organogram-card">
-            <div class="organogram-card-icon" aria-hidden="true">🏢</div>
-            <h2>Organogram</h2>
-            <p>
-                Explore the organizational structure of
-                Dekko Accessories Ltd.
-            </p>
-            <div class="organogram-empty-state">
-                Organization chart will appear here.
+            <div class="organogram-toolbar">
+                <div>
+                    <h2>Organization Structure</h2>
+                    <p>Chairman → Executive Director → Department Heads → Employees</p>
+                </div>
+                <div class="organogram-toolbar-actions">
+                    <button id="organogramEditButton" type="button"
+                        class="organogram-action" style="display:none;">Edit Organogram</button>
+                    <div id="organogramCreatePanel" class="organogram-create-panel"
+                        style="display:none;" aria-label="Create a new organogram">
+                        <button id="organogramCreateButton" type="button"
+                            class="organogram-action">Create New Organogram</button>
+                        <button id="organogramRenameButton" type="button"
+                            class="organogram-action">Rename Organogram</button>
+                        <span id="organogramCreateStatus" role="status"
+                            aria-live="polite"></span>
+                    </div>
+                </div>
             </div>
+
+            <div class="organogram-selector">
+                <label for="organogramSelect">Choose Organogram</label>
+                <select id="organogramSelect" aria-label="Choose Organogram">
+                    <option value="Organogram-Marketing">Organogram-Marketing</option>
+                    <option value="Organogram-Admin">Organogram-Admin</option>
+                    <option value="Organogram-CRD">Organogram-CRD</option>
+                    <option value="Organogram-Commercial">Organogram-Commercial</option>
+                </select>
+            </div>
+            <div id="organogramStatus" class="organogram-status" role="status"
+                aria-live="polite">Loading organization structure...</div>
+
+            <section id="organogramAdminPanel" class="organogram-admin-panel"
+                style="display:none;" aria-label="Edit organization structure">
+                <h3 id="organogramFormTitle">Manage Organization Structure</h3>
+
+                <form id="organogramForm" class="organogram-form">
+                    <input id="organogramRecordId" type="hidden">
+
+                    <label for="organogramNodeType">Position type</label>
+                    <select id="organogramNodeType" required>
+                        <option value="chairman">Chairman</option>
+                        <option value="executive_director">Executive Director</option>
+                        <option value="chief_marketing_officer">Chief Marketing Officer</option>
+                        <option value="department_head">Department Head</option>
+                    </select>
+
+                    <label for="organogramEmployeeSelect">Select employee (optional for top positions)</label>
+                    <input id="organogramEmployeeSearch" type="text"
+                        list="organogramEmployeeSuggestions" autocomplete="off"
+                        placeholder="Type part of an employee name...">
+                    <datalist id="organogramEmployeeSuggestions"></datalist>
+                    <select id="organogramEmployeeSelect" style="display:none;"
+                        aria-hidden="true" tabindex="-1">
+                        <option value="">Choose an employee</option>
+                    </select>
+
+                    <label for="organogramName">Name</label>
+                    <input id="organogramName" type="text" maxlength="150"
+                        placeholder="Leave blank for Chairman">
+
+                    <label for="organogramDesignation">Designation</label>
+                    <input id="organogramDesignation" type="text" maxlength="150"
+                        placeholder="Enter designation">
+
+                    <div id="organogramDepartmentField">
+                        <label for="organogramDepartment">Department</label>
+                        <select id="organogramDepartment">
+                            <option value="">Choose department</option>
+                        </select>
+                    </div>
+
+                    <label for="organogramParent">Reports to</label>
+                    <select id="organogramParent">
+                        <option value="">Top level</option>
+                    </select>
+
+                    <label for="organogramSortOrder">Display order</label>
+                    <input id="organogramSortOrder" type="number" value="0" min="0" step="1">
+
+                    <div class="organogram-form-actions">
+                        <button id="organogramSaveButton" class="organogram-action"
+                            type="submit">Save Position</button>
+                        <button id="organogramCancelButton" class="organogram-cancel"
+                            type="button">Cancel</button>
+                    </div>
+                    <p id="organogramAdminStatus" role="status" aria-live="polite"></p>
+                </form>
+
+                <h3>Saved Positions</h3>
+                <div id="organogramAdminList"></div>
+            </section>
+
+            <div id="organogramTree" class="organogram-tree"
+                aria-label="Head Office organization chart"></div>
         </section>
     </main>
 </div>
 
+<div id="holidayCalendarPage" class="holiday-calendar-page" style="display:none;">
+    <header class="holiday-calendar-header">
+        <button id="holidayCalendarBackButton" class="holiday-calendar-back">
+            <span aria-hidden="true">←</span> Back
+        </button>
+        <div class="holiday-calendar-heading">
+            <div class="holiday-calendar-icon holiday-page-today-icon" aria-label="Today"><span id="holidayPageTodayDay"></span><span id="holidayPageTodayMonth"></span></div>
+            <div>
+                <h1>Holiday Calendar</h1>
+                <p>Government &amp; Office Holidays</p>
+            </div>
+        </div>
+    </header>
+    <main class="holiday-calendar-content">
+        <section class="holiday-calendar-card">
+            <div class="holiday-calendar-controls">
+                <label for="holidayCalendarYear">Calendar year</label>
+                <select id="holidayCalendarYear" aria-label="Calendar year"></select>
+            </div>
+
+            <section class="holiday-calendar-month-box" aria-label="Choose a month">
+  <h2 class="holiday-calendar-box-title">Select Month</h2>
+  <div id="holidayCalendarMonths" class="holiday-calendar-months"
+                 aria-label="Select month"></div>
+</section>
+
+            <section class="holiday-calendar-month-box holiday-calendar-date-box" aria-label="Monthly calendar">
+<div id="holidayCalendarStatus" role="status" aria-live="polite">
+                Loading holiday calendar...
+            </div>
+
+
+            <div class="holiday-calendar-weekdays" aria-hidden="true">
+                <span>Sun</span><span>Mon</span><span>Tue</span>
+                <span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+            </div>
+
+            <div id="holidayCalendarGrid" class="holiday-calendar-grid"
+                 aria-label="Monthly calendar"></div>
+
+            <div class="holiday-calendar-legend">
+                <span><i class="holiday-dot government"></i> Government Holiday</span>
+                <span><i class="holiday-dot office"></i> Office Holiday</span>
+                <span><i class="holiday-dot weekly"></i> Weekly Holiday</span>
+                <span><i class="holiday-dot special-working"></i> Special Working Day</span>
+            </div>
+</section>
+
+            <div id="holidayCalendarSummary" class="holiday-calendar-summary"></div>
+
+            <section class="holiday-calendar-events">
+                <h2 id="holidayCalendarMonthTitle">Monthly Holidays</h2>
+                <div id="holidayCalendarEventList"></div>
+            </section>
+
+            <section id="holidayCalendarAdmin" class="holiday-calendar-admin"
+                     style="display:none;">
+                <h2 id="holidayCalendarFormTitle">Manage Holiday</h2>
+                <form id="holidayCalendarForm">
+                    <input type="hidden" id="holidayCalendarRecordId">
+
+                    <label for="holidayCalendarEventDate">Date</label>
+                    <input type="date" id="holidayCalendarEventDate" required>
+
+                    <label for="holidayCalendarEventType">Holiday type</label>
+                    <select id="holidayCalendarEventType" required>
+                        <option value="Government">Government Holiday</option>
+                        <option value="Office">Office Holiday</option>
+                        <option value="Weekly">Weekly Holiday</option>
+                        <option value="Special Working Day">Special Working Day</option>
+                    </select>
+
+                    <label for="holidayCalendarEventTitle">Title</label>
+                    <input type="text" id="holidayCalendarEventTitle"
+                           maxlength="150" placeholder="Holiday title" required>
+
+                    <label for="holidayCalendarEventDescription">Description</label>
+                    <textarea id="holidayCalendarEventDescription"
+                              maxlength="1000" rows="3"
+                              placeholder="Optional description"></textarea>
+
+                    <div class="holiday-calendar-admin-actions">
+                        <button type="submit" id="holidayCalendarSaveButton">Save Holiday</button>
+                        <button type="button" id="holidayCalendarCancelEdit"
+                                style="display:none;">Cancel Edit</button>
+                    </div>
+                    <p id="holidayCalendarAdminStatus" role="status"></p>
+                </form>
+            </section>
+        </section>
+    </main>
+</div>
 <img id="homeBottomLogo" src="assets/icons/Dekko-bottom-uddate.png" alt="Dekko logo">
 </div>
 
@@ -105,6 +302,26 @@
             <option value="">All Designations</option>
         </select>
     </div>
+    <div id="departmentFilterBox">
+        <select id="departmentFilter">
+            <option value="">All Departments</option>
+        </select>
+    </div>
+
+    <div id="bloodGroupFilterBox">
+        <select id="bloodGroupFilter">
+            <option value="">All Blood Groups</option>
+            <option value="A+">A+</option>
+            <option value="A-">A-</option>
+            <option value="B+">B+</option>
+            <option value="B-">B-</option>
+            <option value="AB+">AB+</option>
+            <option value="AB-">AB-</option>
+            <option value="O+">O+</option>
+            <option value="O-">O-</option>
+        </select>
+    </div>
+
 
     <div id="resultCount">Loading...</div>
 
@@ -210,9 +427,22 @@
 
 <h2>Employee Photo Upload</h2>
 
-<label>Select Employee</label>
+<label for="employeeSearchInput">Search Employee</label>
 
-<select id="employeeSelect">
+<div class="employee-photo-search">
+  <div class="employee-photo-search-row">
+    <input
+      type="search"
+      id="employeeSearchInput"
+      placeholder="Type employee name or ID..."
+      autocomplete="off"
+    >
+    <button type="button" id="employeeSearchButton">Search</button>
+  </div>
+  <div id="employeeSearchSuggestions" class="employee-search-suggestions" hidden></div>
+</div>
+
+<select id="employeeSelect" hidden aria-hidden="true">
 <option value="">Select employee</option>
 </select>
 
@@ -226,14 +456,49 @@
 
 </div>
 
+<div class="admin-card" id="editExistingEmployeeCard">
+<h2>Edit Existing Employee</h2>
+
+<label for="editExistingEmployeeSource">Employee Category</label>
+<select id="editExistingEmployeeSource">
+<option value="headoffice">Head Office</option>
+<option value="factory">Factory</option>
+</select>
+
+<label for="editExistingEmployeeInput">Search Employee by Name or ID</label>
+<div class="edit-existing-search">
+  <input
+    type="search"
+    id="editExistingEmployeeInput"
+    placeholder="Type employee name or ID..."
+    autocomplete="off"
+  >
+  <button type="button" id="editExistingEmployeeSearch">Search</button>
+  <div
+    id="editExistingEmployeeSuggestions"
+    class="edit-existing-suggestions"
+    hidden
+  ></div>
+</div>
+
+<button type="button" id="editExistingEmployeeOpen" disabled>
+View Employee Details &amp; Edit
+</button>
+
+<div id="editExistingEmployeeStatus" role="status"
+     aria-live="polite"></div>
+</div>
+
+</div>
+
 <div class="admin-card">
 
-<h2>Add New Employee</h2>
+<h2>Add New Employee (Head Office)</h2>
 
 <button id="showAddEmployeeButton"
         type="button"
         style="display:block !important;width:100%;background:#16a34a !important;color:white !important;">
-    + Add New Employee
+    + Add New Employee (Head Office)
 </button>
 
 <div id="addEmployeeForm"
@@ -325,7 +590,114 @@
     Save Employee
 </button>
 
+<button id="editLastSavedEmployeeButton" type="button" hidden style="display:none;width:100%;margin-top:12px;">Edit Last Saved Employee</button>
 <div id="addEmployeeStatus"
+     style="margin-top:12px;"></div>
+
+</div>
+
+</div>
+<div class="admin-card">
+
+<h2>Add New Employee (Factory)</h2>
+
+<button id="showAddFactoryEmployeeButton"
+        type="button"
+        style="display:block !important;width:100%;background:#0f766e !important;color:white !important;">
+    + Add New Employee (Factory)
+</button>
+
+<div id="addFactoryEmployeeForm"
+     style="display:none;margin-top:20px;">
+
+<div class="add-employee-row">
+<label>Employee Name</label>
+<input type="text" id="factoryNewEmployeeName" placeholder="Md. Habibur Rahman">
+</div>
+
+<div class="add-employee-row">
+<label>Designation</label>
+<input type="text" id="factoryNewEmployeeDesignation" placeholder="Asst. Manager">
+</div>
+
+<div class="add-employee-row">
+<label>Company</label>
+<input type="text" id="factoryNewEmployeeCompany" placeholder="Dekko Accessories Ltd.">
+</div>
+
+<div class="add-employee-row">
+<label>Employee ID</label>
+<input type="text" id="factoryNewEmployeeNo" placeholder="Employee ID">
+</div>
+
+<div class="add-employee-row">
+<label>Department</label>
+<input type="text" id="factoryNewEmployeeDepartment" placeholder="Department">
+</div>
+
+<div class="add-employee-row">
+<label>Official No.</label>
+<input type="text" id="factoryNewEmployeeOfficialNo" placeholder="Official No.">
+</div>
+
+<div class="add-employee-row">
+<label>Personal No.</label>
+<input type="text" id="factoryNewEmployeePersonalNo" placeholder="Personal No.">
+</div>
+
+<div class="add-employee-row">
+<label>Email Address</label>
+<input type="email" id="factoryNewEmployeeEmail" placeholder="Email Address">
+</div>
+
+<div class="add-employee-row">
+<label>PABX No.</label>
+<input type="text" id="factoryNewEmployeePabx" placeholder="PABX No.">
+</div>
+
+<div class="add-employee-row">
+<label>Blood Group</label>
+<input type="text" id="factoryNewEmployeeBloodGroup" placeholder="Blood Group">
+</div>
+
+<div class="add-employee-row">
+<label>Joining Date</label>
+<input type="date" id="factoryNewEmployeeJoiningDate">
+</div>
+
+<div class="add-employee-row">
+<label>Date of Birth</label>
+<input type="text" id="factoryNewEmployeeBirthday" placeholder="DD-MM">
+</div>
+
+<div class="add-employee-row">
+<label>NID No.</label>
+<input type="text" id="factoryNewEmployeeNid" placeholder="NID No.">
+</div>
+
+<div class="add-employee-row">
+<label>TIN No.</label>
+<input type="text" id="factoryNewEmployeeTin" placeholder="TIN No.">
+</div>
+
+<div class="add-employee-row">
+<label>Bank Name</label>
+<input type="text" id="factoryNewEmployeeBankName" placeholder="Bank Name">
+</div>
+
+<div class="add-employee-row">
+<label>Account No.</label>
+<input type="text" id="factoryNewEmployeeAccountNo" placeholder="Account No.">
+</div>
+
+<button id="saveNewFactoryEmployeeButton"
+        type="button"
+        style="display:block !important;width:100%;background:#2563eb !important;color:white !important;margin-top:20px;">
+    Save Employee
+</button>
+
+<button id="editLastSavedFactoryEmployeeButton" type="button" hidden style="display:none;width:100%;margin-top:12px;">Edit Last Saved Employee</button>
+<div id="addFactoryEmployeeStatus"
      style="margin-top:12px;"></div>
 
 </div>
@@ -336,7 +708,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script defer src="theme.js?v=20261101theme1"></script>
-<script defer src="app.js?v=20261015organogram1"></script>
+<script defer src="app.js?v=20261027holiday-page-date1"></script>
 
 
 <div id="salaryPage" style="display:none;">
@@ -493,8 +865,14 @@
                 <option value="">Select employee</option>
             </select>
 
-            <label for="paySlipMonth">Salary Month</label>
-            <input type="month" id="paySlipMonth" required>
+            <label for="paySlipYear">Year</label>
+            <select id="paySlipYear" aria-label="Pay slip year"></select>
+
+            <label>Salary Month</label>
+            <div id="paySlipMonthGrid" class="payslip-month-grid"
+                 role="group" aria-label="Select salary month"></div>
+            <input type="month" id="paySlipMonth" required
+                   style="display:none;" aria-hidden="true" tabindex="-1">
 
             <button id="viewPaySlipButton" type="button">View Pay Slip</button>
             <button id="printPaySlipButton" type="button"

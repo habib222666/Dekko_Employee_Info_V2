@@ -25,7 +25,7 @@ background: #f5f7fb;
 }
 
 h1 {
-    margin: 0 0 20px;
+    margin: 0 0 8px;
     font-size: 28px;
 }
 
@@ -89,13 +89,14 @@ h1 {
 
 .employee-card-info h3 {
     margin: 0 0 5px;
-    font-size: 18px;
+    font-size: 15.33px;
+    color: #1D4ED8;
 }
 
 .employee-card-info p {
     margin: 0 0 5px;
     font-size: 14px;
-    color: #4b5563;
+    color: #0F766E;
 }
 
 .employee-card-info span {
@@ -189,7 +190,7 @@ button:active {
 
 .profile-card {
     text-align: center;
-    padding: 10px 10px 24px;
+    padding: 4px 10px 24px;
 }
 
 .profile-photo {
@@ -208,11 +209,13 @@ button:active {
 }
 
 .profile-card h2 {
+    color: #1D4ED8;
     margin: 0;
-    font-size: 24px;
+    font-size: 20px;
 }
 
 .profile-designation {
+    color: #0F766E;
     margin: 7px 0 3px;
     font-size: 16px;
     font-weight: 600;
@@ -253,6 +256,9 @@ button:active {
 .detail-row:nth-child(9) { background: #fffaf8; }
 .detail-row:nth-child(10) { background: #f7fcff; }
 
+.detail-row:nth-child(11) { background: #f8fbff; }
+.detail-row:nth-child(12) { background: #f5fcfc; }
+
 .detail-row:last-child {
     border-bottom: none;
 }
@@ -268,6 +274,121 @@ button:active {
     word-break: break-word;
 }
 
+.detail-row strong span {
+    color: #000000;
+}
+
+
+
+
+/* Admin-only Employee Details Edit Form */
+.details-edit-wrapper {
+    margin-top: 18px;
+}
+
+.details-edit-button,
+.details-edit-actions button {
+    border: 0;
+    border-radius: 9px;
+    padding: 11px 18px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.details-edit-button,
+.details-edit-actions button[type="submit"] {
+    background: #2563eb;
+    color: #fff;
+}
+
+.details-edit-form {
+    margin-top: 14px;
+    padding: 16px;
+    border: 1px solid #dbe3ef;
+    border-radius: 12px;
+    background: #f8fafc;
+}
+
+.details-edit-form[hidden] {
+    display: none;
+}
+
+.details-edit-form h3 {
+    margin: 0 0 14px;
+    color: #1e40af;
+    font-size: 17px;
+}
+
+.details-edit-field {
+    display: block;
+    margin-bottom: 12px;
+    color: #334155;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.details-edit-field input {
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 42px;
+    margin-top: 5px;
+    padding: 9px 11px;
+    border: 1px solid #cbd5e1;
+    border-radius: 7px;
+    background: #fff;
+    color: #111827;
+    font: inherit;
+}
+
+.details-edit-employee-id,
+.details-edit-status {
+    color: #64748b;
+    font-size: 12px;
+    overflow-wrap: anywhere;
+}
+
+.details-edit-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+    margin-top: 14px;
+}
+
+.details-edit-actions .details-edit-cancel {
+    background: #e2e8f0;
+    color: #1e293b;
+}
+
+
+/* Admin-only Employee Delete Button */
+.details-edit-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 9px;
+}
+
+.details-delete-button {
+    border: 0;
+    border-radius: 9px;
+    padding: 11px 18px;
+    background: #dc2626;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.details-delete-button:hover {
+    background: #b91c1c;
+}
+
+.details-delete-button:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
 
 /* Admin Page */
 
@@ -2898,9 +3019,134 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
     }
 }
 
+
+/* Keep QR Code label on the left and QR image on the right */
+.detail-row:has(#employeeQRCode) {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    text-align: left;
+}
+
+.detail-row:has(#employeeQRCode) > span {
+    width: auto;
+    text-align: left;
+}
+
+.detail-row:has(#employeeQRCode) > strong {
+    margin-left: auto;
+    text-align: right;
+}
+
+#employeeQRCode {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+#employeeQRCode img {
+    display: block;
+    margin-left: auto;
+}
+
+/* QR label left, QR image right */
+.detail-row.qr-code-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    text-align: left;
+}
+
+.detail-row.qr-code-row > span {
+    flex: 0 0 auto;
+    width: auto;
+    text-align: left;
+}
+
+.detail-row.qr-code-row > #employeeQRCode {
+    margin-left: auto;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    flex: 0 0 auto;
+}
+
+.detail-row.qr-code-row #employeeQRCode img {
+    display: block;
+    margin-left: auto;
+}
+
+/* Blood Group filter: same width as Designation filter */
+#bloodGroupFilterBox {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+#bloodGroupFilter {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Blood Group filter: match Designation filter dimensions */
+#bloodGroupFilterBox {
+    width: 100%;
+    max-width: 600px;
+    margin: 12px auto 16px;
+    box-sizing: border-box;
+}
+
+#bloodGroupFilter {
+    width: 100%;
+    height: 44px;
+    padding: 0 14px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background: #fff;
+    font-size: 16px;
+    font-family: "Trebuchet MS", sans-serif !important;
+    box-sizing: border-box;
+    cursor: pointer;
+}
+
+#bloodGroupFilter:focus {
+    outline: none;
+    border-color: #999;
+}
+
+/* Department filter: match the existing employee filters */
+#departmentFilterBox {
+    width: 100%;
+    max-width: 600px;
+    margin: 12px auto 16px;
+    box-sizing: border-box;
+}
+
+#departmentFilter {
+    width: 100%;
+    height: 44px;
+    padding: 0 14px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background: #fff;
+    font-size: 16px;
+    font-family: "Trebuchet MS", sans-serif !important;
+    box-sizing: border-box;
+    cursor: pointer;
+}
+
+#departmentFilter:focus {
+    outline: none;
+    border-color: #999;
+}
+
+
 /* FIX: Restore consistent spacing between six dashboard cards */
 @media (max-width: 600px) {
     #departmentHeader {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
         column-gap: 12px !important;
         row-gap: 12px !important;
         gap: 12px !important;
@@ -2911,7 +3157,1418 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
     }
 }
 
-/* People icons for Head Office and Factory dashboard cards */
+/* FIX: Increase spacing between six mobile dashboard cards */
+@media (max-width: 600px) {
+    #departmentHeader {
+        column-gap: 16px !important;
+        row-gap: 16px !important;
+        gap: 16px !important;
+    }
+}
+
+/* Monthly Pay Slip year/month selector */
+#paySlipYear {
+    display: block;
+    width: 100%;
+    min-height: 44px;
+    margin: 6px 0 16px;
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #fff;
+    color: #1f2937;
+    font: inherit;
+}
+
+.payslip-month-grid {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 8px;
+    margin: 8px 0 18px;
+}
+
+.payslip-month-button {
+    min-width: 0;
+    min-height: 42px;
+    padding: 8px 2px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #fff;
+    color: #334155;
+    font: inherit;
+    cursor: pointer;
+}
+
+.payslip-month-button.selected {
+    border-color: #15803d;
+    background: #dcfce7;
+    color: #166534;
+    font-weight: 600;
+}
+
+.payslip-month-button:focus-visible,
+#paySlipYear:focus-visible {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+}
+
+
+/* HOLIDAY CALENDAR PAGE DESIGN */
+#holidayCalendarPage.holiday-calendar-page {
+    box-sizing: border-box;
+    min-height: 100vh;
+    padding: 24px;
+    background: linear-gradient(145deg, #f5f8fc, #edf2f7);
+    color: #243247;
+    font-family: Arial, sans-serif;
+}
+
+.holiday-calendar-header,
+.holiday-calendar-content {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.holiday-calendar-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 10px 17px;
+    border: 1px solid #EAB308;
+    border-radius: 12px;
+    background: #FACC15;
+    color: #222222;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(234, 179, 8, 0.22);
+}
+
+.holiday-calendar-back:hover {
+    background: #EAB308;
+    border-color: #CA8A04;
+}
+
+.holiday-calendar-heading {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 28px 0 30px;
+}
+
+.holiday-calendar-icon {
+    display: grid;
+    place-items: center;
+    flex: 0 0 60px;
+    width: 60px;
+    height: 60px;
+    border-radius: 18px;
+    background: #e1efe7;
+    font-size: 30px;
+}
+
+.holiday-calendar-heading h1 {
+    margin: 0 0 6px;
+    color: #203b32;
+    font-size: clamp(25px, 4vw, 34px);
+    line-height: 1.2;
+}
+
+.holiday-calendar-heading p {
+    margin: 0;
+    color: #718096;
+    font-size: 14px;
+}
+
+.holiday-calendar-card {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 28px 24px;
+    border: 1px solid #e5eaf0;
+    border-radius: 22px;
+    background: #fff;
+    box-shadow: 0 10px 35px rgba(30, 50, 75, 0.06);
+}
+
+.holiday-calendar-card h2 {
+    margin: 0 0 10px;
+    color: #293d35;
+    font-size: 23px;
+}
+
+.holiday-calendar-card > p {
+    margin: 0 0 20px;
+    color: #718096;
+    line-height: 1.6;
+}
+
+#holidayCalendarStatus {
+    padding: 14px;
+    border-radius: 12px;
+    background: #f5f8fc;
+    color: #475569;
+    line-height: 1.6;
+}
+
+@media (max-width: 600px) {
+    #holidayCalendarPage.holiday-calendar-page {
+        padding: 16px;
+    }
+
+    .holiday-calendar-heading {
+        gap: 12px;
+        margin: 24px 0;
+    }
+
+    .holiday-calendar-icon {
+        flex-basis: 52px;
+        width: 52px;
+        height: 52px;
+        border-radius: 15px;
+        font-size: 26px;
+    }
+
+    .holiday-calendar-card {
+        padding: 24px 16px;
+        border-radius: 18px;
+    }
+}
+
+
+/* HOLIDAY CALENDAR INTERFACE STYLES */
+.holiday-calendar-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+}
+
+.holiday-calendar-controls label {
+    font-weight: 700;
+    color: #334155;
+}
+
+#holidayCalendarYear,
+#holidayCalendarAdmin input,
+#holidayCalendarAdmin select,
+#holidayCalendarAdmin textarea {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    background: #fff;
+    color: #243247;
+    font: inherit;
+}
+
+#holidayCalendarYear {
+    width: auto;
+    min-width: 120px;
+}
+
+.holiday-calendar-months {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 5px;
+    margin: 16px 0 22px;
+}
+
+.holiday-calendar-month {
+    min-height: 42px;
+    padding: 9px 5px;
+    border: 1px solid #dbe3ed;
+    border-radius: 10px;
+    background: #f8fafc;
+    color: #334155;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.holiday-calendar-month:hover {
+    border-color: #64748b;
+    background: #eef2f7;
+}
+
+.holiday-calendar-month.active {
+    border-color: #1d4ed8;
+    background: #1d4ed8;
+    color: #fff;
+}
+
+.holiday-calendar-summary {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 10px;
+    margin: 20px 0;
+}
+
+.holiday-summary-item {
+    min-width: 0;
+    padding: 14px 8px;
+    border: 1px solid #e2e8f0;
+    border-radius: 13px;
+    background: #f8fafc;
+    text-align: center;
+}
+
+.holiday-summary-item strong {
+    display: block;
+    margin-bottom: 6px;
+    color: #1e293b;
+    font-size: 23px;
+}
+
+.holiday-summary-item span {
+    display: block;
+    color: #64748b;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.holiday-calendar-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 18px;
+    margin: 18px 0;
+    color: #475569;
+    font-size: 13px;
+}
+
+.holiday-calendar-legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.holiday-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.holiday-dot.government { background: #dc2626; }
+.holiday-dot.office { background: #2563eb !important; }
+.holiday-dot.weekly { background: #64748b; }
+.holiday-dot.special-working { background: #16a34a; }
+.holiday-dot.government-weekly { background: #808080; }
+
+.holiday-calendar-weekdays,
+.holiday-calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 6px;
+}
+
+.holiday-calendar-weekdays {
+    margin-bottom: 7px;
+    color: #64748b;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.holiday-calendar-weekdays span {
+    padding: 8px 0;
+}
+
+.holiday-calendar-day {
+    box-sizing: border-box;
+    min-width: 0;
+    min-height: 76px;
+    padding: 7px 5px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background: #fff;
+    color: #334155;
+    overflow-wrap: anywhere;
+}
+
+.holiday-calendar-day.empty {
+    min-height: 0;
+    border-color: transparent;
+    background: transparent;
+}
+
+.holiday-calendar-day .day-number {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 700;
+}
+
+.holiday-calendar-day .day-label {
+    display: block;
+    margin-top: 3px;
+    font-size: 10px;
+    line-height: 1.3;
+}
+
+.holiday-calendar-day.government {
+    border-color: #fecaca;
+    background: #fef2f2;
+}
+
+.holiday-calendar-day.office {
+    border-color: #bfdbfe;
+    background: #eff6ff;
+}
+
+.holiday-calendar-day.weekly {
+    border-color: #cbd5e1;
+    background: #f1f5f9;
+}
+
+.holiday-calendar-day.special-working {
+    border-color: #bbf7d0;
+    background: #f0fdf4;
+}
+
+.holiday-calendar-day.mixed {
+    border-color: #c4b5fd;
+    background: #f5f3ff;
+}
+
+.holiday-calendar-events {
+    margin-top: 28px;
+    padding-top: 22px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.holiday-calendar-events h2,
+.holiday-calendar-admin h2 {
+    margin: 0 0 15px;
+    color: #293d35;
+    font-size: 21px;
+}
+
+.holiday-calendar-event {
+    margin-bottom: 10px;
+    padding: 13px;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    background: #fff;
+}
+
+.holiday-calendar-event strong {
+    display: block;
+    margin-bottom: 5px;
+    color: #1e293b;
+}
+
+.holiday-calendar-event p {
+    margin: 6px 0 0;
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.holiday-calendar-event-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.holiday-calendar-event-actions button,
+.holiday-calendar-admin-actions button {
+    padding: 9px 13px;
+    border: 1px solid #cbd5e1;
+    border-radius: 9px;
+    background: #f8fafc;
+    color: #334155;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.holiday-calendar-admin {
+    margin-top: 28px;
+    padding-top: 24px;
+    border-top: 1px solid #e2e8f0;
+}
+
+#holidayCalendarForm {
+    display: grid;
+    gap: 9px;
+}
+
+#holidayCalendarForm label {
+    margin-top: 7px;
+    color: #334155;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+#holidayCalendarAdmin textarea {
+    resize: vertical;
+}
+
+.holiday-calendar-admin-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+#holidayCalendarSaveButton {
+    border-color: #1d4ed8;
+    background: #1d4ed8;
+    color: #fff;
+}
+
+#holidayCalendarAdminStatus {
+    min-height: 20px;
+    color: #475569;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+@media (max-width: 600px) {
+    .holiday-calendar-months {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 5px;
+    }
+
+    .holiday-calendar-summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .holiday-calendar-summary .holiday-summary-item:last-child {
+        grid-column: 1 / -1;
+    }
+
+    .holiday-calendar-weekdays,
+    .holiday-calendar-grid {
+        gap: 3px;
+    }
+
+    .holiday-calendar-day {
+        min-height: 62px;
+        padding: 5px 2px;
+        border-radius: 7px;
+    }
+
+    .holiday-calendar-day .day-label {
+        font-size: 9px;
+    }
+
+    .holiday-calendar-legend {
+        gap: 10px;
+        font-size: 12px;
+    }
+}
+
+/* HOLIDAY CALENDAR PROFESSIONAL COLOR THEME */
+
+/* Main calendar page */
+#holidayCalendarPage.holiday-calendar-page {
+    background: linear-gradient(145deg, #f1f5f9, #e2e8f0);
+    color: #1e293b;
+}
+
+/* Dashboard Holiday Calendar button */
+#holidayCalendarButton {
+    background: #1e3a8a !important;
+    border-color: #1e3a8a !important;
+    color: #ffffff !important;
+}
+
+#holidayCalendarButton:hover {
+    background: #172554 !important;
+    border-color: #172554 !important;
+}
+
+#holidayCalendarButton .dashboard-icon,
+#holidayCalendarButton .dashboard-label {
+    color: #ffffff !important;
+}
+
+/* Calendar heading and icon */
+.holiday-calendar-icon {
+    background: #dbeafe;
+    color: #1e3a8a;
+}
+
+.holiday-calendar-heading h1,
+.holiday-calendar-card h2 {
+    color: #1e3a8a;
+}
+
+/* Back button */
+.holiday-calendar-back {
+    background: #1e3a8a;
+    border-color: #1e3a8a;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(30, 58, 138, 0.18);
+}
+
+.holiday-calendar-back:hover {
+    background: #172554;
+    border-color: #172554;
+}
+
+/* Calendar card */
+.holiday-calendar-card {
+    border-color: #cbd5e1;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+}
+
+/* Month selector */
+.holiday-calendar-month {
+    border-color: #cbd5e1;
+    background: #f8fafc;
+    color: #334155;
+}
+
+.holiday-calendar-month:hover {
+    border-color: #1e3a8a;
+    background: #dbeafe;
+}
+
+.holiday-calendar-month.active {
+    border-color: #1e3a8a;
+    background: #1e3a8a;
+    color: #ffffff;
+}
+
+/* Monthly summary tiles */
+.holiday-summary-item {
+    border-color: #cbd5e1;
+    background: #f8fafc;
+}
+
+.holiday-summary-item:nth-child(1) {
+    border-top: 4px solid #991b1b;
+    background: #fef2f2;
+}
+
+.holiday-summary-item:nth-child(2) {
+    border-top: 4px solid #1e3a8a;
+    background: #eff6ff;
+}
+
+.holiday-summary-item:nth-child(3) {
+    border-top: 4px solid #92400e;
+    background: #fffbeb;
+}
+
+.holiday-summary-item:nth-child(4) {
+    border-top: 4px solid #166534;
+    background: #f0fdf4;
+}
+
+.holiday-summary-item:nth-child(5) {
+    border-top: 4px solid #475569;
+    background: #f1f5f9;
+}
+
+/* Calendar day cells */
+.holiday-calendar-day.government {
+    background: #991b1b;
+    border-color: #7f1d1d;
+    color: #ffffff;
+}
+
+.holiday-calendar-day.office {
+    background: #1e3a8a;
+    border-color: #172554;
+    color: #ffffff;
+}
+
+.holiday-calendar-day.weekly {
+    background: #92400e;
+    border-color: #78350f;
+    color: #ffffff;
+}
+
+.holiday-calendar-day.special-working {
+    background: #166534;
+    border-color: #14532d;
+    color: #ffffff;
+}
+
+.holiday-calendar-day.mixed {
+    background: #475569;
+    border-color: #334155;
+    color: #ffffff;
+}
+
+.holiday-calendar-day.government .day-number,
+.holiday-calendar-day.office .day-number,
+.holiday-calendar-day.weekly .day-number,
+.holiday-calendar-day.special-working .day-number,
+.holiday-calendar-day.mixed .day-number {
+    color: #ffffff;
+}
+
+.holiday-calendar-day.government .day-label,
+.holiday-calendar-day.office .day-label,
+.holiday-calendar-day.weekly .day-label,
+.holiday-calendar-day.special-working .day-label,
+.holiday-calendar-day.mixed .day-label {
+    color: #ffffff;
+}
+
+/* Calendar status and event cards */
+#holidayCalendarStatus {
+    border: 1px solid #cbd5e1;
+    background: #f1f5f9;
+    color: #334155;
+}
+
+.holiday-calendar-event {
+    border-color: #cbd5e1;
+    background: #ffffff;
+}
+
+.holiday-calendar-event strong {
+    color: #1e3a8a;
+}
+
+/* Admin form buttons */
+#holidayCalendarSaveButton {
+    background: #166534;
+    border-color: #14532d;
+    color: #ffffff;
+}
+
+#holidayCalendarSaveButton:hover {
+    background: #14532d;
+}
+
+
+/* Holiday calendar: boxed weekdays and centered dates */
+.holiday-calendar-weekdays span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    min-height: 38px;
+    padding: 6px 2px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #e2e8f0;
+    color: #1e3a8a;
+    box-sizing: border-box;
+}
+
+.holiday-calendar-day {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.holiday-calendar-day .day-number {
+    display: block;
+    width: 100%;
+    margin: 0 0 5px;
+    text-align: center;
+}
+
+.holiday-calendar-day .day-label {
+    width: 100%;
+    text-align: center;
+}
+
+/* Holiday calendar: compact date boxes and hide labels below dates */
+.holiday-calendar-day {
+    min-height: 54px;
+    padding: 5px 2px;
+    box-sizing: border-box;
+}
+
+.holiday-calendar-day .day-label {
+    display: none !important;
+}
+
+/* Final calendar spacing adjustments */
+.holiday-calendar-day {
+    justify-content: center;
+    min-height: 46px;
+    padding: 3px 2px;
+}
+
+.holiday-calendar-day .day-number {
+    margin: 0;
+    line-height: 1.2;
+}
+
+.holiday-calendar-day .day-label {
+    display: none !important;
+}
+
+.holiday-calendar-summary {
+    gap: 7px;
+    margin: 10px 0;
+}
+
+.holiday-summary-item {
+    padding: 7px 5px;
+    border-radius: 9px;
+}
+
+.holiday-summary-item strong {
+    margin-bottom: 2px;
+    font-size: 19px;
+    line-height: 1.2;
+}
+
+.holiday-summary-item span {
+    font-size: 11px;
+    line-height: 1.25;
+}
+
+/* Distinct holiday colors */
+.holiday-calendar-day.government {
+    background: #991b1b;
+    border-color: #7f1d1d;
+    color: #ffffff;
+}
+
+.holiday-calendar-day.weekly {
+    background: #6d28d9;
+    border-color: #5b21b6;
+    color: #ffffff;
+}
+
+/* Compact holiday details / legend boxes */
+.holiday-calendar-legend {
+    gap: 6px 10px;
+}
+
+.holiday-calendar-legend span {
+    padding: 5px 8px;
+    line-height: 1.2;
+    border-radius: 7px;
+    font-size: 11px;
+}
+
+/* Compact single-line holiday legend */
+.holiday-calendar-legend {
+    gap: 5px 7px;
+    margin: 8px 0;
+    font-size: 11px;
+}
+
+.holiday-calendar-legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 6px;
+    line-height: 1.15;
+    white-space: nowrap;
+    border-radius: 6px;
+    box-sizing: border-box;
+}
+
+.holiday-calendar-legend .holiday-dot {
+    width: 7px;
+    height: 7px;
+    flex: 0 0 7px;
+}
+
+/* Final compact holiday detail labels */
+.holiday-calendar-legend {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 6px;
+    margin: 6px 0;
+    font-size: 10px;
+}
+
+.holiday-calendar-legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 3px 5px;
+    line-height: 1.1;
+    white-space: nowrap;
+    border-radius: 5px;
+}
+
+.holiday-calendar-legend .holiday-dot {
+    width: 6px;
+    height: 6px;
+    flex: 0 0 6px;
+}
+
+/* Compact holiday detail cards below the calendar */
+.holiday-calendar-events {
+    margin-top: 16px;
+    padding-top: 12px;
+}
+
+.holiday-calendar-events h2 {
+    margin-bottom: 8px;
+    font-size: 18px;
+}
+
+.holiday-calendar-event {
+    margin-bottom: 6px;
+    padding: 7px 9px;
+    border-radius: 8px;
+}
+
+.holiday-calendar-event strong {
+    margin-bottom: 2px;
+    line-height: 1.3;
+}
+
+.holiday-calendar-event p {
+    margin-top: 3px;
+    font-size: 11px;
+    line-height: 1.3;
+}
+
+.holiday-calendar-event-actions {
+    gap: 4px;
+}
+
+/* Calendar date box colors */
+.holiday-calendar-day.government {
+    background: #dc2626;
+    border-color: #b91c1c;
+    color: #ffffff;
+}
+
+.holiday-calendar-day.weekly {
+    background: #92400e;
+    border-color: #78350f;
+    color: #ffffff;
+}
+
+/* Holiday Details: restore distinct category colors */
+.holiday-calendar-legend .government .holiday-dot {
+    background: #dc2626;
+}
+
+.holiday-calendar-legend .office .holiday-dot {
+    background: #16a34a;
+}
+
+.holiday-calendar-legend .weekly .holiday-dot {
+    background: #92400e;
+}
+
+.holiday-calendar-legend .special .holiday-dot {
+    background: #eab308;
+}
+
+/* Fix missing color dots in Holiday Details legend */
+.holiday-calendar-legend .holiday-dot {
+    display: inline-block !important;
+    width: 8px;
+    height: 8px;
+    min-width: 8px;
+    border-radius: 50%;
+    flex: 0 0 8px;
+}
+
+.holiday-calendar-legend .holiday-dot.office {
+    background-color: #16a34a !important;
+}
+
+.holiday-calendar-legend .holiday-dot.weekly {
+    background-color: #92400e !important;
+}
+
+/* Office Holiday legend dot: blue */
+.holiday-calendar-legend .holiday-dot.office {
+    background-color: #2563eb !important;
+}
+
+
+/* Holiday calendar final styling 20261027 */
+
+.holiday-calendar-weekdays {
+    font-size: 14px;
+}
+
+.holiday-calendar-weekdays span {
+    background: #e2e8f0;
+    border-color: #cbd5e1;
+    color: #1e3a8a;
+}
+
+.holiday-calendar-grid {
+    row-gap: 8px;
+}
+
+/* Restore original date-box colors */
+.holiday-calendar-day:not(.empty) {
+    background: #fff;
+    border-color: #e2e8f0;
+    color: #334155;
+}
+
+.holiday-calendar-day.government {
+    background: #dc2626;
+    border-color: #b91c1c;
+    color: #fff;
+}
+
+.holiday-calendar-day.office {
+    background: #1e3a8a;
+    border-color: #172554;
+    color: #fff;
+}
+
+.holiday-calendar-day.weekly {
+    background: #92400e;
+    border-color: #78350f;
+    color: #fff;
+}
+
+.holiday-calendar-day.special-working {
+    background: #166534;
+    border-color: #14532d;
+    color: #fff;
+}
+
+.holiday-calendar-day.mixed {
+    background: #475569;
+    border-color: #334155;
+    color: #fff;
+}
+
+/* Make the calendar status box shorter */
+#holidayCalendarStatus {
+    min-height: 0;
+    padding: 5px 10px;
+    line-height: 1.2;
+}
+
+@media (max-width: 600px) {
+    .holiday-calendar-grid {
+        row-gap: 8px;
+    }
+
+    #holidayCalendarStatus {
+        padding: 4px 8px;
+    }
+}
+
+/* Final override: restore calendar colors and compact status */
+.holiday-calendar-weekdays {
+    font-size: 14px !important;
+}
+
+.holiday-calendar-weekdays span {
+    background: #e2e8f0 !important;
+    border-color: #cbd5e1 !important;
+    color: #1e3a8a !important;
+}
+
+.holiday-calendar-day:not(.empty):not(.government):not(.office):not(.weekly):not(.special-working):not(.mixed) {
+    background: #fff !important;
+    border-color: #e2e8f0 !important;
+    color: #334155 !important;
+}
+
+.holiday-calendar-day.government {
+    background: #dc2626 !important;
+    border-color: #b91c1c !important;
+    color: #fff !important;
+}
+
+.holiday-calendar-day.office {
+    background: #1e3a8a !important;
+    border-color: #172554 !important;
+    color: #fff !important;
+}
+
+.holiday-calendar-day.weekly {
+    background: #92400e !important;
+    border-color: #78350f !important;
+    color: #fff !important;
+}
+
+.holiday-calendar-day.special-working {
+    background: #166534 !important;
+    border-color: #14532d !important;
+    color: #fff !important;
+}
+
+.holiday-calendar-day.mixed {
+    background: #475569 !important;
+    border-color: #334155 !important;
+    color: #fff !important;
+}
+
+#holidayCalendarStatus {
+    min-height: 0 !important;
+    padding: 4px 8px !important;
+    line-height: 1.2 !important;
+}
+
+
+#holidayCalendarStatus { display: none !important; }
+
+
+/* Holiday calendar: more space between date rows and legend */
+.holiday-calendar-grid {
+    row-gap: 8px !important;
+}
+
+.holiday-calendar-legend {
+    margin-top: 20px !important;
+}
+
+/* Weekday heading boxes: yellow */
+.holiday-calendar-weekdays span {
+    background: #FACC15 !important;
+    border: 1px solid #EAB308 !important;
+    color: #422006 !important;
+}
+
+/* Today's date inside the Dashboard Holiday Calendar icon */
+#holidayCalendarButton .holiday-today-icon {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: #ffffff;
+    border: 2px solid #dc2626;
+    color: #1e3a8a;
+    font-size: 17px;
+    font-weight: 800;
+    box-sizing: border-box;
+}
+
+#holidayCalendarButton .holiday-today-icon::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 7px;
+    background: #dc2626;
+    border-radius: 5px 5px 0 0;
+}
+
+#holidayCalendarButton .holiday-today-icon #holidayTodayDate {
+    padding-top: 5px;
+}
+
+/* Day and month inside the Holiday Calendar dashboard icon */
+#holidayCalendarButton .holiday-today-icon {
+    flex-direction: column;
+    gap: 0;
+    overflow: hidden;
+}
+
+#holidayCalendarButton .holiday-today-icon::before {
+    height: 7px;
+}
+
+#holidayCalendarButton .holiday-today-icon #holidayTodayDate {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding-top: 7px;
+    line-height: 1;
+}
+
+#holidayCalendarButton .holiday-today-day {
+    font-size: 15px;
+    font-weight: 800;
+}
+
+#holidayCalendarButton .holiday-today-month {
+    margin-top: 3px;
+    font-size: 8px;
+    font-weight: 800;
+}
+
+/* Fix Holiday Calendar icon date visibility */
+#holidayCalendarButton .holiday-today-icon {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    overflow: hidden;
+    background: #ffffff;
+}
+
+#holidayCalendarButton .holiday-today-icon::before {
+    z-index: 0;
+    pointer-events: none;
+}
+
+#holidayCalendarButton .holiday-today-icon #holidayTodayDate {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    width: 100%;
+    padding: 8px 0 2px;
+    box-sizing: border-box;
+    line-height: 1;
+    background: transparent;
+}
+
+#holidayCalendarButton .holiday-today-day {
+    color: #1e3a8a;
+    font-size: 15px;
+    font-weight: 800;
+}
+
+#holidayCalendarButton .holiday-today-month {
+    color: #1e3a8a;
+    margin-top: 3px;
+    font-size: 8px;
+    font-weight: 800;
+}
+
+/* Final fix: keep the date and month visible inside the calendar icon */
+#holidayCalendarButton .holiday-today-icon {
+    position: relative !important;
+    display: inline-flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    width: 40px !important;
+    min-width: 40px !important;
+    height: 44px !important;
+    min-height: 44px !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+    background: #fff !important;
+    border: 2px solid #dc2626 !important;
+    border-radius: 7px !important;
+    color: #1e3a8a !important;
+    line-height: 1 !important;
+}
+
+#holidayCalendarButton .holiday-today-icon::before {
+    content: "" !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    height: 7px !important;
+    background: #dc2626 !important;
+    z-index: 0 !important;
+}
+
+#holidayCalendarButton .holiday-today-icon #holidayTodayDate {
+    position: relative !important;
+    z-index: 2 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex: 1 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 9px 0 0 !important;
+    background: transparent !important;
+    color: #1e3a8a !important;
+    box-sizing: border-box !important;
+    line-height: 1 !important;
+}
+
+#holidayCalendarButton .holiday-today-day {
+    display: block !important;
+    color: #1e3a8a !important;
+    font-size: 15px !important;
+    font-weight: 800 !important;
+    line-height: 1 !important;
+}
+
+#holidayCalendarButton .holiday-today-month {
+    display: block !important;
+    margin-top: 3px !important;
+    color: #1e3a8a !important;
+    font-size: 8px !important;
+    font-weight: 800 !important;
+    line-height: 1 !important;
+}
+
+/* Today's date icon beside the Holiday Calendar page heading */
+.holiday-page-today-icon {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex: 0 0 60px !important;
+    width: 60px !important;
+    height: 60px !important;
+    gap: 3px !important;
+    box-sizing: border-box !important;
+    border: 2px solid #dc2626 !important;
+    border-radius: 12px !important;
+    background: #ffffff !important;
+    color: #1e3a8a !important;
+    font-size: inherit !important;
+    line-height: 1 !important;
+}
+
+#holidayPageTodayDay {
+    font-size: 23px !important;
+    font-weight: 800 !important;
+    color: #1e3a8a !important;
+}
+
+#holidayPageTodayMonth {
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    color: #dc2626 !important;
+}
+
+
+/* Separate boxes for month selection and monthly calendar */
+.holiday-calendar-month-box {
+    box-sizing: border-box;
+    width: 100%;
+    margin: 0 0 8px;
+    padding: 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: 0 5px 18px rgba(15, 23, 42, 0.06);
+}
+.holiday-calendar-box-title {
+    margin: 0 0 6px;
+    color: #1e3a8a;
+    font-size: 16px;
+    font-weight: 800;
+}
+.holiday-calendar-month-box .holiday-calendar-months {
+    margin: 0;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 4px 6px;
+}
+.holiday-calendar-date-box .holiday-calendar-weekdays {
+    margin-top: 6px;
+}
+.holiday-calendar-date-box .holiday-calendar-legend {
+    margin-top: 6px;
+}
+@media (max-width: 600px) {
+    .holiday-calendar-month-box {
+        padding: 8px;
+        margin-bottom: 8px;
+        border-radius: 10px;
+    }
+    .holiday-calendar-month-box .holiday-calendar-months {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 3px 4px;
+    }
+}
+
+
+/* Home Page: Birthday Celebrations */
+#homeBirthdaySection {
+    margin: 22px auto 26px;
+    padding: 18px;
+    width: 100%;
+    box-sizing: border-box;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.07);
+}
+#homeBirthdayTitle {
+    font-family: "BrittanySignature", cursive !important;
+    margin: 0;
+    color: #1d4ed8;
+    font-size: 22px;
+    font-weight: 750;
+}
+#homeBirthdaySection .home-birthday-subtitle {
+    margin: 12px 0 16px;
+    color: #475569;
+    font-size: 15px;
+    font-weight: 600;
+}
+.home-birthday-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(245px, 1fr));
+    gap: 12px;
+}
+.home-birthday-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+    padding: 12px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+}
+.home-birthday-photo-wrap {
+    flex: 0 0 58px;
+    width: 58px;
+    height: 58px;
+    overflow: hidden;
+    border-radius: 50%;
+    background: #e2e8f0;
+}
+.home-birthday-card .employee-photo,
+.home-birthday-card .employee-photo-placeholder {
+    display: flex;
+    width: 58px !important;
+    height: 58px !important;
+    min-width: 58px;
+    object-fit: cover;
+    border-radius: 50% !important;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+}
+.home-birthday-card .employee-photo-placeholder {
+    font-size: 10px;
+    text-align: center;
+}
+.home-birthday-info { min-width: 0; }
+.home-birthday-name {
+    color: #1e293b;
+    font-size: 15px;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+.home-birthday-role {
+    margin-top: 3px;
+    color: #0f766e;
+    font-size: 12px;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+.home-birthday-date {
+    margin-top: 5px;
+    color: #b45309;
+    font-size: 12px;
+    font-weight: 700;
+}
+.home-birthday-empty {
+    margin: 0;
+    color: #64748b;
+    font-size: 14px;
+}
+@media (max-width: 480px) {
+    #homeBirthdaySection { padding: 14px; }
+    #homeBirthdayTitle { font-size: 20px; }
+    .home-birthday-list { grid-template-columns: 1fr; }
+}
+
+
+/* Home dashboard: Head Office and Factory employee cards */
 #departmentHeader .dashboard-label small {
     display: block;
     margin-top: 3px;
@@ -2919,10 +4576,14 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
     font-weight: 600;
     line-height: 1.1;
 }
+
 #allFactoryEmployeesButton {
     background: #455a64 !important;
     color: #ffffff !important;
 }
+
+
+/* People icons for Head Office and Factory dashboard cards */
 #departmentHeader .employee-group-icon {
     display: block;
     width: 38px;
@@ -2937,3 +4598,1681 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
     height: 32px;
     flex: 0 0 auto;
 }
+
+
+/* Holiday Calendar: requested color priority */
+
+/* Government + Office, or Government + Weekly: RED */
+.holiday-calendar-day.government,
+.holiday-calendar-day.government.office,
+.holiday-calendar-day.government.mixed {
+    background: #dc2626 !important;
+    border-color: #b91c1c !important;
+    color: #ffffff !important;
+}
+
+/* Office + Weekly, without Government: BLUE */
+.holiday-calendar-day.office.mixed:not(.government) {
+    background: #2563eb !important;
+    border-color: #1d4ed8 !important;
+    color: #ffffff !important;
+}
+
+/* Weekly only: PURPLE */
+.holiday-calendar-day.weekly:not(.government):not(.office) {
+    background: #7c3aed !important;
+    border-color: #6d28d9 !important;
+    color: #ffffff !important;
+}
+
+/* Special Working Day remains GREEN */
+.holiday-calendar-day.special-working {
+    background: #16a34a !important;
+    border-color: #15803d !important;
+    color: #ffffff !important;
+}
+
+
+/* Holiday legend dots: Office blue, Weekly purple */
+.holiday-calendar-legend .office .holiday-dot,
+.holiday-dot.office {
+    background: #2563eb !important;
+}
+.holiday-calendar-legend .weekly .holiday-dot,
+.holiday-dot.weekly {
+    background: #7c3aed !important;
+}
+
+
+/* Holiday Calendar legend: larger, correct-color dots */
+.holiday-calendar-legend .holiday-dot {
+    display: inline-block !important;
+    width: 12px !important;
+    height: 12px !important;
+    min-width: 12px !important;
+    min-height: 12px !important;
+    border-radius: 50% !important;
+    flex-shrink: 0 !important;
+}
+
+.holiday-calendar-legend .holiday-dot.government {
+    background: #dc2626 !important;
+}
+
+.holiday-calendar-legend .holiday-dot.office {
+    background: #2563eb !important;
+}
+
+.holiday-calendar-legend .holiday-dot.weekly {
+    background: #7c3aed !important;
+}
+
+.holiday-calendar-legend .holiday-dot.special-working {
+    background: #16a34a !important;
+}
+
+#privateNid,
+#privateTinNo {
+    color: #000000;
+}
+
+
+
+/* ORGANOGRAM TREE RESPONSIVE DESIGN V1 */
+.organogram-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    text-align: left;
+    margin-bottom: 24px;
+}
+.organogram-toolbar h2 {
+    margin: 0 0 8px;
+    color: #203b32;
+    font-size: 23px;
+}
+.organogram-toolbar p {
+    margin: 0;
+    color: #687789;
+    line-height: 1.6;
+    font-size: 14px;
+}
+.organogram-action,
+.organogram-cancel,
+.organogram-delete {
+    border: 0;
+    border-radius: 10px;
+    padding: 11px 16px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+}
+.organogram-action {
+    background: #176b4d;
+    color: #fff;
+}
+.organogram-action:hover {
+    background: #10553c;
+}
+.organogram-cancel {
+    background: #e8eef3;
+    color: #263746;
+}
+.organogram-delete {
+    background: #fee2e2;
+    color: #991b1b;
+}
+.organogram-status {
+    margin: 16px 0;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: #f1f5f9;
+    color: #475569;
+    text-align: left;
+    font-size: 14px;
+    line-height: 1.5;
+}
+.organogram-admin-panel {
+    margin: 20px 0 28px;
+    padding: 22px;
+    border: 1px solid #cbded4;
+    border-radius: 16px;
+    background: #f7fbf8;
+    text-align: left;
+}
+.organogram-admin-panel h3 {
+    margin: 0 0 16px;
+    color: #203b32;
+}
+.organogram-form {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 9px;
+}
+.organogram-form label {
+    margin-top: 5px;
+    color: #334155;
+    font-size: 13px;
+    font-weight: 700;
+}
+.organogram-form input,
+.organogram-form select {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    padding: 11px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 9px;
+    background: #fff;
+    color: #1e293b;
+    font: inherit;
+}
+.organogram-form-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+}
+#organogramAdminStatus {
+    margin: 6px 0 0;
+    color: #475569;
+    font-size: 13px;
+    line-height: 1.5;
+}
+#organogramAdminList {
+    display: grid;
+    gap: 9px;
+    margin-top: 12px;
+}
+.organogram-admin-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background: #fff;
+    text-align: left;
+}
+.organogram-admin-row > span {
+    flex: 1 1 220px;
+    min-width: 0;
+    color: #334155;
+    overflow-wrap: anywhere;
+}
+.organogram-tree {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+    overflow-x: auto;
+    padding: 18px 0;
+}
+.organogram-branch {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    width: 100%;
+    min-width: 0;
+    position: relative;
+}
+.organogram-person {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    width: min(100%, 280px);
+    min-width: 0;
+    padding: 18px 16px;
+    border: 1px solid #dbe5e0;
+    border-radius: 16px;
+    background: #fff;
+    color: #263746;
+    box-shadow: 0 5px 18px rgba(30, 50, 75, 0.07);
+    text-align: center;
+    overflow-wrap: anywhere;
+}
+.organogram-person strong {
+    color: #203b32;
+    font-size: 15px;
+    line-height: 1.45;
+}
+.organogram-person > span {
+    color: #0f766e;
+    font-size: 13px;
+    line-height: 1.45;
+}
+.organogram-person small {
+    color: #64748b;
+    font-size: 11px;
+}
+.organogram-role-chairman {
+    border-top: 5px solid #b68b24;
+    background: #fffdf6;
+}
+.organogram-role-executive_director {
+    border-top: 5px solid #176b4d;
+    background: #f6fcf8;
+}
+.organogram-role-department_head {
+    border-top: 5px solid #2563eb;
+    background: #f7faff;
+}
+.organogram-role-employee {
+    width: 170px;
+    padding: 12px 10px;
+}
+.organogram-photo {
+    display: block;
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid #e2e8f0;
+    background: #f1f5f9;
+}
+.organogram-photo-placeholder {
+    display: grid;
+    place-items: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: #e2e8f0;
+    color: #64748b;
+    font-size: 10px;
+    text-align: center;
+}
+.organogram-children {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 22px;
+    width: 100%;
+    position: relative;
+}
+.organogram-staff {
+    width: 100%;
+    padding: 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    background: #f8fafc;
+}
+.organogram-staff h4 {
+    margin: 0 0 14px;
+    color: #334155;
+    font-size: 14px;
+}
+.organogram-staff-grid {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+.organogram-empty-state {
+    overflow-wrap: anywhere;
+}
+@media (max-width: 600px) {
+    .organogram-toolbar {
+        align-items: stretch;
+    }
+    .organogram-toolbar h2 {
+        font-size: 20px;
+    }
+    .organogram-admin-panel {
+        padding: 15px;
+    }
+    .organogram-admin-row {
+        align-items: stretch;
+    }
+    .organogram-admin-row > span {
+        flex-basis: 100%;
+    }
+    .organogram-tree {
+        align-items: stretch;
+        overflow-x: visible;
+    }
+    .organogram-person {
+        width: min(100%, 260px);
+    }
+    .organogram-children {
+        flex-direction: column;
+        align-items: center;
+    }
+    .organogram-staff {
+        box-sizing: border-box;
+        padding: 12px 8px;
+    }
+    .organogram-role-employee {
+        width: min(100%, 170px);
+    }
+    .organogram-form-actions > button {
+        flex: 1 1 auto;
+    }
+}
+
+
+/* ORGANOGRAM LANDSCAPE LAYOUT UPDATE */
+@media (min-width: 900px) {
+    #organogramPage.organogram-page {
+        padding: 20px;
+    }
+
+    .organogram-header,
+    .organogram-content {
+        max-width: 1800px;
+        width: 100%;
+    }
+
+    .organogram-card {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 320px;
+        grid-template-areas:
+            "toolbar toolbar"
+            "status status"
+            "tree admin";
+        align-items: start;
+        gap: 12px 20px;
+        padding: 24px;
+        text-align: left;
+    }
+
+    .organogram-toolbar { grid-area: toolbar; }
+    #organogramStatus { grid-area: status; width: 100%; box-sizing: border-box; }
+    #organogramTree { grid-area: tree; min-width: 0; }
+    #organogramAdminPanel {
+        grid-area: admin;
+        min-width: 0;
+        margin: 0;
+        padding: 16px;
+    }
+
+    .organogram-tree {
+        align-items: center;
+        overflow: auto;
+        min-width: 0;
+    }
+
+    .organogram-children {
+        gap: 14px;
+    }
+
+    .organogram-staff-grid {
+        justify-content: flex-start;
+        gap: 8px;
+    }
+}
+
+.organogram-person {
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 10px;
+    width: min(100%, 235px);
+    padding: 9px 11px;
+    border-top-width: 3px;
+    border-radius: 10px;
+    text-align: left;
+}
+
+.organogram-person-info {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 2px;
+    min-width: 0;
+}
+
+.organogram-person strong {
+    display: block;
+    font-size: 12px;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+}
+
+.organogram-person > .organogram-person-info > span {
+    display: block;
+    font-size: 11px;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+}
+
+.organogram-person small {
+    font-size: 10px;
+}
+
+.organogram-photo,
+.organogram-photo-placeholder {
+    flex: 0 0 42px;
+    width: 42px;
+    height: 42px;
+}
+
+.organogram-role-employee {
+    width: 205px;
+    padding: 7px 9px;
+}
+
+@media (max-width: 899px) {
+    .organogram-person {
+        width: min(100%, 235px);
+    }
+
+    .organogram-role-employee {
+        width: min(100%, 205px);
+    }
+
+    .organogram-photo,
+    .organogram-photo-placeholder {
+        flex-basis: 40px;
+        width: 40px;
+        height: 40px;
+    }
+}
+
+@media (max-width: 600px) {
+    .organogram-person {
+        width: min(100%, 260px);
+    }
+
+    .organogram-role-employee {
+        width: min(100%, 230px);
+    }
+}
+
+
+
+/* ORGANOGRAM TRUE LANDSCAPE PAN FIX */
+#organogramPage.organogram-page {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+}
+
+#organogramPage .organogram-header,
+#organogramPage .organogram-content {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+}
+
+#organogramPage .organogram-card {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+}
+
+#organogramTree.organogram-tree {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    height: min(72dvh, 760px);
+    min-height: 360px;
+    overflow: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x pan-y;
+    padding: 20px;
+    scroll-behavior: smooth;
+}
+
+#organogramTree .organogram-branch {
+    flex: 0 0 auto;
+    width: max-content;
+    min-width: max-content;
+    align-items: center;
+}
+
+#organogramTree .organogram-children {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    align-items: flex-start;
+    width: max-content;
+    min-width: max-content;
+    gap: 16px;
+}
+
+#organogramTree .organogram-staff {
+    flex: 0 0 auto;
+    width: max-content;
+    min-width: max-content;
+}
+
+#organogramTree .organogram-staff-grid {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    width: max-content;
+    min-width: max-content;
+    gap: 10px;
+}
+
+#organogramTree .organogram-person {
+    flex: 0 0 220px;
+    box-sizing: border-box;
+    width: 220px;
+    min-width: 0;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    text-align: left;
+}
+
+#organogramTree .organogram-role-employee {
+    flex-basis: 200px;
+    width: 200px;
+}
+
+#organogramTree .organogram-person-info {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+#organogramTree .organogram-photo,
+#organogramTree .organogram-photo-placeholder {
+    flex: 0 0 40px;
+    width: 40px;
+    height: 40px;
+}
+
+@media (max-width: 899px) {
+    #organogramPage.organogram-page {
+        padding: 8px;
+    }
+
+    #organogramPage .organogram-card {
+        padding: 10px;
+    }
+
+    #organogramTree.organogram-tree {
+        height: 68dvh;
+        min-height: 300px;
+        padding: 12px;
+    }
+
+    #organogramTree .organogram-person {
+        flex-basis: 210px;
+        width: 210px;
+    }
+
+    #organogramTree .organogram-role-employee {
+        flex-basis: 190px;
+        width: 190px;
+    }
+}
+
+
+/* ORGANOGRAM FULL VIEWPORT LAYOUT FIX */
+#organogramPage.organogram-page {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    width: 100vw;
+    max-width: none;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    overflow: auto;
+    box-sizing: border-box;
+}
+
+#organogramPage .organogram-header,
+#organogramPage .organogram-content {
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+#organogramPage .organogram-card {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+@media (min-width: 900px) {
+    #organogramPage .organogram-card {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 320px;
+        grid-template-areas:
+            "toolbar toolbar"
+            "status status"
+            "tree admin";
+        align-items: start;
+        gap: 12px 20px;
+        text-align: left;
+    }
+
+    #organogramPage .organogram-toolbar { grid-area: toolbar; }
+    #organogramPage #organogramStatus { grid-area: status; }
+    #organogramPage #organogramTree { grid-area: tree; }
+    #organogramPage #organogramAdminPanel {
+        grid-area: admin;
+        min-width: 0;
+        margin: 0;
+    }
+}
+
+@media (max-width: 899px) {
+    #organogramPage .organogram-content {
+        padding: 0;
+    }
+
+    #organogramPage .organogram-card {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    #organogramPage #organogramTree {
+        width: 100%;
+        max-width: 100%;
+    }
+}
+
+
+/* ORGANOGRAM STAFF GRID AND REPORTING ARROWS */
+
+/* Three employees per row beneath each Department Head */
+#organogramTree .organogram-staff {
+    box-sizing: border-box;
+    width: 620px;
+    min-width: 620px;
+    max-width: 620px;
+    padding: 14px;
+    overflow: visible;
+}
+
+#organogramTree .organogram-staff-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: start;
+    justify-content: stretch;
+    width: 100%;
+    min-width: 0;
+    gap: 10px;
+}
+
+#organogramTree .organogram-staff-grid > .organogram-person {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    flex: initial;
+    padding: 7px;
+    gap: 7px;
+}
+
+#organogramTree .organogram-role-employee {
+    flex-basis: auto;
+}
+
+#organogramTree .organogram-staff .organogram-photo,
+#organogramTree .organogram-staff .organogram-photo-placeholder {
+    flex: 0 0 34px;
+    width: 34px;
+    height: 34px;
+}
+
+/* Reporting connectors between hierarchy levels */
+#organogramTree .organogram-branch {
+    position: relative;
+}
+
+#organogramTree .organogram-branch > .organogram-children {
+    position: relative;
+    padding-top: 20px;
+}
+
+#organogramTree .organogram-branch > .organogram-children::before {
+    content: "";
+    position: absolute;
+    top: 9px;
+    left: 0;
+    right: 0;
+    border-top: 2px solid #94a3b8;
+}
+
+#organogramTree .organogram-branch > .organogram-children::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 50%;
+    height: 10px;
+    border-left: 2px solid #94a3b8;
+}
+
+#organogramTree .organogram-children > .organogram-branch::before {
+    content: "";
+    position: absolute;
+    top: -11px;
+    left: 50%;
+    height: 11px;
+    border-left: 2px solid #94a3b8;
+}
+
+#organogramTree .organogram-children > .organogram-branch::after {
+    content: "";
+    position: absolute;
+    top: -2px;
+    left: calc(50% - 4px);
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 6px solid #64748b;
+}
+
+/* Department Head team cards are arranged in their own grid */
+#organogramTree .organogram-branch:has(> .organogram-staff) {
+    align-items: center;
+}
+
+@media (max-width: 899px) {
+    #organogramTree .organogram-staff {
+        width: 620px;
+        min-width: 620px;
+        max-width: 620px;
+    }
+
+    #organogramTree .organogram-staff-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+
+/* ORGANOGRAM TOP LEVEL CARDS COMPACT */
+#organogramTree .organogram-person.organogram-role-chairman,
+#organogramTree .organogram-person.organogram-role-executive_director,
+#organogramTree .organogram-person.organogram-role-department_head {
+    flex: 0 0 170px;
+    width: 170px;
+    min-width: 170px;
+    max-width: 170px;
+    padding: 9px 10px;
+    gap: 5px;
+    border-top-width: 4px;
+}
+
+#organogramTree .organogram-person.organogram-role-chairman .organogram-photo,
+#organogramTree .organogram-person.organogram-role-chairman .organogram-photo-placeholder,
+#organogramTree .organogram-person.organogram-role-executive_director .organogram-photo,
+#organogramTree .organogram-person.organogram-role-executive_director .organogram-photo-placeholder,
+#organogramTree .organogram-person.organogram-role-department_head .organogram-photo,
+#organogramTree .organogram-person.organogram-role-department_head .organogram-photo-placeholder {
+    flex: 0 0 34px;
+    width: 34px;
+    height: 34px;
+}
+
+#organogramTree .organogram-person.organogram-role-chairman strong,
+#organogramTree .organogram-person.organogram-role-executive_director strong,
+#organogramTree .organogram-person.organogram-role-department_head strong {
+    font-size: 12px;
+    line-height: 1.3;
+}
+
+#organogramTree .organogram-person.organogram-role-chairman > span,
+#organogramTree .organogram-person.organogram-role-executive_director > span,
+#organogramTree .organogram-person.organogram-role-department_head > span {
+    font-size: 10px;
+    line-height: 1.3;
+}
+
+#organogramTree .organogram-person.organogram-role-chairman small,
+#organogramTree .organogram-person.organogram-role-executive_director small,
+#organogramTree .organogram-person.organogram-role-department_head small {
+    font-size: 9px;
+}
+
+
+/* ORGANOGRAM MINIMUM CARD HEIGHT AND CONNECTOR ALIGNMENT */
+
+/* Compact top-level hierarchy cards; height follows content */
+#organogramTree .organogram-person.organogram-role-chairman,
+#organogramTree .organogram-person.organogram-role-executive_director,
+#organogramTree .organogram-person.organogram-role-department_head {
+    box-sizing: border-box;
+    flex: 0 0 140px;
+    width: 140px;
+    min-width: 140px;
+    max-width: 140px;
+    height: auto;
+    min-height: 0;
+    padding: 6px 7px;
+    gap: 3px;
+    border-top-width: 3px;
+    border-radius: 10px;
+    box-shadow: 0 2px 7px rgba(30, 50, 75, 0.07);
+}
+
+#organogramTree .organogram-person.organogram-role-chairman .organogram-photo,
+#organogramTree .organogram-person.organogram-role-chairman .organogram-photo-placeholder,
+#organogramTree .organogram-person.organogram-role-executive_director .organogram-photo,
+#organogramTree .organogram-person.organogram-role-executive_director .organogram-photo-placeholder,
+#organogramTree .organogram-person.organogram-role-department_head .organogram-photo,
+#organogramTree .organogram-person.organogram-role-department_head .organogram-photo-placeholder {
+    flex: 0 0 28px;
+    width: 28px;
+    height: 28px;
+}
+
+#organogramTree .organogram-person.organogram-role-chairman strong,
+#organogramTree .organogram-person.organogram-role-executive_director strong,
+#organogramTree .organogram-person.organogram-role-department_head strong {
+    font-size: 11px;
+    line-height: 1.2;
+}
+
+#organogramTree .organogram-person.organogram-role-chairman > span,
+#organogramTree .organogram-person.organogram-role-executive_director > span,
+#organogramTree .organogram-person.organogram-role-department_head > span {
+    font-size: 9px;
+    line-height: 1.2;
+}
+
+#organogramTree .organogram-person.organogram-role-chairman small,
+#organogramTree .organogram-person.organogram-role-executive_director small,
+#organogramTree .organogram-person.organogram-role-department_head small {
+    font-size: 8px;
+    line-height: 1.2;
+}
+
+/* Keep connectors visible and evenly spaced between hierarchy levels */
+#organogramTree .organogram-branch > .organogram-children {
+    position: relative;
+    padding-top: 18px;
+}
+
+#organogramTree .organogram-branch > .organogram-children::before {
+    top: 8px;
+    border-top: 1.5px solid #94a3b8;
+}
+
+#organogramTree .organogram-branch > .organogram-children::after {
+    top: 0;
+    height: 9px;
+    border-left: 1.5px solid #94a3b8;
+}
+
+#organogramTree .organogram-children > .organogram-branch::before {
+    top: -10px;
+    height: 10px;
+    border-left: 1.5px solid #94a3b8;
+}
+
+#organogramTree .organogram-children > .organogram-branch::after {
+    top: -2px;
+    border-left-width: 4px;
+    border-right-width: 4px;
+    border-top: 5px solid #64748b;
+}
+
+/* Do not impose a fixed minimum height on any person card */
+#organogramTree .organogram-person {
+    min-height: 0;
+    height: auto;
+}
+
+/* FORCE SMALLER ORGANOGRAM TOP CARDS */
+#organogramPage #organogramTree .organogram-person.organogram-role-chairman,
+#organogramPage #organogramTree .organogram-person.organogram-role-executive_director,
+#organogramPage #organogramTree .organogram-person.organogram-role-department_head {
+    box-sizing: border-box !important;
+    flex: 0 0 110px !important;
+    width: 110px !important;
+    min-width: 110px !important;
+    max-width: 110px !important;
+    min-height: 0 !important;
+    height: auto !important;
+    padding: 5px !important;
+    gap: 3px !important;
+    border-radius: 8px !important;
+}
+
+#organogramPage #organogramTree .organogram-person.organogram-role-chairman .organogram-photo,
+#organogramPage #organogramTree .organogram-person.organogram-role-chairman .organogram-photo-placeholder,
+#organogramPage #organogramTree .organogram-person.organogram-role-executive_director .organogram-photo,
+#organogramPage #organogramTree .organogram-person.organogram-role-executive_director .organogram-photo-placeholder,
+#organogramPage #organogramTree .organogram-person.organogram-role-department_head .organogram-photo,
+#organogramPage #organogramTree .organogram-person.organogram-role-department_head .organogram-photo-placeholder {
+    flex: 0 0 24px !important;
+    width: 24px !important;
+    height: 24px !important;
+}
+
+#organogramPage #organogramTree .organogram-person.organogram-role-chairman strong,
+#organogramPage #organogramTree .organogram-person.organogram-role-executive_director strong,
+#organogramPage #organogramTree .organogram-person.organogram-role-department_head strong {
+    font-size: 10px !important;
+    line-height: 1.15 !important;
+    overflow-wrap: anywhere;
+}
+
+#organogramPage #organogramTree .organogram-person.organogram-role-chairman > span,
+#organogramPage #organogramTree .organogram-person.organogram-role-executive_director > span,
+#organogramPage #organogramTree .organogram-person.organogram-role-department_head > span {
+    font-size: 8px !important;
+    line-height: 1.15 !important;
+    overflow-wrap: anywhere;
+}
+
+#organogramPage #organogramTree .organogram-person.organogram-role-chairman small,
+#organogramPage #organogramTree .organogram-person.organogram-role-executive_director small,
+#organogramPage #organogramTree .organogram-person.organogram-role-department_head small {
+    font-size: 7px !important;
+    line-height: 1.15 !important;
+    overflow-wrap: anywhere;
+}
+
+/* FINAL FIX: TOP CARDS SAME WIDTH AS EMPLOYEE CARDS */
+#organogramPage #organogramTree .organogram-person.organogram-role-chairman,
+#organogramPage #organogramTree .organogram-person.organogram-role-executive_director,
+#organogramPage #organogramTree .organogram-person.organogram-role-department_head {
+    box-sizing: border-box !important;
+    flex: 0 0 200px !important;
+    width: 200px !important;
+    min-width: 200px !important;
+    max-width: 200px !important;
+    height: auto !important;
+    min-height: 0 !important;
+    padding: 7px 9px !important;
+    gap: 8px !important;
+}
+
+#organogramPage #organogramTree .organogram-person.organogram-role-chairman .organogram-photo,
+#organogramPage #organogramTree .organogram-person.organogram-role-chairman .organogram-photo-placeholder,
+#organogramPage #organogramTree .organogram-person.organogram-role-executive_director .organogram-photo,
+#organogramPage #organogramTree .organogram-person.organogram-role-executive_director .organogram-photo-placeholder,
+#organogramPage #organogramTree .organogram-person.organogram-role-department_head .organogram-photo,
+#organogramPage #organogramTree .organogram-person.organogram-role-department_head .organogram-photo-placeholder {
+    flex: 0 0 40px !important;
+    width: 40px !important;
+    height: 40px !important;
+}
+
+#organogramPage #organogramTree .organogram-person.organogram-role-chairman strong,
+#organogramPage #organogramTree .organogram-person.organogram-role-executive_director strong,
+#organogramPage #organogramTree .organogram-person.organogram-role-department_head strong {
+    font-size: 12px !important;
+    line-height: 1.3 !important;
+}
+
+#organogramPage #organogramTree .organogram-person.organogram-role-chairman > span,
+#organogramPage #organogramTree .organogram-person.organogram-role-executive_director > span,
+#organogramPage #organogramTree .organogram-person.organogram-role-department_head > span {
+    font-size: 11px !important;
+    line-height: 1.3 !important;
+}
+
+#organogramPage #organogramTree .organogram-person.organogram-role-chairman small,
+#organogramPage #organogramTree .organogram-person.organogram-role-executive_director small,
+#organogramPage #organogramTree .organogram-person.organogram-role-department_head small {
+    font-size: 10px !important;
+    line-height: 1.3 !important;
+}
+
+/* CONNECTOR ALIGNMENT: vertical stems, horizontal branch, downward arrows */
+#organogramPage #organogramTree .organogram-branch {
+    position: relative;
+}
+
+#organogramPage #organogramTree .organogram-branch > .organogram-children {
+    position: relative;
+    padding-top: 20px !important;
+}
+
+#organogramPage #organogramTree .organogram-branch > .organogram-children::before {
+    top: 9px !important;
+    left: 0 !important;
+    right: 0 !important;
+    border-top: 2px solid #94a3b8 !important;
+}
+
+#organogramPage #organogramTree .organogram-branch > .organogram-children::after {
+    top: 0 !important;
+    left: 50% !important;
+    height: 10px !important;
+    border-left: 2px solid #94a3b8 !important;
+}
+
+#organogramPage #organogramTree .organogram-children > .organogram-branch::before {
+    top: -11px !important;
+    left: 50% !important;
+    height: 11px !important;
+    border-left: 2px solid #94a3b8 !important;
+}
+
+#organogramPage #organogramTree .organogram-children > .organogram-branch::after {
+    top: -2px !important;
+    left: calc(50% - 4px) !important;
+    width: 0 !important;
+    height: 0 !important;
+    border-left: 4px solid transparent !important;
+    border-right: 4px solid transparent !important;
+    border-top: 6px solid #64748b !important;
+}
+
+/* FINAL FIX: MATCH TOP CARD HEIGHT TO EMPLOYEE CARD */
+#organogramPage #organogramTree .organogram-person.organogram-role-chairman,
+#organogramPage #organogramTree .organogram-person.organogram-role-executive_director,
+#organogramPage #organogramTree .organogram-person.organogram-role-department_head {
+    box-sizing: border-box !important;
+    flex: 0 0 200px !important;
+    width: 200px !important;
+    min-width: 200px !important;
+    max-width: 200px !important;
+    min-height: 57px !important;
+    height: auto !important;
+    padding: 7px 9px !important;
+    gap: 8px !important;
+    align-items: center !important;
+}
+
+#organogramPage #organogramTree .organogram-person.organogram-role-chairman .organogram-photo,
+#organogramPage #organogramTree .organogram-person.organogram-role-chairman .organogram-photo-placeholder,
+#organogramPage #organogramTree .organogram-person.organogram-role-executive_director .organogram-photo,
+#organogramPage #organogramTree .organogram-person.organogram-role-executive_director .organogram-photo-placeholder,
+#organogramPage #organogramTree .organogram-person.organogram-role-department_head .organogram-photo,
+#organogramPage #organogramTree .organogram-person.organogram-role-department_head .organogram-photo-placeholder {
+    flex: 0 0 40px !important;
+    width: 40px !important;
+    height: 40px !important;
+}
+
+/* RESET OLD CONNECTOR POSITIONS */
+#organogramPage #organogramTree .organogram-branch > .organogram-children::before,
+#organogramPage #organogramTree .organogram-branch > .organogram-children::after,
+#organogramPage #organogramTree .organogram-children > .organogram-branch::before,
+#organogramPage #organogramTree .organogram-children > .organogram-branch::after {
+    box-sizing: border-box !important;
+}
+
+/* Give each child row room for its connector */
+#organogramPage #organogramTree .organogram-branch > .organogram-children {
+    position: relative !important;
+    padding-top: 20px !important;
+}
+
+/* Horizontal connector: between child branch centers */
+#organogramPage #organogramTree .organogram-branch > .organogram-children::before {
+    top: 9px !important;
+    left: 100px !important;
+    right: 100px !important;
+    border-top: 2px solid #94a3b8 !important;
+}
+
+/* Parent stem down to the horizontal connector */
+#organogramPage #organogramTree .organogram-branch > .organogram-children::after {
+    top: 0 !important;
+    left: calc(50% - 1px) !important;
+    width: 0 !important;
+    height: 10px !important;
+    border-left: 2px solid #94a3b8 !important;
+}
+
+/* Child stem and arrowhead */
+#organogramPage #organogramTree .organogram-children > .organogram-branch::before {
+    top: -11px !important;
+    left: calc(50% - 1px) !important;
+    width: 0 !important;
+    height: 11px !important;
+    border-left: 2px solid #94a3b8 !important;
+}
+
+#organogramPage #organogramTree .organogram-children > .organogram-branch::after {
+    top: -1px !important;
+    left: calc(50% - 4px) !important;
+    width: 0 !important;
+    height: 0 !important;
+    border-left: 4px solid transparent !important;
+    border-right: 4px solid transparent !important;
+    border-top: 6px solid #64748b !important;
+}
+
+/* ORGANOGRAM FINAL OVERRIDES */
+#organogramPage #organogramTree .organogram-person.organogram-role-chairman,
+#organogramPage #organogramTree .organogram-person.organogram-role-executive_director,
+#organogramPage #organogramTree .organogram-person.organogram-role-department_head {
+    box-sizing: border-box !important;
+    flex: 0 0 200px !important;
+    width: 200px !important;
+    min-width: 200px !important;
+    max-width: 200px !important;
+    height: 72px !important;
+    min-height: 72px !important;
+    max-height: 72px !important;
+    padding: 7px 9px !important;
+    gap: 8px !important;
+    flex-direction: row !important;
+    align-items: center !important;
+}
+
+/* TWO EMPLOYEES PER ROW */
+#organogramPage #organogramTree .organogram-staff-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 220px) !important;
+    grid-auto-flow: row !important;
+    justify-content: start !important;
+    align-items: stretch !important;
+    column-gap: 10px !important;
+    row-gap: 10px !important;
+    width: 450px !important;
+    min-width: 450px !important;
+}
+
+/* KEEP CONNECTORS ABOVE CARDS AND CENTERED */
+#organogramPage #organogramTree .organogram-branch {
+    position: relative !important;
+}
+
+#organogramPage #organogramTree .organogram-branch > .organogram-children {
+    position: relative !important;
+    padding-top: 20px !important;
+}
+
+#organogramPage #organogramTree .organogram-branch > .organogram-children::before {
+    top: 9px !important;
+    left: 225px !important;
+    right: 225px !important;
+}
+
+#organogramPage #organogramTree .organogram-branch > .organogram-children::after {
+    top: 0 !important;
+    left: calc(50% - 1px) !important;
+    height: 10px !important;
+}
+
+#organogramPage #organogramTree .organogram-children > .organogram-branch::before {
+    top: -11px !important;
+    left: calc(50% - 1px) !important;
+    height: 11px !important;
+}
+
+#organogramPage #organogramTree .organogram-children > .organogram-branch::after {
+    top: -1px !important;
+    left: calc(50% - 4px) !important;
+    border-left: 4px solid transparent !important;
+    border-right: 4px solid transparent !important;
+    border-top: 6px solid #64748b !important;
+}
+
+/* ORGANOGRAM: COMPACT STAFF BOXES */
+#organogramPage #organogramTree .organogram-staff {
+    width: 420px !important;
+    min-width: 420px !important;
+    max-width: 420px !important;
+    padding: 10px !important;
+}
+
+#organogramPage #organogramTree .organogram-staff-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    column-gap: 8px !important;
+    row-gap: 8px !important;
+}
+
+#organogramPage #organogramTree .organogram-staff-grid > .organogram-person {
+    padding: 5px !important;
+    gap: 5px !important;
+}
+
+#organogramPage #organogramTree .organogram-staff .organogram-person-info strong {
+    font-size: 11px !important;
+}
+
+#organogramPage #organogramTree .organogram-staff .organogram-person-info span {
+    font-size: 10px !important;
+}
+
+
+/* ORGANOGRAM CHART SELECTOR + CONNECTOR-FREE LAYOUT */
+#organogramPage .organogram-create-panel {
+    display: none;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin: 12px 0 16px;
+    padding: 14px;
+    border: 1px solid #dbe3ee;
+    border-radius: 12px;
+    background: #f8fafc;
+}
+
+#organogramPage .organogram-create-panel label {
+    width: 100%;
+    color: #334155;
+    font-weight: 700;
+}
+
+#organogramPage #organogramNewName {
+    box-sizing: border-box;
+    width: min(100%, 360px);
+    min-height: 42px;
+    padding: 9px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    background: #fff;
+    color: #0f172a;
+    font: inherit;
+}
+
+#organogramPage #organogramCreateStatus {
+    flex-basis: 100%;
+    overflow-wrap: anywhere;
+    color: #475569;
+    font-size: 13px;
+}
+
+#organogramPage #organogramCreateButton:disabled {
+    opacity: 0.65;
+    cursor: wait;
+}
+
+#organogramPage .organogram-selector {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin: 14px 0;
+}
+#organogramPage .organogram-selector label {
+    font-weight: 700;
+    color: #334155;
+}
+#organogramPage #organogramSelect {
+    width: min(100%, 360px);
+    min-height: 42px;
+    padding: 9px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    background: #fff;
+    color: #0f172a;
+    font: inherit;
+}
+#organogramPage #organogramTree {
+    width: 100%;
+    min-width: 0;
+    height: auto;
+    min-height: 0;
+    max-height: none;
+    overflow: visible;
+    padding: 12px 0;
+}
+#organogramPage #organogramTree .organogram-branch {
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: 100%;
+}
+#organogramPage #organogramTree .organogram-branch > .organogram-children {
+    display: flex;
+    flex-wrap: wrap !important;
+    justify-content: center;
+    align-items: flex-start;
+    width: 100% !important;
+    min-width: 0 !important;
+    padding-top: 12px !important;
+    gap: 16px;
+}
+#organogramPage #organogramTree .organogram-children > .organogram-branch {
+    flex: 0 1 auto;
+}
+#organogramPage #organogramTree .organogram-staff {
+    width: 100%;
+    min-width: 0;
+}
+#organogramPage #organogramTree .organogram-staff-grid {
+    display: flex;
+    flex-wrap: wrap !important;
+    justify-content: center;
+    width: 100%;
+    min-width: 0;
+    gap: 10px;
+}
+#organogramPage #organogramTree .organogram-branch > .organogram-children::before,
+#organogramPage #organogramTree .organogram-branch > .organogram-children::after,
+#organogramPage #organogramTree .organogram-children > .organogram-branch::before,
+#organogramPage #organogramTree .organogram-children > .organogram-branch::after {
+    display: none !important;
+    content: none !important;
+    border: 0 !important;
+}
+
+
+/* ORGANOGRAM UI REQUEST: create button below edit; center Chairman text */
+#organogramPage .organogram-toolbar-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    flex: 0 0 auto;
+}
+
+#organogramPage .organogram-create-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+}
+
+#organogramPage #organogramCreateStatus {
+    max-width: 220px;
+    overflow-wrap: anywhere;
+}
+
+#organogramPage #organogramTree .organogram-person.organogram-role-chairman {
+    justify-content: center !important;
+}
+
+#organogramPage #organogramTree .organogram-person.organogram-role-chairman strong,
+#organogramPage #organogramTree .organogram-person.organogram-role-chairman > span,
+#organogramPage #organogramTree .organogram-person.organogram-role-chairman small {
+    text-align: center !important;
+}
+
+
+/* ORGANOGRAM ALIGNMENT FIX: center chart and Chairman content */
+@media (min-width: 900px) {
+    #organogramPage .organogram-card {
+        grid-template-columns: minmax(0, 1fr) !important;
+        grid-template-areas:
+            "toolbar"
+            "status"
+            "tree"
+            "admin" !important;
+        text-align: center;
+    }
+
+    #organogramPage #organogramTree {
+        grid-area: tree;
+        justify-self: center;
+        width: 100%;
+        max-width: 100%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    #organogramPage #organogramAdminPanel {
+        grid-area: admin;
+        width: 100%;
+        max-width: 100%;
+    }
+}
+
+#organogramPage #organogramTree .organogram-person.organogram-role-chairman {
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    text-align: center !important;
+}
+
+#organogramPage #organogramTree .organogram-person.organogram-role-chairman strong,
+#organogramPage #organogramTree .organogram-person.organogram-role-chairman > span,
+#organogramPage #organogramTree .organogram-person.organogram-role-chairman small {
+    display: block;
+    width: 100%;
+    text-align: center !important;
+}
+
+#organogramPage .organogram-toolbar-actions {
+    align-items: stretch;
+}
+
+
+/* ORGANOGRAM DESKTOP LAYOUT: tree left, admin right, selector upper right */
+#organogramPage .organogram-card {
+    display: grid;
+}
+
+@media (min-width: 900px) {
+    #organogramPage .organogram-card {
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr) 320px !important;
+        grid-template-areas:
+            "toolbar toolbar"
+            "selector selector"
+            "status status"
+            "tree admin" !important;
+        align-items: start;
+        text-align: left;
+    }
+
+    #organogramPage .organogram-toolbar {
+        grid-area: toolbar !important;
+    }
+
+    #organogramPage .organogram-selector {
+        grid-area: selector !important;
+        justify-self: end;
+        align-items: flex-end;
+        margin: 0 0 10px !important;
+    }
+
+    #organogramPage #organogramStatus {
+        grid-area: status !important;
+    }
+
+    #organogramPage #organogramTree {
+        grid-area: tree !important;
+        min-width: 0;
+        width: 100%;
+        margin: 0;
+    }
+
+    #organogramPage #organogramAdminPanel {
+        grid-area: admin !important;
+        min-width: 0;
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+    }
+}
+
+
+/* CMO CARD: MATCH EXECUTIVE DIRECTOR SIZE */
+#organogramPage #organogramTree .organogram-person.organogram-role-chief_marketing_officer {
+    box-sizing: border-box !important;
+    flex: 0 0 200px !important;
+    width: 200px !important;
+    min-width: 200px !important;
+    max-width: 200px !important;
+    height: 72px !important;
+    min-height: 72px !important;
+    max-height: 72px !important;
+    padding: 7px 9px !important;
+    gap: 8px !important;
+    flex-direction: row !important;
+    align-items: center !important;
+}
+
+#organogramPage #organogramTree .organogram-person.organogram-role-chief_marketing_officer .organogram-photo,
+#organogramPage #organogramTree .organogram-person.organogram-role-chief_marketing_officer .organogram-photo-placeholder {
+    flex: 0 0 40px !important;
+    width: 40px !important;
+    height: 40px !important;
+}
+
+#organogramPage #organogramTree .organogram-person.organogram-role-chief_marketing_officer strong {
+    font-size: 12px !important;
+    line-height: 1.3 !important;
+}
+
+#organogramPage #organogramTree .organogram-person.organogram-role-chief_marketing_officer > span {
+    font-size: 11px !important;
+    line-height: 1.3 !important;
+}
+
+#organogramPage #organogramTree .organogram-person.organogram-role-chief_marketing_officer small {
+    font-size: 10px !important;
+    line-height: 1.3 !important;
+}
+
+
+/* Edit Existing Employee Admin Card */
+#editExistingEmployeeCard .edit-existing-search {
+    display: flex;
+    gap: 8px;
+    align-items: stretch;
+}
+
+#editExistingEmployeeCard input,
+#editExistingEmployeeCard select {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    min-height: 43px;
+    padding: 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #fff;
+    color: #111827;
+    font: inherit;
+}
+
+#editExistingEmployeeCard .edit-existing-search input {
+    flex: 1;
+}
+
+#editExistingEmployeeCard button {
+    min-height: 43px;
+    padding: 10px 15px;
+    border: 0;
+    border-radius: 8px;
+    background: #2563eb;
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+#editExistingEmployeeCard #editExistingEmployeeOpen {
+    width: 100%;
+    margin-top: 12px;
+}
+
+#editExistingEmployeeCard button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+#editExistingEmployeeStatus {
+    margin-top: 12px;
+    color: #64748b;
+    font-size: 13px;
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 420px) {
+    #editExistingEmployeeCard .edit-existing-search {
+        flex-direction: column;
+    }
+}
+
+/* ===== Employee Live Search Suggestions ===== */
+
+.employee-photo-search {
+    position: relative;
+    margin-bottom: 12px;
+}
+
+.employee-photo-search-row {
+    display: flex;
+    gap: 8px;
+    align-items: stretch;
+}
+
+.employee-photo-search-row input {
+    flex: 1;
+    min-width: 0;
+    box-sizing: border-box;
+    border-radius: 12px !important;
+}
+
+.employee-search-suggestions,
+.edit-existing-suggestions {
+    position: absolute;
+    top: calc(100% + 3px);
+    left: 0;
+    right: 0;
+    z-index: 10000;
+    max-height: 260px;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid #cbd5e1;
+    border-radius: 9px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.16);
+}
+
+.employee-search-suggestion {
+    display: block;
+    width: 100%;
+    padding: 11px 12px;
+    border: 0;
+    border-bottom: 1px solid #e5e7eb;
+    border-radius: 0;
+    background: #fff;
+    color: #111827;
+    text-align: left;
+    font: inherit;
+    cursor: pointer;
+}
+
+.employee-search-suggestion:last-child {
+    border-bottom: 0;
+}
+
+.employee-search-suggestion:hover,
+.employee-search-suggestion:focus {
+    background: #eff6ff;
+    color: #111827;
+    outline: none;
+}
+
+.employee-search-empty {
+    padding: 12px;
+    color: #64748b;
+    font-size: 13px;
+}
+
+#editExistingEmployeeCard .edit-existing-search {
+    position: relative;
+    display: block;
+}
+
+#editExistingEmployeeCard .edit-existing-search input {
+    box-sizing: border-box;
+    width: 100%;
+}
+
+#editExistingEmployeeCard .edit-existing-suggestions {
+    position: absolute;
+}
+
+@media (max-width: 420px) {
+    .employee-photo-search-row {
+        gap: 6px;
+    }
+}
+
+/* ===== End Employee Live Search Suggestions ===== */

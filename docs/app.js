@@ -1354,87 +1354,98 @@ function showDetails(employee, previousPage = "list") {
    EMPLOYEE SELECT
 ========================= */
 
+
 const employeeSearchInput = document.getElementById("employeeSearchInput");
 const employeeSearchButton = document.getElementById("employeeSearchButton");
 const employeeSearchSuggestions = document.getElementById("employeeSearchSuggestions");
 
+function getPhotoEmployeeMatches(query) {
+    const q = query.trim().toLocaleLowerCase();
+    if (!q) return [];
 
-function syncPhotoEmployeeSelection() {
-    if (!employeeSearchInput || !employeeSelect) return;
-    const query = employeeSearchInput.value.trim().toLocaleLowerCase();
-    const options = Array.from(employeeSelect.options).filter(option => option.value);
-    const match = options.find(option =>
-        option.textContent.trim().toLocaleLowerCase() === query
-    );
-    employeeSelect.value = match ? match.value : "";
+    return Array.from(employeeSelect.options).filter(option => {
+        if (!option.value) return false;
+        const id = String(option.dataset.employeeNo || "").toLocaleLowerCase();
+        const name = String(option.dataset.employeeName || "").toLocaleLowerCase();
+        return id.includes(q) || name.includes(q);
+    }).slice(0, 15);
 }
 
-employeeSearchInput?.addEventListener("input", syncPhotoEmployeeSelection);
-employeeSearchInput?.addEventListener("change", syncPhotoEmployeeSelection);
+function selectPhotoEmployee(option) {
+    if (!option) return;
 
-function updateEmployeeSearchSuggestions() {
-    if (!employeeSearchSuggestions) return;
+    employeeSelect.value = option.value;
+    employeeSearchInput.value =
+        `${option.dataset.employeeNo} - ${option.dataset.employeeName || ""}`;
+    employeeSearchSuggestions.replaceChildren();
+    employeeSearchSuggestions.hidden = true;
+    uploadStatus.textContent = "Selected: " + option.textContent;
+}
 
-    const seen = new Set();
-    const uniqueOptions = [];
-
-    Array.from(employeeSelect.options).forEach(option => {
-        if (!option.value) return;
-
-        if (seen.has(option.value)) {
-            option.remove();
-            return;
-        }
-
-        seen.add(option.value);
-        uniqueOptions.push(option);
-    });
-
+function renderPhotoEmployeeSuggestions() {
+    const query = employeeSearchInput.value.trim();
+    employeeSelect.value = "";
     employeeSearchSuggestions.replaceChildren();
 
-    uniqueOptions.forEach(option => {
-        const suggestion = document.createElement("option");
-        suggestion.value = option.textContent;
-        employeeSearchSuggestions.appendChild(suggestion);
-    });
+    if (!query) {
+        employeeSearchSuggestions.hidden = true;
+        return;
+    }
+
+    const matches = getPhotoEmployeeMatches(query);
+
+    if (!matches.length) {
+        const empty = document.createElement("div");
+        empty.className = "employee-search-empty";
+        empty.textContent = "No matching employee found.";
+        employeeSearchSuggestions.appendChild(empty);
+    } else {
+        matches.forEach(option => {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "employee-search-suggestion";
+            button.textContent = option.textContent;
+            button.addEventListener("click", () => selectPhotoEmployee(option));
+            employeeSearchSuggestions.appendChild(button);
+        });
+    }
+
+    employeeSearchSuggestions.hidden = false;
 }
 
-if (employeeSearchButton && employeeSearchInput) {
-    employeeSearchButton.addEventListener("click", () => {
-        const query = employeeSearchInput.value.trim().toLocaleLowerCase();
+employeeSearchInput?.addEventListener("input", renderPhotoEmployeeSuggestions);
 
-        if (!query) {
-            uploadStatus.textContent = "Please enter an employee name or ID.";
-            employeeSearchInput.focus();
-            return;
-        }
+employeeSearchButton?.addEventListener("click", () => {
+    const query = employeeSearchInput.value.trim();
 
-        const options = Array.from(employeeSelect.options).filter(option => option.value);
-        const match =
-            options.find(option => option.textContent.trim().toLocaleLowerCase() === query) ||
-            options.find(option => String(option.dataset.employeeNo || "").toLocaleLowerCase() === query) ||
-            options.find(option => option.textContent.toLocaleLowerCase().includes(query));
+    if (!query) {
+        uploadStatus.textContent = "Please enter an employee name or ID.";
+        employeeSearchInput.focus();
+        return;
+    }
 
-        if (!match) {
-            uploadStatus.textContent = "No matching employee found. Try another name or ID.";
-            return;
-        }
+    const matches = getPhotoEmployeeMatches(query);
 
-        employeeSelect.value = match.value;
-        employeeSearchInput.value = match.textContent;
-        uploadStatus.textContent = "Selected: " + match.textContent;
-    });
+    if (matches.length === 1) {
+        selectPhotoEmployee(matches[0]);
+    } else {
+        renderPhotoEmployeeSuggestions();
+        uploadStatus.textContent = matches.length
+            ? "Select an employee from the suggestions."
+            : "No matching employee found. Try another name or ID.";
+    }
+});
 
-    employeeSearchInput.addEventListener("keydown", event => {
-        if (event.key === "Enter") {
-            event.preventDefault();
-            employeeSearchButton.click();
-        }
-    });
-}
+employeeSearchInput?.addEventListener("keydown", event => {
+    if (event.key === "Enter") {
+        event.preventDefault();
+        employeeSearchButton?.click();
+    }
+});
 
 async function loadEmployeeSelect() {
     employeeSelect.replaceChildren(new Option("Select employee", ""));
+
     try {
         const sources = [
             { key: "headoffice", label: "Head Office", view: "employee_directory_public" },
@@ -1451,26 +1462,31 @@ async function loadEmployeeSelect() {
                     }
                 }
             );
+
             if (!response.ok) {
                 throw new Error(`${source.label} employee list failed (${response.status}).`);
             }
+
             return { source, list: await response.json() };
         }));
 
         results.forEach(({ source, list }) => {
             list.forEach(employee => {
                 if (employee.employee_no == null) return;
+
                 const option = document.createElement("option");
                 option.value = `${source.key}::${employee.employee_no}`;
                 option.dataset.source = source.key;
                 option.dataset.employeeNo = String(employee.employee_no);
+                option.dataset.employeeName = String(employee.employee_name || "");
                 option.textContent =
                     `${source.label} — ${employee.employee_no} - ${employee.employee_name || ""}`;
+
                 employeeSelect.appendChild(option);
             });
         });
 
-        updateEmployeeSearchSuggestions();
+        renderPhotoEmployeeSuggestions();
     } catch (error) {
         console.error("Photo employee list error:", error);
         uploadStatus.textContent = "Employee list could not load: " + error.message;
@@ -1487,14 +1503,15 @@ async function loadEmployeeSelect() {
    EDIT EXISTING EMPLOYEE
 ========================= */
 
+
 const editExistingEmployeeSource =
     document.getElementById("editExistingEmployeeSource");
 const editExistingEmployeeInput =
     document.getElementById("editExistingEmployeeInput");
 const editExistingEmployeeSearch =
     document.getElementById("editExistingEmployeeSearch");
-const editExistingEmployeeResults =
-    document.getElementById("editExistingEmployeeResults");
+const editExistingEmployeeSuggestions =
+    document.getElementById("editExistingEmployeeSuggestions");
 const editExistingEmployeeOpen =
     document.getElementById("editExistingEmployeeOpen");
 const editExistingEmployeeStatus =
@@ -1504,120 +1521,143 @@ let editExistingEmployeeCache = {
     headoffice: null,
     factory: null
 };
-
 let editExistingEmployeeMatches = [];
+let editExistingEmployeeSelected = null;
+let editExistingEmployeeRequest = 0;
 
 function resetExistingEmployeeSearch() {
+    editExistingEmployeeRequest++;
     editExistingEmployeeMatches = [];
-    editExistingEmployeeResults.replaceChildren(
-        new Option("Select an employee", "")
-    );
-    editExistingEmployeeResults.hidden = true;
+    editExistingEmployeeSelected = null;
+    editExistingEmployeeInput.value = "";
+    editExistingEmployeeSuggestions.replaceChildren();
+    editExistingEmployeeSuggestions.hidden = true;
     editExistingEmployeeOpen.disabled = true;
     editExistingEmployeeStatus.textContent = "";
 }
 
 editExistingEmployeeSource?.addEventListener("change", resetExistingEmployeeSearch);
 
+async function loadExistingEmployeeList(source) {
+    if (editExistingEmployeeCache[source]) {
+        return editExistingEmployeeCache[source];
+    }
+
+    const viewName = source === "factory"
+        ? "employee_directory_factory_public"
+        : "employee_directory_public";
+
+    const response = await fetch(
+        `${SUPABASE_URL}/rest/v1/${viewName}?select=*`,
+        {
+            headers: {
+                apikey: SUPABASE_KEY,
+                Authorization: `Bearer ${SUPABASE_KEY}`
+            }
+        }
+    );
+
+    if (!response.ok) {
+        throw new Error(`Employee list could not load (${response.status}).`);
+    }
+
+    editExistingEmployeeCache[source] = await response.json();
+    return editExistingEmployeeCache[source];
+}
+
+function selectExistingEmployee(employee) {
+    editExistingEmployeeSelected = employee;
+    editExistingEmployeeInput.value =
+        `${employee.employee_no || "-"} - ${employee.employee_name || "-"}`;
+
+    editExistingEmployeeSuggestions.replaceChildren();
+    editExistingEmployeeSuggestions.hidden = true;
+    editExistingEmployeeOpen.disabled = false;
+    editExistingEmployeeStatus.textContent =
+        "Selected: " + editExistingEmployeeInput.value;
+}
+
 async function searchExistingEmployee() {
+    const requestId = ++editExistingEmployeeRequest;
     const source = editExistingEmployeeSource.value;
     const query = editExistingEmployeeInput.value.trim().toLocaleLowerCase();
 
+    editExistingEmployeeSelected = null;
+    editExistingEmployeeOpen.disabled = true;
+
     if (!query) {
-        editExistingEmployeeStatus.textContent =
-            "Please enter an employee name or ID.";
-        editExistingEmployeeInput.focus();
+        editExistingEmployeeMatches = [];
+        editExistingEmployeeSuggestions.replaceChildren();
+        editExistingEmployeeSuggestions.hidden = true;
+        editExistingEmployeeStatus.textContent = "";
         return;
     }
 
-    editExistingEmployeeSearch.disabled = true;
     editExistingEmployeeStatus.textContent = "Searching employees...";
-    editExistingEmployeeOpen.disabled = true;
 
     try {
-        if (!editExistingEmployeeCache[source]) {
-            const viewName = source === "factory"
-                ? "employee_directory_factory_public"
-                : "employee_directory_public";
+        const employees = await loadExistingEmployeeList(source);
 
-            const response = await fetch(
-                `${SUPABASE_URL}/rest/v1/${viewName}?select=*`,
-                {
-                    headers: {
-                        apikey: SUPABASE_KEY,
-                        Authorization: `Bearer ${SUPABASE_KEY}`
-                    }
-                }
-            );
+        if (requestId !== editExistingEmployeeRequest) return;
 
-            if (!response.ok) {
-                throw new Error(`Employee list could not load (${response.status}).`);
-            }
-
-            editExistingEmployeeCache[source] = await response.json();
-        }
-
-        const employeesForSource = editExistingEmployeeCache[source];
-
-        editExistingEmployeeMatches = employeesForSource.filter(employee => {
+        editExistingEmployeeMatches = employees.filter(employee => {
             const name = String(employee.employee_name || "").toLocaleLowerCase();
             const id = String(employee.employee_no || "").toLocaleLowerCase();
             return name.includes(query) || id.includes(query);
-        });
+        }).slice(0, 15);
 
-        editExistingEmployeeResults.replaceChildren(
-            new Option("Select matching employee", "")
-        );
+        editExistingEmployeeSuggestions.replaceChildren();
 
-        editExistingEmployeeMatches.forEach((employee, index) => {
-            const label =
-                `${employee.employee_no || "-"} - ${employee.employee_name || "-"}` +
-                ` (${employee.designation || "-"})`;
+        if (!editExistingEmployeeMatches.length) {
+            const empty = document.createElement("div");
+            empty.className = "employee-search-empty";
+            empty.textContent = "No matching employee found.";
+            editExistingEmployeeSuggestions.appendChild(empty);
+        } else {
+            editExistingEmployeeMatches.forEach(employee => {
+                const button = document.createElement("button");
+                button.type = "button";
+                button.className = "employee-search-suggestion";
+                button.textContent =
+                    `${employee.employee_no || "-"} - ${employee.employee_name || "-"}` +
+                    ` (${employee.designation || "-"})`;
 
-            editExistingEmployeeResults.appendChild(
-                new Option(label, String(index))
-            );
-        });
+                button.addEventListener("click", () => {
+                    selectExistingEmployee(employee);
+                });
 
-        editExistingEmployeeResults.hidden =
-            editExistingEmployeeMatches.length === 0;
+                editExistingEmployeeSuggestions.appendChild(button);
+            });
+        }
 
-        editExistingEmployeeOpen.disabled = true;
-
+        editExistingEmployeeSuggestions.hidden = false;
         editExistingEmployeeStatus.textContent =
             editExistingEmployeeMatches.length
                 ? `${editExistingEmployeeMatches.length} matching employee(s) found. Select an employee.`
                 : "No matching employee found. Try another name or ID.";
-
     } catch (error) {
+        if (requestId !== editExistingEmployeeRequest) return;
         console.error("Edit employee search error:", error);
+        editExistingEmployeeSuggestions.hidden = true;
         editExistingEmployeeStatus.textContent =
             "Search failed: " + error.message;
-    } finally {
-        editExistingEmployeeSearch.disabled = false;
     }
 }
 
-editExistingEmployeeSearch?.addEventListener(
-    "click",
-    searchExistingEmployee
-);
+editExistingEmployeeInput?.addEventListener("input", searchExistingEmployee);
+editExistingEmployeeSearch?.addEventListener("click", searchExistingEmployee);
 
 editExistingEmployeeInput?.addEventListener("keydown", event => {
     if (event.key === "Enter") {
         event.preventDefault();
-        searchExistingEmployee();
+        if (editExistingEmployeeMatches.length === 1) {
+            selectExistingEmployee(editExistingEmployeeMatches[0]);
+        }
     }
 });
 
-editExistingEmployeeResults?.addEventListener("change", () => {
-    editExistingEmployeeOpen.disabled =
-        editExistingEmployeeResults.value === "";
-});
-
 editExistingEmployeeOpen?.addEventListener("click", () => {
-    const index = Number(editExistingEmployeeResults.value);
-    const employee = editExistingEmployeeMatches[index];
+    const employee = editExistingEmployeeSelected;
 
     if (!employee || !accessToken) {
         editExistingEmployeeStatus.textContent =
@@ -1625,10 +1665,7 @@ editExistingEmployeeOpen?.addEventListener("click", () => {
         return;
     }
 
-    const source = editExistingEmployeeSource.value;
-
-    currentEmployeeSource = source;
-
+    currentEmployeeSource = editExistingEmployeeSource.value;
     adminPage.style.display = "none";
     showDetails(employee, "adminEdit");
 });
@@ -1859,6 +1896,7 @@ async function restoreSavedAdminSession() {
             "block";
 
         uploadStatus.textContent = "";
+        loadEmployeeSelect();
 
         console.log(
             "Saved admin session restored."
@@ -1995,6 +2033,7 @@ loginButton.addEventListener(
 
 
             uploadStatus.textContent = "";
+        loadEmployeeSelect();
 
             if (window.__openSalaryAfterLogin) {
                 window.__openSalaryAfterLogin = false;

@@ -1,5 +1,5 @@
-const SUPABASE_URL = 'https://' + 'jborzgwqlinwkeiquivy' + '.supabase.co';
-const SUPABASE_KEY = "sb_publishable_W_h2UbIqWWJNGZfRnJSojg_JCpHW7qN";
+const SUPABASE_URL = 'https://' + 'jnkpswbieqoprvvkhxvu' + '.supabase.co';
+const SUPABASE_KEY = "sb_publishable_q0cxNXSQ7iFRmCOqonhWOw_Xnt0FEnP";
 
 const rememberLogin =
     document.getElementById("rememberLogin");
@@ -17,6 +17,7 @@ const departmentSection = document.getElementById("departmentSection");
 const departmentCards = document.getElementById("departmentCards");
 const allDepartmentsButton = document.getElementById("allDepartmentsButton");
 const allEmployeesButton = document.getElementById("allEmployeesButton");
+const allFactoryEmployeesButton = document.getElementById("allFactoryEmployeesButton");
 const favoriteEmployeesButton = document.getElementById("favoriteEmployeesButton");
 const departmentPage = document.getElementById("departmentPage");
 const departmentPageTitle = document.getElementById("departmentPageTitle");
@@ -33,61 +34,47 @@ const birthdayMonths = document.getElementById("birthdayMonths");
 const allEmployeesPage = document.getElementById("allEmployeesPage");
 const allEmployeesBackButton = document.getElementById("allEmployeesBackButton");
 
-let favoriteEmployees = JSON.parse(
-    localStorage.getItem("favoriteEmployees") || "[]"
-);
+let currentEmployeeSource = "headoffice";
 
-function isFavorite(employee) {
-    return favoriteEmployees.includes(
-        String(employee.employee_no)
+function favoriteStorageKey(source = currentEmployeeSource) {
+    return source === "factory"
+        ? "favoriteEmployees_factory"
+        : "favoriteEmployees_headoffice";
+}
+
+// Keep existing web favorites by migrating the old shared list to Head Office.
+if (
+    localStorage.getItem("favoriteEmployees_headoffice") === null &&
+    localStorage.getItem("favoriteEmployees") !== null
+) {
+    localStorage.setItem(
+        "favoriteEmployees_headoffice",
+        localStorage.getItem("favoriteEmployees")
     );
 }
 
-async function toggleFavorite(employee) {
+let favoriteEmployees = JSON.parse(
+    localStorage.getItem(favoriteStorageKey()) || "[]"
+).map(String);
 
+function isFavorite(employee) {
+    return favoriteEmployees.includes(String(employee.employee_no));
+}
+
+async function toggleFavorite(employee, source = currentEmployeeSource) {
     const employeeNo = String(employee.employee_no);
-    const newFavorite = !isFavorite(employee);
+    const key = favoriteStorageKey(source);
+    const sourceFavorites = JSON.parse(localStorage.getItem(key) || "[]").map(String);
+    const newFavorite = !sourceFavorites.includes(employeeNo);
+    const nextFavorites = newFavorite
+        ? [...new Set([...sourceFavorites, employeeNo])]
+        : sourceFavorites.filter(id => id !== employeeNo);
 
-    if (newFavorite) {
-        favoriteEmployees.push(employeeNo);
-    } else {
-        favoriteEmployees =
-            favoriteEmployees.filter(
-                id => id !== employeeNo
-            );
-    }
+    localStorage.setItem(key, JSON.stringify(nextFavorites));
+    if (source === currentEmployeeSource) favoriteEmployees = nextFavorites;
 
-    localStorage.setItem(
-        "favoriteEmployees",
-        JSON.stringify(favoriteEmployees)
-    );
-
-    try {
-        const response = await fetch(
-            `${SUPABASE_URL}/rest/v1/employee_dekko_v2?employee_no=eq.${encodeURIComponent(employeeNo)}`,
-            {
-                method: "PATCH",
-                headers: {
-                    "apikey": SUPABASE_KEY,
-                    "Authorization": `Bearer ${SUPABASE_KEY}`,
-                    "Content-Type": "application/json",
-                    "Prefer": "return=minimal"
-                },
-                body: JSON.stringify({
-                    favorite: newFavorite
-                })
-            }
-        );
-
-        if (!response.ok) {
-            console.error(
-                "Failed to sync favorite:",
-                await response.text()
-            );
-        }
-    } catch (error) {
-        console.error("Favorite sync error:", error);
-    }
+    // Favorites remain device-local; no employee table is updated.
+    employee.favorite = newFavorite;
 }
 
 
@@ -270,6 +257,22 @@ function normalizeDesignation(designation) {
     return value || "Other";
 }
 
+function populateDepartmentFilter() {
+    const filter = document.getElementById("departmentFilter");
+    if (!filter) return;
+
+    const departments = [...new Set(
+        employees.map(employee =>
+            String(employee.department || "Other").trim()
+        ).filter(Boolean)
+    )].sort((a, b) => a.localeCompare(b));
+
+    filter.replaceChildren(new Option("All Departments", ""));
+    departments.forEach(department => {
+        filter.appendChild(new Option(department, department));
+    });
+}
+
 function populateDesignationFilter() {
 
     const filter = document.getElementById("designationFilter");
@@ -319,15 +322,18 @@ function populateDesignationFilter() {
    LOAD EMPLOYEES
 ========================= */
 
-async function loadEmployees() {
+async function loadEmployees(source = "headoffice") {
+    currentEmployeeSource = source;
 
-    employeeList.innerHTML =
-        "<p>Loading employees...</p>";
+    employeeList.innerHTML = "<p>Loading employees...</p>";
 
     try {
+        const viewName = source === "factory"
+            ? "employee_directory_factory_public"
+            : "employee_directory_public";
 
         const response = await fetch(
-            `${SUPABASE_URL}/rest/v1/employee_dekko_v2?select=*`,
+            `${SUPABASE_URL}/rest/v1/${viewName}?select=*`,
             {
                 headers: {
                     "apikey": SUPABASE_KEY,
@@ -336,50 +342,39 @@ async function loadEmployees() {
             }
         );
 
-
         if (!response.ok) {
-
-            throw new Error(
-                "Supabase error: " + response.status
-            );
-
+            throw new Error("Supabase error: " + response.status);
         }
-
 
         employees = await response.json();
 
-        // Load favorite status from Supabase
-        favoriteEmployees = employees
-            .filter(employee => employee.favorite === true)
-            .map(employee => String(employee.employee_no));
-
-        localStorage.setItem(
-            "favoriteEmployees",
-            JSON.stringify(favoriteEmployees)
-        );
-
-
-        showDepartmentCards();
+        // Restore favorites saved on this device.
+        favoriteEmployees = JSON.parse(
+            localStorage.getItem(favoriteStorageKey(source)) || "[]"
+        ).map(id => String(id));
 
         showEmployees(employees);
-
         populateDesignationFilter();
-        loadEmployeeSelect();
+        populateDepartmentFilter();
 
+        const heading = allEmployeesPage.querySelector("h1");
+        if (heading) {
+            heading.textContent = source === "factory"
+                ? "👥 All Employees (Factory)"
+                : "👥 All Employees (Head Office)";
+        }
+
+        if (source === "headoffice") {
+            showDepartmentCards();
+            renderHomeBirthdayCelebrations();
+            loadEmployeeSelect();
+        }
 
     } catch (error) {
-
         console.error(error);
-
-
-        employeeList.innerHTML =
-            "<p>Employee data load হয়নি।</p>";
-
-
+        employeeList.innerHTML = "<p>Employee data load হয়নি।</p>";
         resultCount.textContent = "";
-
     }
-
 }
 
 
@@ -421,84 +416,33 @@ function getInitials(name) {
    PHOTO URL
 ========================= */
 
-const employeePhotoCache = new Map();
-
 function getPhoto(employee) {
-    if (!employee.photo_path) {
-        return `
-            <div class="employee-photo-placeholder">
-                No Photo
-            </div>
-        `;
+    const employeeNo = String(
+        employee.employee_no || employee.emp_no || employee.employeeNo || ""
+    ).trim();
+
+    if (!employeeNo) {
+        return '<div class="employee-photo-placeholder">No Photo</div>';
     }
 
-    const photoId =
-        "photo_" + employee.employee_no + "_" +
-        Math.random().toString(36).substring(2, 8);
+    const storedPhotoPath = String(employee.photo_path || "").trim();
+    const cloudinaryPrefix =
+        "https" + "://" + "res.cloudinary.com/lnhd3otv/image/upload/";
 
-    const cacheKey = employee.photo_path;
-    const photoUrl =
-        `${SUPABASE_URL}/storage/v1/object/employee-photos/${employee.photo_path}`;
-
-    setTimeout(async () => {
-        try {
-            if (!employeePhotoCache.has(cacheKey)) {
-                const promise = fetch(photoUrl, {
-                    headers: {
-                        "apikey": SUPABASE_KEY,
-                        "Authorization": "Bearer " + SUPABASE_KEY
-                    }
-                }).then(response => {
-                    if (!response.ok) {
-                        throw new Error("HTTP " + response.status);
-                    }
-                    return response.blob();
-                }).then(blob => URL.createObjectURL(blob));
-
-                employeePhotoCache.set(cacheKey, promise);
-
-                promise.catch(() => {
-                    if (employeePhotoCache.get(cacheKey) === promise) {
-                        employeePhotoCache.delete(cacheKey);
-                    }
-                });
-            }
-
-            const imageUrl = await employeePhotoCache.get(cacheKey);
-            const img = document.getElementById(photoId);
-
-            if (img) {
-                img.src = imageUrl;
-            }
-        } catch (error) {
-            console.error("Photo loading failed:", employee.employee_no, error);
-
-            const img = document.getElementById(photoId);
-            if (img) {
-                img.style.display = "none";
-                if (img.nextElementSibling) {
-                    img.nextElementSibling.style.display = "flex";
-                }
-            }
-        }
-    }, 0);
+    const photoUrl = storedPhotoPath.startsWith(cloudinaryPrefix)
+        ? storedPhotoPath
+        : cloudinaryPrefix + encodeURIComponent(employeeNo) + ".jpg";
 
     return `
         <img
-            id="${photoId}"
-            src=""
+            src="${photoUrl}"
+            alt="Employee photo"
             class="employee-photo"
-            alt="${employee.employee_name || "Employee"}"
+            loading="lazy"
+            onerror="this.outerHTML='<div class=&quot;employee-photo-placeholder&quot;>No Photo</div>'"
         >
-        <div
-            class="employee-photo-placeholder"
-            style="display:none;"
-        >
-            No Photo
-        </div>
     `;
 }
-
 function showDepartmentCards() {
 
     departmentCards.innerHTML = "";
@@ -617,68 +561,99 @@ function showDepartmentCards() {
         departmentNames.length ? "block" : "none";
 }
 
-function showFavoriteEmployees() {
+async function showFavoriteEmployees() {
+    favoriteEmployeeList.innerHTML = "<p>Loading favorite employees...</p>";
+
+    const sources = [
+        { key: "headoffice", title: "Employees (Head Office)", view: "employee_directory_public" },
+        { key: "factory", title: "Employees (Factory)", view: "employee_directory_factory_public" }
+    ];
 
     favoriteEmployeeList.innerHTML = "";
 
-    const favorites = employees.filter(function(employee) {
-        return isFavorite(employee);
-    });
+    for (const source of sources) {
+        const section = document.createElement("section");
+        section.className = "favorite-source-section";
 
-    if (favorites.length === 0) {
-        favoriteEmployeeList.innerHTML =
-            "<p>No favorite employees found.</p>";
-        return;
-    }
+        const heading = document.createElement("h2");
+        heading.textContent = source.title;
 
-    favorites.forEach(function(employee) {
+        const list = document.createElement("div");
+        list.className = "favorite-source-list";
 
-        const div = document.createElement("div");
+        section.appendChild(heading);
+        section.appendChild(list);
+        favoriteEmployeeList.appendChild(section);
 
-        div.className = "employee-card";
-
-        div.innerHTML = `
-            <div class="employee-card-top">
-                ${getPhoto(employee)}
-                <div class="employee-card-info">
-                    <h3>${employee.employee_name || "-"}</h3>
-                    <p>${employee.designation || "-"}</p>
-                    <span>${employee.employee_no || "-"}</span>
-                </div>
-            </div>
-
-            <div class="employee-card-actions">
-
-                <button class="favorite-button" type="button">
-                    ❤️
-                </button>
-
-                <button class="view-button" type="button">
-                    View Details
-                </button>
-
-            </div>
-        `;
-
-        div.querySelector(".favorite-button")
-            .addEventListener(
-                "click",
-                function() {
-                    toggleFavorite(employee);
-                    showFavoriteEmployees();
+        try {
+            const response = await fetch(
+                `${SUPABASE_URL}/rest/v1/${source.view}?select=*`,
+                {
+                    headers: {
+                        "apikey": SUPABASE_KEY,
+                        "Authorization": `Bearer ${SUPABASE_KEY}`
+                    }
                 }
             );
+            if (!response.ok) {
+                throw new Error("Supabase error: " + response.status);
+            }
 
-        div.querySelector(".view-button")
-            .addEventListener(
-                "click",
-                function() {
+            const sourceEmployees = await response.json();
+            const ids = JSON.parse(
+                localStorage.getItem(favoriteStorageKey(source.key)) || "[]"
+            ).map(String);
+            const favorites = sourceEmployees.filter(employee =>
+                ids.includes(String(employee.employee_no))
+            );
+
+            if (!favorites.length) {
+                list.innerHTML = "<p>No favorite employees found.</p>";
+                continue;
+            }
+
+            favorites.forEach(function(employee) {
+                const div = document.createElement("div");
+                div.className = "employee-card";
+                div.innerHTML = `
+                    <div class="employee-card-top">
+                        ${getPhoto(employee)}
+                        <div class="employee-card-info">
+                            <h3>${employee.employee_name || "-"}</h3>
+                            <p>${employee.designation || "-"}</p>
+                            <span>${employee.employee_no || "-"}</span>
+                        </div>
+                    </div>
+                    <div class="employee-card-actions">
+                        <button class="favorite-button" type="button">❤️</button>
+                        <button class="view-button" type="button">View Details</button>
+                    </div>`;
+
+                div.querySelector(".favorite-button").addEventListener("click", async function() {
+                    currentEmployeeSource = source.key;
+                    favoriteEmployees = JSON.parse(
+                        localStorage.getItem(favoriteStorageKey(source.key)) || "[]"
+                    ).map(String);
+                    await toggleFavorite(employee, source.key);
+                    await showFavoriteEmployees();
+                });
+
+                div.querySelector(".view-button").addEventListener("click", function() {
+                    currentEmployeeSource = source.key;
+                    favoriteEmployees = JSON.parse(
+                        localStorage.getItem(favoriteStorageKey(source.key)) || "[]"
+                    ).map(String);
+                    employees = sourceEmployees;
                     showDetails(employee, "favorite");
-                }
-            );
+                });
 
-        favoriteEmployeeList.appendChild(div);
-    });
+                list.appendChild(div);
+            });
+        } catch (error) {
+            console.error("Favorite list load failed:", source.key, error);
+            list.innerHTML = "<p>এই তালিকা লোড করা যায়নি। আবার চেষ্টা করুন।</p>";
+        }
+    }
 }
 
 
@@ -819,6 +794,378 @@ function showEmployees(list, targetList = employeeList) {
    EMPLOYEE DETAILS
 ========================= */
 
+
+let privateDetailsRequestId = 0;
+
+async function loadPrivateEmployeeDetails(employeeNo) {
+    const requestId = ++privateDetailsRequestId;
+    const fields = {
+        personal_no: "privatePersonalNo",
+        date_of_birth: "privateDateOfBirth",
+        nid: "privateNid",
+        tin_no: "privateTinNo"
+    };
+
+    Object.values(fields).forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = "-";
+    });
+
+    if (!accessToken || !employeeNo) return;
+
+    try {
+        const authResponse = await fetch(SUPABASE_URL + "/auth/v1/user", {
+            headers: {
+                apikey: SUPABASE_KEY,
+                Authorization: "Bearer " + accessToken
+            }
+        });
+        if (!authResponse.ok) return;
+
+        const user = await authResponse.json();
+        if (
+            user.id !== "f0fcbd2e-003e-4fc2-bc2e-51b13c5f0814" ||
+            requestId !== privateDetailsRequestId
+        ) return;
+
+        const params = new URLSearchParams({
+            select: "employee_no,personal_no,date_of_birth,nid,tin_no",
+            employee_no: "eq." + employeeNo,
+            limit: "1"
+        });
+
+        const privateTable =
+            employeeDetails.dataset.source === "factory"
+                ? "all_employee_factory"
+                : "all_employee_headoffice";
+
+        const response = await fetch(
+            SUPABASE_URL + "/rest/v1/" + privateTable + "?" + params.toString(),
+            {
+                headers: {
+                    apikey: SUPABASE_KEY,
+                    Authorization: "Bearer " + accessToken
+                }
+            }
+        );
+        if (!response.ok || requestId !== privateDetailsRequestId) return;
+
+        const rows = await response.json();
+        const record = rows[0];
+
+        if (
+            !record ||
+            String(record.employee_no) !== String(employeeNo) ||
+            String(employeeDetails.dataset.employeeNo) !== String(employeeNo)
+        ) return;
+
+        Object.entries(fields).forEach(([field, id]) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = record[field] || "-";
+        });
+    } catch (error) {
+        console.error("Unable to load private employee details.");
+    }
+}
+
+
+async function setupDetailsEdit(employee, source, previousPage) {
+    const employeeNo = String(employee.employee_no || "");
+    const adminUid = "f0fcbd2e-003e-4fc2-bc2e-51b13c5f0814";
+    const table = source === "factory"
+        ? "all_employee_factory"
+        : "all_employee_headoffice";
+
+    if (!employeeNo || !accessToken) return;
+
+    const isCurrentEmployee = () =>
+        String(employeeDetails.dataset.employeeNo) === employeeNo &&
+        employeeDetails.dataset.source === source;
+
+    async function verifyAdmin() {
+        if (!accessToken) return false;
+        const response = await fetch(SUPABASE_URL + "/auth/v1/user", {
+            headers: {
+                apikey: SUPABASE_KEY,
+                Authorization: "Bearer " + accessToken
+            }
+        });
+        if (!response.ok) return false;
+        const user = await response.json();
+        return user.id === adminUid;
+    }
+
+    try {
+        if (!(await verifyAdmin()) || !isCurrentEmployee()) return;
+
+        const params = new URLSearchParams({
+            select: "employee_no,employee_name,designation,company,department,phone_official,personal_no,email_official,pabx_number,blood_group,joining_date,birthday_text,date_of_birth,nid,tin_no,bank_name,account_no",
+            employee_no: "eq." + employeeNo,
+            limit: "1"
+        });
+
+        const response = await fetch(
+            SUPABASE_URL + "/rest/v1/" + table + "?" + params.toString(),
+            {
+                headers: {
+                    apikey: SUPABASE_KEY,
+                    Authorization: "Bearer " + accessToken
+                }
+            }
+        );
+
+        if (!response.ok) throw new Error("Employee information could not be loaded.");
+
+        const rows = await response.json();
+        const record = rows[0];
+        if (!record || !isCurrentEmployee()) return;
+
+        const wrapper = document.createElement("section");
+        wrapper.className = "details-edit-wrapper";
+
+        const toolbar = document.createElement("div");
+        toolbar.className = "details-edit-toolbar";
+
+        const editButton = document.createElement("button");
+        editButton.type = "button";
+        editButton.className = "details-edit-button";
+        editButton.textContent = "✎ Edit Employee";
+
+        const deleteButton = document.createElement("button");
+        deleteButton.type = "button";
+        deleteButton.className = "details-delete-button";
+        deleteButton.textContent = "Delete Employee";
+        toolbar.append(editButton, deleteButton);
+        if (previousPage === "adminEdit") deleteButton.hidden = true;
+
+        const form = document.createElement("form");
+        form.className = "details-edit-form";
+        form.hidden = true;
+
+        const heading = document.createElement("h3");
+        heading.textContent = "Edit Employee Information";
+        form.appendChild(heading);
+
+        const fields = [
+            ["employee_name", "Employee Name", "text"],
+            ["designation", "Designation", "text"],
+            ["company", "Company", "text"],
+            ["department", "Department", "text"],
+            ["phone_official", "Official No.", "text"],
+            ["personal_no", "Personal No.", "text"],
+            ["email_official", "Email Address", "email"],
+            ["pabx_number", "PABX No.", "text"],
+            ["blood_group", "Blood Group", "text"],
+            ["joining_date", "Joining Date", "date"],
+            ["birthday_text", "Birthday", "text"],
+            ["date_of_birth", "Date of Birth", "date"],
+            ["nid", "NID No.", "text"],
+            ["tin_no", "TIN No.", "text"],
+            ["bank_name", "Bank Name", "text"],
+            ["account_no", "Account No.", "text"]
+        ];
+
+        const inputs = {};
+
+        fields.forEach(([key, labelText, type]) => {
+            const label = document.createElement("label");
+            label.className = "details-edit-field";
+            label.textContent = labelText;
+
+            const input = document.createElement("input");
+            input.type = type;
+            input.name = key;
+            input.value = record[key] == null ? "" : String(record[key]);
+
+            if (type === "date" && input.value) {
+                input.value = input.value.slice(0, 10);
+            }
+
+            if (key === "employee_name") input.required = true;
+
+            label.appendChild(input);
+            form.appendChild(label);
+            inputs[key] = input;
+        });
+
+        const employeeId = document.createElement("p");
+        employeeId.className = "details-edit-employee-id";
+        employeeId.textContent = "Employee ID: " + employeeNo + " (cannot be changed)";
+        form.appendChild(employeeId);
+
+        const status = document.createElement("p");
+        status.className = "details-edit-status";
+        form.appendChild(status);
+
+        const actions = document.createElement("div");
+        actions.className = "details-edit-actions";
+
+        const saveButton = document.createElement("button");
+        saveButton.type = "submit";
+        saveButton.textContent = "Update Employee";
+
+        const cancelButton = document.createElement("button");
+        cancelButton.type = "button";
+        cancelButton.textContent = "Cancel";
+        cancelButton.className = "details-edit-cancel";
+
+        actions.append(saveButton, cancelButton);
+        form.appendChild(actions);
+        wrapper.append(toolbar, form);
+        employeeDetails.appendChild(wrapper);
+
+        editButton.addEventListener("click", () => {
+            form.hidden = false;
+            toolbar.hidden = true;
+        });
+
+        cancelButton.addEventListener("click", () => {
+            form.hidden = true;
+            toolbar.hidden = false;
+            status.textContent = "";
+        });
+
+        deleteButton.addEventListener("click", async () => {
+            if (deleteButton.disabled || !isCurrentEmployee()) return;
+
+            const employeeName =
+                record.employee_name || employee.employee_name || "this employee";
+
+            const confirmed = window.confirm(
+                `Permanently delete ${employeeName} (ID: ${employeeNo}) from ` +
+                `${source === "factory" ? "Factory" : "Head Office"}?\n\n` +
+                "This action cannot be undone."
+            );
+
+            if (!confirmed) return;
+
+            deleteButton.disabled = true;
+            deleteButton.textContent = "Deleting...";
+
+            try {
+                if (!(await verifyAdmin())) {
+                    throw new Error("Administrator login is required.");
+                }
+
+                if (!isCurrentEmployee()) {
+                    throw new Error("Employee details changed. Please try again.");
+                }
+
+                const deleteUrl =
+                    SUPABASE_URL + "/rest/v1/" + table +
+                    "?employee_no=eq." + encodeURIComponent(employeeNo);
+
+                const deleteResponse = await fetch(deleteUrl, {
+                    method: "DELETE",
+                    headers: {
+                        apikey: SUPABASE_KEY,
+                        Authorization: "Bearer " + accessToken,
+                        Prefer: "return=representation"
+                    }
+                });
+
+                const responseText = await deleteResponse.text();
+
+                if (!deleteResponse.ok) {
+                    throw new Error(responseText || "Supabase delete failed.");
+                }
+
+                const deletedRows = responseText
+                    ? JSON.parse(responseText)
+                    : [];
+
+                if (!Array.isArray(deletedRows) || deletedRows.length === 0) {
+                    throw new Error(
+                        "No employee record was deleted. Check Supabase permissions."
+                    );
+                }
+
+                employees = employees.filter(
+                    item => String(item.employee_no) !== employeeNo
+                );
+
+                currentEmployeeSource = source;
+                await loadEmployees(source);
+                backButton.click();
+
+            } catch (error) {
+                console.error("Employee delete error:", error);
+                alert("Employee could not be deleted:\n\n" + error.message);
+            } finally {
+                deleteButton.disabled = false;
+                deleteButton.textContent = "Delete Employee";
+            }
+        });
+
+        form.addEventListener("submit", async event => {
+            event.preventDefault();
+            if (saveButton.disabled || !isCurrentEmployee()) return;
+
+            saveButton.disabled = true;
+            saveButton.textContent = "Updating...";
+            status.textContent = "Verifying administrator access...";
+
+            try {
+                if (!(await verifyAdmin())) {
+                    throw new Error("Administrator login is required.");
+                }
+                if (!isCurrentEmployee()) return;
+
+                const payload = {};
+                fields.forEach(([key, labelText, type]) => {
+                    const value = inputs[key].value.trim();
+                    payload[key] = type === "date" ? (value || null) : value;
+                });
+
+                if (!payload.employee_name) {
+                    throw new Error("Employee Name is required.");
+                }
+
+                const updateUrl =
+                    SUPABASE_URL + "/rest/v1/" + table +
+                    "?employee_no=eq." + encodeURIComponent(employeeNo);
+
+                const updateResponse = await fetch(updateUrl, {
+                    method: "PATCH",
+                    headers: {
+                        apikey: SUPABASE_KEY,
+                        Authorization: "Bearer " + accessToken,
+                        "Content-Type": "application/json",
+                        Prefer: "return=representation"
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const responseText = await updateResponse.text();
+                if (!updateResponse.ok) {
+                    throw new Error(responseText || "Supabase update failed.");
+                }
+
+                const updatedRows = responseText ? JSON.parse(responseText) : [];
+                if (!Array.isArray(updatedRows) || updatedRows.length === 0) {
+                    throw new Error("No employee record was updated. Check Supabase permissions.");
+                }
+
+                if (previousPage === "adminEdit") editExistingEmployeeCache[source] = null;
+                currentEmployeeSource = source;
+                showDetails(
+                    { ...employee, ...updatedRows[0] },
+                    previousPage
+                );
+            } catch (error) {
+                console.error("Employee details update error:", error);
+                status.textContent = "Update failed: " + error.message;
+                alert("Employee could not be updated:\n\n" + error.message);
+            } finally {
+                saveButton.disabled = false;
+                saveButton.textContent = "Update Employee";
+            }
+        });
+    } catch (error) {
+        console.error("Unable to prepare employee edit form:", error);
+    }
+}
+
 let detailsPreviousPage = "list";
 
 function showDetails(employee, previousPage = "list") {
@@ -840,6 +1187,9 @@ function showDetails(employee, previousPage = "list") {
 
     detailsPage.style.display =
         "block";
+
+    employeeDetails.dataset.employeeNo = String(employee.employee_no || "");
+    employeeDetails.dataset.source = currentEmployeeSource === "factory" ? "factory" : "headoffice";
 
 
     employeeDetails.innerHTML = `
@@ -879,111 +1229,96 @@ function showDetails(employee, previousPage = "list") {
         <div class="details-card">
 
             <div class="detail-row">
-                <span>
-                    Employee ID
-                </span>
-                <strong>
-                    ${employee.employee_no || "-"}
-                </strong>
+                <span>Employee ID</span>
+                <strong>${employee.employee_no || "-"}</strong>
             </div>
 
             <div class="detail-row">
-                <span>
-                    Department
-                </span>
-                <strong>
-                    ${employee.department || "-"}
-                </strong>
+                <span>Department</span>
+                <strong>${employee.department || "-"}</strong>
             </div>
 
             <div class="detail-row">
-                <span>
-                    Official No.
-                </span>
-                <strong>
-                    ${employee.phone_official || "-"}
-                </strong>
+                <span>Official No.</span>
+                <strong>${employee.phone_official || "-"}</strong>
             </div>
 
             <div class="detail-row">
-                <span>
-                    Personal No.
-                </span>
-                <strong>
-                    ${employee.personal_no || "-"}
-                </strong>
+                <span>Personal No.</span>
+                <strong><span id="privatePersonalNo">-</span></strong>
             </div>
 
             <div class="detail-row">
-                <span>
-                    Email Address
-                </span>
-                <strong>
-                    ${employee.email_official || "-"}
-                </strong>
+                <span>Email Address</span>
+                <strong>${employee.email_official || "-"}</strong>
             </div>
 
             <div class="detail-row">
-                <span>
-                    PABX No.
-                </span>
-                <strong>
-                    ${employee.pabx_number || "-"}
-                </strong>
+                <span>PABX No.</span>
+                <strong>${employee.pabx_number || "-"}</strong>
             </div>
 
             <div class="detail-row">
-                <span>
-                    Blood Group
-                </span>
-                <strong>
-                    ${employee.blood_group || "-"}
-                </strong>
+                <span>Blood Group</span>
+                <strong>${employee.blood_group || "-"}</strong>
             </div>
 
             <div class="detail-row">
-                <span>
-                    Joining Date
-                </span>
-                <strong>
-                    ${employee.joining_date || "-"}
-                </strong>
+                <span>Joining Date</span>
+                <strong>${employee.joining_date || "-"}</strong>
             </div>
 
             <div class="detail-row">
-                <span>
-                    Date of Birth
-                </span>
-                <strong>
-                    ${employee.date_of_birth || "-"}
-                </strong>
+                <span>Service Duration</span>
+                <strong>${(() => {
+                    const raw = employee.joining_date;
+                    if (!raw) return "-";
+
+                    const parts = String(raw).slice(0, 10).split("-").map(Number);
+                    if (parts.length !== 3 || parts.some(n => !n)) return "-";
+
+                    const start = new Date(parts[0], parts[1] - 1, parts[2]);
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+
+                    if (start > today) return "-";
+
+                    let years = today.getFullYear() - start.getFullYear();
+                    let months = today.getMonth() - start.getMonth();
+                    let days = today.getDate() - start.getDate();
+
+                    if (days < 0) {
+                        months--;
+                        days += new Date(today.getFullYear(), today.getMonth(), 0).getDate();
+                    }
+
+                    if (months < 0) {
+                        years--;
+                        months += 12;
+                    }
+
+                    return years + " Years, " + months + " Months, " + days + " Days";
+                })()}</strong>
             </div>
 
             <div class="detail-row">
-                <span>
-                    NID No.
-                </span>
-                <strong>
-                    ${employee.nid || "-"}
-                </strong>
+                <span>Date of Birth</span>
+                <strong><span id="privateDateOfBirth">-</span></strong>
             </div>
 
             <div class="detail-row">
-                <span>
-                    TIN No.
-                </span>
-                <strong>
-                    ${employee.tin_no || "-"}
-                </strong>
+                <span>NID No.</span>
+                <strong><span id="privateNid">-</span></strong>
             </div>
 
             <div class="detail-row">
-                <span>
-                    QR Code
-                </span>
-                <strong>
-                    <div id="employeeQRCode"></div>
-                </strong>
+                <span>TIN No.</span>
+                <strong><span id="privateTinNo">-</span></strong>
+            </div>
+
+            <div class="detail-row qr-code-row">
+                <span>QR Code</span>
+                <div id="employeeQRCode"></div>
             </div>
 
         </div>
@@ -1009,6 +1344,9 @@ function showDetails(employee, previousPage = "list") {
         qrContainer.innerHTML = "";
         qrContainer.appendChild(img);
     }
+
+    loadPrivateEmployeeDetails(employee.employee_no);
+    setupDetailsEdit(employee, employeeDetails.dataset.source, previousPage);
 }
 
 
@@ -1016,39 +1354,321 @@ function showDetails(employee, previousPage = "list") {
    EMPLOYEE SELECT
 ========================= */
 
-function loadEmployeeSelect() {
+const employeeSearchInput = document.getElementById("employeeSearchInput");
+const employeeSearchButton = document.getElementById("employeeSearchButton");
+const employeeSearchSuggestions = document.getElementById("employeeSearchSuggestions");
 
-    employeeSelect.innerHTML = `
-        <option value="">
-            Select employee
-        </option>
-    `;
+function getPhotoEmployeeMatches(query) {
+    const q = query.trim().toLocaleLowerCase();
+    if (!q) return [];
 
+    return Array.from(employeeSelect.options).filter(option => {
+        if (!option.value) return false;
+        const id = String(option.dataset.employeeNo || "").toLocaleLowerCase();
+        const name = String(option.dataset.employeeName || "").toLocaleLowerCase();
+        return id.includes(q) || name.includes(q);
+    }).slice(0, 15);
+}
 
-    employees.forEach((employee) => {
+function selectPhotoEmployee(option) {
+    if (!option) return;
 
-        const option =
-            document.createElement("option");
+    employeeSelect.value = option.value;
+    employeeSearchInput.value =
+        `${option.dataset.employeeNo} - ${option.dataset.employeeName || ""}`;
+    employeeSearchSuggestions.replaceChildren();
+    employeeSearchSuggestions.hidden = true;
+    uploadStatus.textContent = "Selected: " + option.textContent;
+}
 
+function renderPhotoEmployeeSuggestions() {
+    const query = employeeSearchInput.value.trim();
+    employeeSelect.value = "";
+    employeeSearchSuggestions.replaceChildren();
 
-        option.value =
-            employee.employee_no;
+    if (!query) {
+        employeeSearchSuggestions.hidden = true;
+        return;
+    }
 
+    const matches = getPhotoEmployeeMatches(query);
 
-        option.textContent =
-            `${employee.employee_no} - ${employee.employee_name}`;
+    if (!matches.length) {
+        const empty = document.createElement("div");
+        empty.className = "employee-search-empty";
+        empty.textContent = "No matching employee found.";
+        employeeSearchSuggestions.appendChild(empty);
+    } else {
+        matches.forEach(option => {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "employee-search-suggestion";
+            button.textContent = option.textContent;
+            button.addEventListener("click", () => selectPhotoEmployee(option));
+            employeeSearchSuggestions.appendChild(button);
+        });
+    }
 
+    employeeSearchSuggestions.hidden = false;
+}
 
-        employeeSelect.appendChild(option);
+employeeSearchInput?.addEventListener("input", renderPhotoEmployeeSuggestions);
 
-    });
+employeeSearchButton?.addEventListener("click", () => {
+    const query = employeeSearchInput.value.trim();
 
+    if (!query) {
+        uploadStatus.textContent = "Please enter an employee name or ID.";
+        employeeSearchInput.focus();
+        return;
+    }
+
+    const matches = getPhotoEmployeeMatches(query);
+
+    if (matches.length === 1) {
+        selectPhotoEmployee(matches[0]);
+    } else {
+        renderPhotoEmployeeSuggestions();
+        uploadStatus.textContent = matches.length
+            ? "Select an employee from the suggestions."
+            : "No matching employee found. Try another name or ID.";
+    }
+});
+
+employeeSearchInput?.addEventListener("keydown", event => {
+    if (event.key === "Enter") {
+        event.preventDefault();
+        employeeSearchButton?.click();
+    }
+});
+
+async function loadEmployeeSelect() {
+    employeeSelect.replaceChildren(new Option("Select employee", ""));
+
+    try {
+        const sources = [
+            { key: "headoffice", label: "Head Office", view: "employee_directory_public" },
+            { key: "factory", label: "Factory", view: "employee_directory_factory_public" }
+        ];
+
+        const results = await Promise.all(sources.map(async source => {
+            const response = await fetch(
+                `${SUPABASE_URL}/rest/v1/${source.view}?select=employee_no,employee_name&order=employee_name.asc`,
+                {
+                    headers: {
+                        apikey: SUPABASE_KEY,
+                        Authorization: `Bearer ${SUPABASE_KEY}`
+                    }
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error(`${source.label} employee list failed (${response.status}).`);
+            }
+
+            return { source, list: await response.json() };
+        }));
+
+        results.forEach(({ source, list }) => {
+            list.forEach(employee => {
+                if (employee.employee_no == null) return;
+
+                const option = document.createElement("option");
+                option.value = `${source.key}::${employee.employee_no}`;
+                option.dataset.source = source.key;
+                option.dataset.employeeNo = String(employee.employee_no);
+                option.dataset.employeeName = String(employee.employee_name || "");
+                option.textContent =
+                    `${source.label} — ${employee.employee_no} - ${employee.employee_name || ""}`;
+
+                employeeSelect.appendChild(option);
+            });
+        });
+
+        renderPhotoEmployeeSuggestions();
+    } catch (error) {
+        console.error("Photo employee list error:", error);
+        uploadStatus.textContent = "Employee list could not load: " + error.message;
+    }
 }
 
 
 /* =========================
    ADMIN BUTTON
 ========================= */
+
+
+/* =========================
+   EDIT EXISTING EMPLOYEE
+========================= */
+
+
+const editExistingEmployeeSource =
+    document.getElementById("editExistingEmployeeSource");
+const editExistingEmployeeInput =
+    document.getElementById("editExistingEmployeeInput");
+const editExistingEmployeeSearch =
+    document.getElementById("editExistingEmployeeSearch");
+const editExistingEmployeeSuggestions =
+    document.getElementById("editExistingEmployeeSuggestions");
+const editExistingEmployeeOpen =
+    document.getElementById("editExistingEmployeeOpen");
+const editExistingEmployeeStatus =
+    document.getElementById("editExistingEmployeeStatus");
+
+let editExistingEmployeeCache = {
+    headoffice: null,
+    factory: null
+};
+let editExistingEmployeeMatches = [];
+let editExistingEmployeeSelected = null;
+let editExistingEmployeeRequest = 0;
+
+function resetExistingEmployeeSearch() {
+    editExistingEmployeeRequest++;
+    editExistingEmployeeMatches = [];
+    editExistingEmployeeSelected = null;
+    editExistingEmployeeInput.value = "";
+    editExistingEmployeeSuggestions.replaceChildren();
+    editExistingEmployeeSuggestions.hidden = true;
+    editExistingEmployeeOpen.disabled = true;
+    editExistingEmployeeStatus.textContent = "";
+}
+
+editExistingEmployeeSource?.addEventListener("change", resetExistingEmployeeSearch);
+
+async function loadExistingEmployeeList(source) {
+    if (editExistingEmployeeCache[source]) {
+        return editExistingEmployeeCache[source];
+    }
+
+    const viewName = source === "factory"
+        ? "employee_directory_factory_public"
+        : "employee_directory_public";
+
+    const response = await fetch(
+        `${SUPABASE_URL}/rest/v1/${viewName}?select=*`,
+        {
+            headers: {
+                apikey: SUPABASE_KEY,
+                Authorization: `Bearer ${SUPABASE_KEY}`
+            }
+        }
+    );
+
+    if (!response.ok) {
+        throw new Error(`Employee list could not load (${response.status}).`);
+    }
+
+    editExistingEmployeeCache[source] = await response.json();
+    return editExistingEmployeeCache[source];
+}
+
+function selectExistingEmployee(employee) {
+    editExistingEmployeeSelected = employee;
+    editExistingEmployeeInput.value =
+        `${employee.employee_no || "-"} - ${employee.employee_name || "-"}`;
+
+    editExistingEmployeeSuggestions.replaceChildren();
+    editExistingEmployeeSuggestions.hidden = true;
+    editExistingEmployeeOpen.disabled = false;
+    editExistingEmployeeStatus.textContent =
+        "Selected: " + editExistingEmployeeInput.value;
+}
+
+async function searchExistingEmployee() {
+    const requestId = ++editExistingEmployeeRequest;
+    const source = editExistingEmployeeSource.value;
+    const query = editExistingEmployeeInput.value.trim().toLocaleLowerCase();
+
+    editExistingEmployeeSelected = null;
+    editExistingEmployeeOpen.disabled = true;
+
+    if (!query) {
+        editExistingEmployeeMatches = [];
+        editExistingEmployeeSuggestions.replaceChildren();
+        editExistingEmployeeSuggestions.hidden = true;
+        editExistingEmployeeStatus.textContent = "";
+        return;
+    }
+
+    editExistingEmployeeStatus.textContent = "Searching employees...";
+
+    try {
+        const employees = await loadExistingEmployeeList(source);
+
+        if (requestId !== editExistingEmployeeRequest) return;
+
+        editExistingEmployeeMatches = employees.filter(employee => {
+            const name = String(employee.employee_name || "").toLocaleLowerCase();
+            const id = String(employee.employee_no || "").toLocaleLowerCase();
+            return name.includes(query) || id.includes(query);
+        }).slice(0, 15);
+
+        editExistingEmployeeSuggestions.replaceChildren();
+
+        if (!editExistingEmployeeMatches.length) {
+            const empty = document.createElement("div");
+            empty.className = "employee-search-empty";
+            empty.textContent = "No matching employee found.";
+            editExistingEmployeeSuggestions.appendChild(empty);
+        } else {
+            editExistingEmployeeMatches.forEach(employee => {
+                const button = document.createElement("button");
+                button.type = "button";
+                button.className = "employee-search-suggestion";
+                button.textContent =
+                    `${employee.employee_no || "-"} - ${employee.employee_name || "-"}` +
+                    ` (${employee.designation || "-"})`;
+
+                button.addEventListener("click", () => {
+                    selectExistingEmployee(employee);
+                });
+
+                editExistingEmployeeSuggestions.appendChild(button);
+            });
+        }
+
+        editExistingEmployeeSuggestions.hidden = false;
+        editExistingEmployeeStatus.textContent =
+            editExistingEmployeeMatches.length
+                ? `${editExistingEmployeeMatches.length} matching employee(s) found. Select an employee.`
+                : "No matching employee found. Try another name or ID.";
+    } catch (error) {
+        if (requestId !== editExistingEmployeeRequest) return;
+        console.error("Edit employee search error:", error);
+        editExistingEmployeeSuggestions.hidden = true;
+        editExistingEmployeeStatus.textContent =
+            "Search failed: " + error.message;
+    }
+}
+
+editExistingEmployeeInput?.addEventListener("input", searchExistingEmployee);
+editExistingEmployeeSearch?.addEventListener("click", searchExistingEmployee);
+
+editExistingEmployeeInput?.addEventListener("keydown", event => {
+    if (event.key === "Enter") {
+        event.preventDefault();
+        if (editExistingEmployeeMatches.length === 1) {
+            selectExistingEmployee(editExistingEmployeeMatches[0]);
+        }
+    }
+});
+
+editExistingEmployeeOpen?.addEventListener("click", () => {
+    const employee = editExistingEmployeeSelected;
+
+    if (!employee || !accessToken) {
+        editExistingEmployeeStatus.textContent =
+            "Administrator login is required.";
+        return;
+    }
+
+    currentEmployeeSource = editExistingEmployeeSource.value;
+    adminPage.style.display = "none";
+    showDetails(employee, "adminEdit");
+});
+
 
 if (adminButton) {
     adminButton.addEventListener(
@@ -1275,6 +1895,7 @@ async function restoreSavedAdminSession() {
             "block";
 
         uploadStatus.textContent = "";
+        loadEmployeeSelect();
 
         console.log(
             "Saved admin session restored."
@@ -1411,6 +2032,7 @@ loginButton.addEventListener(
 
 
             uploadStatus.textContent = "";
+        loadEmployeeSelect();
 
             if (window.__openSalaryAfterLogin) {
                 window.__openSalaryAfterLogin = false;
@@ -1494,165 +2116,91 @@ logoutButton.addEventListener(
    PHOTO UPLOAD
 ========================= */
 
-uploadPhotoButton.addEventListener(
-    "click",
-    async function() {
+uploadPhotoButton.addEventListener("click", async function() {
+    if (!accessToken) {
+        uploadStatus.textContent = "Please login first.";
+        return;
+    }
 
-        if (!accessToken) {
+    const selected = employeeSelect.selectedOptions[0];
+    const source = selected?.dataset.source;
+    const employeeNo = selected?.dataset.employeeNo;
+    const file = photoInput.files?.[0];
 
-            uploadStatus.textContent =
-                "Please login first.";
+    if (!source || !employeeNo) {
+        uploadStatus.textContent = "Please select an employee.";
+        return;
+    }
 
-            return;
+    if (!file) {
+        uploadStatus.textContent = "Please choose a photo file first.";
+        photoInput.focus();
+        return;
+    }
 
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+        uploadStatus.textContent = "Please choose a JPG, PNG, or WebP image.";
+        return;
+    }
+
+    if (file.size < 1 || file.size > 10 * 1024 * 1024) {
+        uploadStatus.textContent = "Photo size must be 10 MB or less.";
+        return;
+    }
+
+    uploadPhotoButton.disabled = true;
+    uploadStatus.textContent = "Uploading photo...";
+
+    try {
+        const form = new FormData();
+        form.append("file", file, file.name);
+        form.append("source", source);
+        form.append("employeeNo", employeeNo);
+
+        const uploadResponse = await fetch(
+            `${SUPABASE_URL}/functions/v1/upload-employee-photo`,
+            {
+                method: "POST",
+                headers: {
+                    apikey: SUPABASE_KEY,
+                    Authorization: `Bearer ${accessToken}`
+                },
+                body: form
+            }
+        );
+
+        let result = {};
+        try {
+            result = await uploadResponse.json();
+        } catch (_) {
+            // Handle non-JSON responses below.
         }
 
-
-        const employeeNo =
-            employeeSelect.value;
-
-
-        const file =
-            photoInput.files[0];
-
-
-        if (!employeeNo) {
-
-            uploadStatus.textContent =
-                "Please select an employee.";
-
-            return;
-
-        }
-
-
-        if (!file) {
-
-            uploadStatus.textContent =
-                "Please select a photo.";
-
-            return;
-
-        }
-
-
-        const employee =
-            employees.find(
-                e =>
-                    e.employee_no === employeeNo
+        if (!uploadResponse.ok || result.success !== true) {
+            throw new Error(
+                result.error || `Upload failed (HTTP ${uploadResponse.status}).`
             );
-
-
-        if (!employee) {
-
-            uploadStatus.textContent =
-                "Employee not found.";
-
-            return;
-
         }
-
 
         uploadStatus.textContent =
-            "Uploading photo...";
+            `Photo uploaded successfully for ${source === "factory" ? "Factory" : "Head Office"} employee ${employeeNo}.`;
 
-
-        try {
-
-            const extension =
-                file.name
-                    .split(".")
-                    .pop()
-                    .toLowerCase();
-
-
-            const fileName =
-                `${employeeNo}.${extension}`;
-
-
-            const uploadResponse =
-                await fetch(
-                    `${SUPABASE_URL}/storage/v1/object/employee-photos/${fileName}`,
-                    {
-                        method: "POST",
-
-                        headers: {
-                            "apikey": SUPABASE_KEY,
-                            "Authorization": `Bearer ${accessToken}`,
-                            "Content-Type": file.type
-                        },
-
-                        body: file
-                    }
-                );
-
-
-            if (!uploadResponse.ok) {
-
-                const errorText =
-                    await uploadResponse.text();
-
-
-                throw new Error(
-                    errorText
-                );
-
-            }
-
-
-            const updateResponse =
-                await fetch(
-                    `${SUPABASE_URL}/rest/v1/employee_dekko_v2?employee_no=eq.${encodeURIComponent(employeeNo)}`,
-                    {
-                        method: "PATCH",
-
-                        headers: {
-                            "apikey": SUPABASE_KEY,
-                            "Authorization": `Bearer ${accessToken}`,
-                            "Content-Type": "application/json",
-                            "Prefer": "return=minimal"
-                        },
-
-                        body: JSON.stringify({
-                            photo_path: fileName
-                        })
-                    }
-                );
-
-
-            if (!updateResponse.ok) {
-
-                throw new Error(
-                    "Photo uploaded but database update failed."
-                );
-
-            }
-
-
-            uploadStatus.textContent =
-                "Photo uploaded successfully!";
-
-
-            photoInput.value = "";
-
-
-            await loadEmployees();
-
-
-        } catch (error) {
-
-            console.error(error);
-
-
-            uploadStatus.textContent =
-                "Upload failed: " +
-                error.message;
-
-        }
-
+        photoInput.value = "";
+        await loadEmployees(source);
+        await loadEmployeeSelect();
+        employeeSelect.value = `${source}::${employeeNo}`;
+    } catch (error) {
+        console.error("Photo upload error:", error);
+        uploadStatus.textContent =
+            "Upload failed: " + (error?.message || "Unexpected error.");
+    } finally {
+        uploadPhotoButton.disabled = false;
     }
-);
-
+});
+photoInput.addEventListener("change", function() {
+    const file = photoInput.files?.[0];
+    if (file) uploadStatus.textContent = "Selected file: " + file.name;
+});
 
 /* =========================
    BACK BUTTON
@@ -1667,7 +2215,13 @@ backButton.addEventListener(
         detailsPage.style.display =
             "none";
 
-        if (detailsPreviousPage === "favorite") {
+        if (detailsPreviousPage === "adminEdit") {
+            listPage.style.display = "none";
+            allEmployeesPage.style.display = "none";
+            departmentPage.style.display = "none";
+            favoritePage.style.display = "none";
+            adminPage.style.display = "block";
+        } else if (detailsPreviousPage === "favorite") {
 
             listPage.style.display =
                 "none";
@@ -1827,7 +2381,10 @@ allEmployeesButton.addEventListener(
 
         allEmployeesPage.style.display = "block";
 
-        showEmployees(employees);
+        if (designationFilter) designationFilter.value = "";
+        if (departmentFilter) departmentFilter.value = "";
+        if (bloodGroupFilter) bloodGroupFilter.value = "";
+        loadEmployees("headoffice");
 
         window.scrollTo({
             top: 0,
@@ -1836,6 +2393,25 @@ allEmployeesButton.addEventListener(
     }
 );
 
+if (allFactoryEmployeesButton) {
+    allFactoryEmployeesButton.addEventListener("click", function() {
+        searchInput.value = "";
+        if (designationFilter) designationFilter.value = "";
+        if (departmentFilter) departmentFilter.value = "";
+        if (bloodGroupFilter) bloodGroupFilter.value = "";
+
+        listPage.style.display = "none";
+        departmentPage.style.display = "none";
+        favoritePage.style.display = "none";
+        birthdayPage.style.display = "none";
+        detailsPage.style.display = "none";
+        allEmployeesPage.style.display = "block";
+
+        loadEmployees("factory");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+}
+
 if (allEmployeesBackButton) {
     allEmployeesBackButton.addEventListener(
         "click",
@@ -1843,6 +2419,7 @@ if (allEmployeesBackButton) {
 
             allEmployeesPage.style.display = "none";
             listPage.style.display = "block";
+            loadEmployees("headoffice");
 
             window.scrollTo({
                 top: 0,
@@ -1871,6 +2448,9 @@ searchInput.addEventListener(
                 ? designationFilter.value
                 : "";
 
+        const selectedBloodGroup = bloodGroupFilter ? bloodGroupFilter.value : "";
+        const selectedDepartment = departmentFilter ? departmentFilter.value : "";
+
         const filtered =
             employees.filter(employee => {
 
@@ -1892,8 +2472,15 @@ searchInput.addEventListener(
                     text.toLowerCase()
                         .includes(searchText);
 
+                const matchesBloodGroup =
+                    !selectedBloodGroup ||
+                    String(employee.blood_group || "").trim().toUpperCase() === selectedBloodGroup;
+
                 return matchesDesignation &&
-                       matchesSearch;
+                    matchesBloodGroup &&
+                    (!selectedDepartment ||
+                        String(employee.department || "Other").trim().toLowerCase() === selectedDepartment.toLowerCase()) &&
+                    matchesSearch;
             });
 
         showEmployees(filtered);
@@ -1915,6 +2502,13 @@ clearSearch.addEventListener(
 
         if (designationFilter) {
             designationFilter.value = "";
+        }
+
+        if (bloodGroupFilter) {
+            bloodGroupFilter.value = "";
+        }
+        if (departmentFilter) {
+            departmentFilter.value = "";
         }
 
         showEmployees(employees);
@@ -2020,6 +2614,91 @@ document.addEventListener("DOMContentLoaded", function () {
    BIRTHDAY FEATURE
 ========================= */
 
+function renderHomeBirthdayCelebrations() {
+    const list = document.getElementById("homeBirthdayList");
+    if (!list) return;
+
+    const monthNames = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    ];
+
+    // Upcoming 7 days: today through the next 6 days.
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const weekDates = new Map();
+    for (let i = 0; i < 7; i++) {
+        const date = new Date(today);
+        date.setDate(today.getDate() + i);
+        const key =
+            String(date.getMonth() + 1).padStart(2, "0") + "-" +
+            String(date.getDate()).padStart(2, "0");
+
+        weekDates.set(key, {
+            order: i,
+            label: date.getDate() + " " + monthNames[date.getMonth()]
+        });
+    }
+
+    const upcoming = (Array.isArray(employees) ? employees : [])
+        .map(employee => {
+            const raw = String(employee.birthday_text || "").trim();
+            const parts = raw.match(/^(\d{1,2})-(\d{1,2})$/);
+
+            if (!parts) return null;
+
+            const day = Number(parts[1]);
+            const month = Number(parts[2]);
+
+            if (
+                month < 1 || month > 12 ||
+                day < 1 || day > new Date(2024, month, 0).getDate()
+            ) return null;
+
+            const key =
+                String(month).padStart(2, "0") + "-" +
+                String(day).padStart(2, "0");
+
+            const weekDate = weekDates.get(key);
+            if (!weekDate) return null;
+
+            return {
+                employee,
+                order: weekDate.order,
+                dateLabel: weekDate.label
+            };
+        })
+        .filter(Boolean)
+        .sort((a, b) => a.order - b.order);
+
+    if (!upcoming.length) {
+        list.innerHTML =
+            '<p class="home-birthday-empty">No birthdays this week.</p>';
+        return;
+    }
+
+    list.innerHTML = upcoming.map(({ employee, dateLabel }) => {
+        const name = employee.employee_name || employee.name || "Unnamed Employee";
+        const designation = employee.designation || "";
+        const department = employee.department || "";
+        const role = designation && department
+            ? `${designation} - ${department}`
+            : designation || department;
+
+        return `
+            <article class="home-birthday-card">
+                <div class="home-birthday-photo-wrap">
+                    ${getPhoto(employee)}
+                </div>
+                <div class="home-birthday-info">
+                    <div class="home-birthday-name">${name}</div>
+                    <div class="home-birthday-role">${role}</div>
+                    <div class="home-birthday-date">${dateLabel}</div>
+                </div>
+            </article>`;
+    }).join("");
+}
+
 function showBirthdayEmployees(month) {
     if (!birthdayEmployeeList) return;
 
@@ -2027,13 +2706,13 @@ function showBirthdayEmployees(month) {
 
     const birthdayEmployees = employees
         .filter(employee => {
-            const birthday = String(employee.birthday || "").trim();
+            const birthday = String(employee.birthday_text || "").trim();
             return /^\d{1,2}-\d{1,2}$/.test(birthday) &&
                    birthday.split("-")[1].padStart(2, "0") === monthNumber;
         })
         .sort((a, b) => {
-            const dayA = parseInt(String(a.birthday).split("-")[0], 10);
-            const dayB = parseInt(String(b.birthday).split("-")[0], 10);
+            const dayA = parseInt(String(a.birthday_text || "").split("-")[0], 10);
+            const dayB = parseInt(String(b.birthday_text || "").split("-")[0], 10);
             return dayA - dayB;
         });
 
@@ -2063,14 +2742,14 @@ function showBirthdayEmployees(month) {
                             <td>${employee.designation || ""}</td>
                             <td>${employee.department || ""}</td>
                             <td>${(() => {
-                                const parts = String(employee.birthday || "").split("-");
+                                const parts = String(employee.birthday_text || "").split("-");
                                 const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
                                 if (parts.length === 2) {
                                     const day = parts[0].padStart(2, "0");
                                     const month = months[parseInt(parts[1], 10) - 1];
-                                    return month ? `${day} ${month}` : employee.birthday || "";
+                                    return month ? `${day} ${month}` : employee.birthday_text || "";
                                 }
-                                return employee.birthday || "";
+                                return employee.birthday_text || "";
                             })()}</td>
                         </tr>
                     `).join("")}
@@ -2130,6 +2809,9 @@ if (birthdayMonths) {
 const designationFilter =
     document.getElementById("designationFilter");
 
+const bloodGroupFilter = document.getElementById("bloodGroupFilter");
+const departmentFilter = document.getElementById("departmentFilter");
+
 if (designationFilter) {
 
     designationFilter.addEventListener(
@@ -2138,6 +2820,8 @@ if (designationFilter) {
 
             const selectedDesignation =
                 this.value;
+            const selectedBloodGroup = bloodGroupFilter ? bloodGroupFilter.value : "";
+            const selectedDepartment = departmentFilter ? departmentFilter.value : "";
 
             const searchText =
                 searchInput.value
@@ -2165,8 +2849,15 @@ if (designationFilter) {
                         text.toLowerCase()
                             .includes(searchText);
 
+                    const matchesBloodGroup =
+                        !selectedBloodGroup ||
+                        String(employee.blood_group || "").trim().toUpperCase() === selectedBloodGroup;
+
                     return matchesDesignation &&
-                           matchesSearch;
+                    matchesBloodGroup &&
+                    (!selectedDepartment ||
+                        String(employee.department || "Other").trim().toLowerCase() === selectedDepartment.toLowerCase()) &&
+                    matchesSearch;
                 });
 
             showEmployees(filtered);
@@ -2176,275 +2867,198 @@ if (designationFilter) {
 
 }
 
+
 /* =========================
-   ADD NEW EMPLOYEE
+   ADD / EDIT EMPLOYEES
 ========================= */
 
-const showAddEmployeeButton =
-    document.getElementById("showAddEmployeeButton");
+function setupEmployeeForm(config) {
+    const button = document.getElementById(config.buttonId);
+    const form = document.getElementById(config.formId);
+    const saveButton = document.getElementById(config.saveId);
+    const editButton = document.getElementById(config.editId);
+    const status = document.getElementById(config.statusId);
+    const field = suffix => document.getElementById(config.prefix + suffix);
 
-const addEmployeeForm =
-    document.getElementById("addEmployeeForm");
+    if (!button || !form || !saveButton || !editButton || !status) return;
 
-const saveNewEmployeeButton =
-    document.getElementById("saveNewEmployeeButton");
+    let editingEmployeeNo = null;
+    let lastSavedEmployee = null;
 
-const addEmployeeStatus =
-    document.getElementById("addEmployeeStatus");
+    button.addEventListener("click", function() {
+        const opening = form.style.display === "none";
+        form.style.display = opening ? "block" : "none";
+        button.textContent = opening ? config.closeLabel : config.openLabel;
+    });
 
-if (showAddEmployeeButton && addEmployeeForm) {
+    editButton.addEventListener("click", function() {
+        if (!lastSavedEmployee) return;
 
-    showAddEmployeeButton.addEventListener(
-        "click",
-        function() {
+        const employee = lastSavedEmployee;
+        const values = {
+            Name: employee.employee_name,
+            Designation: employee.designation,
+            Company: employee.company,
+            No: employee.employee_no,
+            Department: employee.department,
+            OfficialNo: employee.phone_official,
+            PersonalNo: employee.personal_no,
+            Email: employee.email_official,
+            Pabx: employee.pabx_number,
+            BloodGroup: employee.blood_group,
+            JoiningDate: employee.joining_date,
+            Birthday: employee.birthday_text,
+            Nid: employee.nid,
+            Tin: employee.tin_no,
+            BankName: employee.bank_name,
+            AccountNo: employee.account_no
+        };
 
-            if (addEmployeeForm.style.display === "none") {
+        Object.entries(values).forEach(([suffix, value]) => {
+            const input = field(suffix);
+            if (input) input.value = value == null ? "" : String(value);
+        });
 
-                addEmployeeForm.style.display = "block";
+        editingEmployeeNo = String(employee.employee_no);
+        saveButton.textContent = "Update Employee";
+        status.textContent = "Edit the details, then select Update Employee to save changes.";
+        form.style.display = "block";
+        button.textContent = config.closeLabel;
+        saveButton.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
 
-                showAddEmployeeButton.textContent =
-                    "− Close Add Employee";
+    saveButton.addEventListener("click", async function() {
+        const read = suffix => {
+            const input = field(suffix);
+            return input ? input.value.trim() : "";
+        };
 
-            } else {
+        const employeeName = read("Name");
+        const employeeNo = read("No");
 
-                addEmployeeForm.style.display = "none";
-
-                showAddEmployeeButton.textContent =
-                    "+ Add New Employee";
-            }
-
+        if (!employeeName) {
+            alert("Employee Name is required.");
+            return;
         }
-    );
-}
+        if (!employeeNo) {
+            alert("Employee ID is required.");
+            return;
+        }
+        if (!accessToken) {
+            alert("Please login first.");
+            return;
+        }
 
-if (saveNewEmployeeButton) {
+        const isEditing = editingEmployeeNo !== null;
+        const payload = {
+            employee_name: employeeName,
+            designation: read("Designation"),
+            company: read("Company"),
+            employee_no: isEditing ? editingEmployeeNo : employeeNo,
+            department: read("Department"),
+            phone_official: read("OfficialNo"),
+            personal_no: read("PersonalNo"),
+            email_official: read("Email"),
+            pabx_number: read("Pabx"),
+            blood_group: read("BloodGroup"),
+            joining_date: read("JoiningDate") || null,
+            birthday_text: read("Birthday"),
+            nid: read("Nid"),
+            tin_no: read("Tin"),
+            bank_name: read("BankName"),
+            account_no: read("AccountNo")
+        };
 
-    saveNewEmployeeButton.addEventListener(
-        "click",
-        async function() {
+        saveButton.disabled = true;
+        saveButton.textContent = isEditing ? "Updating..." : "Saving...";
+        status.textContent = isEditing ? "Updating employee..." : "Saving employee...";
 
-            const employeeName =
-                document.getElementById("newEmployeeName").value.trim();
+        try {
+            const table = config.source === "factory"
+                ? "all_employee_factory"
+                : "all_employee_headoffice";
+            const url = isEditing
+                ? `${SUPABASE_URL}/rest/v1/${table}?employee_no=eq.${encodeURIComponent(editingEmployeeNo)}`
+                : `${SUPABASE_URL}/rest/v1/${table}`;
 
-            const designation =
-                document.getElementById("newEmployeeDesignation").value.trim();
+            const response = await fetch(url, {
+                method: isEditing ? "PATCH" : "POST",
+                headers: {
+                    apikey: SUPABASE_KEY,
+                    Authorization: `Bearer ${accessToken}`,
+                    "Content-Type": "application/json",
+                    Prefer: "return=representation"
+                },
+                body: JSON.stringify(payload)
+            });
 
-            const company =
-                document.getElementById("newEmployeeCompany").value.trim();
-
-            const employeeNo =
-                document.getElementById("newEmployeeNo").value.trim();
-
-            const department =
-                document.getElementById("newEmployeeDepartment").value.trim();
-
-            const officialNo =
-                document.getElementById("newEmployeeOfficialNo").value.trim();
-
-            const personalNo =
-                document.getElementById("newEmployeePersonalNo").value.trim();
-
-            const emailOfficial =
-                document.getElementById("newEmployeeEmail").value.trim();
-
-            const pabxNumber =
-                document.getElementById("newEmployeePabx").value.trim();
-
-            const bloodGroup =
-                document.getElementById("newEmployeeBloodGroup").value.trim();
-
-            const joiningDate =
-                document.getElementById("newEmployeeJoiningDate").value;
-
-            const birthday =
-                document.getElementById("newEmployeeBirthday").value.trim();
-
-            const nid =
-                document.getElementById("newEmployeeNid").value.trim();
-
-            const tinNo =
-                document.getElementById("newEmployeeTin").value.trim();
-
-            const bankName =
-                document.getElementById("newEmployeeBankName").value.trim();
-
-            const accountNo =
-                document.getElementById("newEmployeeAccountNo").value.trim();
-
-            if (!employeeName) {
-                alert("Employee Name is required.");
-                return;
-            }
-
-            if (!employeeNo) {
-                alert("Employee ID is required.");
-                return;
-            }
-
-            if (!accessToken) {
-                alert("Please login first.");
-                return;
-            }
-
-            saveNewEmployeeButton.disabled = true;
-            saveNewEmployeeButton.textContent = "Saving...";
-
-            addEmployeeStatus.textContent =
-                "Saving employee...";
-
+            const responseText = await response.text();
+            let data = null;
             try {
-
-                const response = await fetch(
-                    `${SUPABASE_URL}/rest/v1/employee_dekko_v2`,
-                    {
-                        method: "POST",
-
-                        headers: {
-                            "apikey": SUPABASE_KEY,
-                            "Authorization":
-                                `Bearer ${accessToken}`,
-                            "Content-Type":
-                                "application/json",
-                            "Prefer":
-                                "return=representation"
-                        },
-
-                        body: JSON.stringify({
-                            employee_name: employeeName,
-                            designation: designation,
-                            company: company,
-                            employee_no: employeeNo,
-                            department: department,
-                            phone_official: officialNo,
-                            personal_no: personalNo,
-                            email_official: emailOfficial,
-                            pabx_number: pabxNumber,
-                            blood_group: bloodGroup,
-                            joining_date: joiningDate || null,
-                            birthday: birthday,
-                            nid: nid,
-                            tin_no: tinNo,
-                            bank_name: bankName,
-                            account_no: accountNo
-                        })
-                    }
-                );
-
-                const data = await response.json();
-
-                console.log(
-                    "Add Employee Response:",
-                    data
-                );
-
-                if (!response.ok) {
-
-                    throw new Error(
-                        data.message ||
-                        data.details ||
-                        data.hint ||
-                        data.error ||
-                        "Employee could not be added."
-                    );
-                }
-
-                addEmployeeStatus.textContent =
-                    "Employee added successfully.";
-
-                alert(
-                    "Employee added successfully!"
-                );
-
-                document.getElementById(
-                    "newEmployeeName"
-                ).value = "";
-
-                document.getElementById(
-                    "newEmployeeDesignation"
-                ).value = "";
-
-                document.getElementById(
-                    "newEmployeeCompany"
-                ).value = "";
-
-                document.getElementById(
-                    "newEmployeeNo"
-                ).value = "";
-
-                document.getElementById(
-                    "newEmployeeDepartment"
-                ).value = "";
-
-                document.getElementById(
-                    "newEmployeeOfficialNo"
-                ).value = "";
-
-                document.getElementById(
-                    "newEmployeePersonalNo"
-                ).value = "";
-
-                document.getElementById(
-                    "newEmployeeEmail"
-                ).value = "";
-
-                document.getElementById(
-                    "newEmployeePabx"
-                ).value = "";
-
-                document.getElementById(
-                    "newEmployeeBloodGroup"
-                ).value = "";
-
-                document.getElementById(
-                    "newEmployeeJoiningDate"
-                ).value = "";
-
-                document.getElementById(
-                    "newEmployeeBirthday"
-                ).value = "";
-
-                document.getElementById(
-                    "newEmployeeNid"
-                ).value = "";
-
-                document.getElementById(
-                    "newEmployeeTin"
-                ).value = "";
-
-                document.getElementById("newEmployeeBankName").value = "";
-                document.getElementById("newEmployeeAccountNo").value = "";
-
-                await loadEmployees();
-
-            } catch (error) {
-
-                console.error(
-                    "Add Employee Error:",
-                    error
-                );
-
-                addEmployeeStatus.textContent =
-                    "Error: " + error.message;
-
-                alert(
-                    "Employee could not be added:\n\n" +
-                    error.message
-                );
-
-            } finally {
-
-                saveNewEmployeeButton.disabled = false;
-
-                saveNewEmployeeButton.textContent =
-                    "Save Employee";
+                data = responseText ? JSON.parse(responseText) : null;
+            } catch (_) {
+                data = { message: responseText };
             }
 
-        }
-    );
+            if (!response.ok) {
+                throw new Error(
+                    data?.message || data?.details || data?.hint ||
+                    data?.error || responseText || "Employee could not be saved."
+                );
+            }
 
+            const saved = Array.isArray(data) ? data[0] : data;
+            lastSavedEmployee = saved && saved.employee_no
+                ? saved
+                : { ...payload };
+            editingEmployeeNo = null;
+
+            editButton.hidden = false;
+            editButton.style.display = "block";
+            status.textContent = isEditing
+                ? "Employee updated successfully in Supabase."
+                : "Employee added successfully to " + config.label + ".";
+
+            await loadEmployees(config.source);
+            await loadEmployeeSelect();
+        } catch (error) {
+            console.error(config.label + " employee save error:", error);
+            status.textContent = "Error: " + error.message;
+            alert("Employee could not be saved:\n\n" + error.message);
+        } finally {
+            saveButton.disabled = false;
+            saveButton.textContent = editingEmployeeNo
+                ? "Update Employee"
+                : "Save Employee";
+        }
+    });
 }
 
+setupEmployeeForm({
+    source: "headoffice",
+    label: "Head Office",
+    prefix: "newEmployee",
+    buttonId: "showAddEmployeeButton",
+    formId: "addEmployeeForm",
+    saveId: "saveNewEmployeeButton",
+    editId: "editLastSavedEmployeeButton",
+    statusId: "addEmployeeStatus",
+    openLabel: "+ Add New Employee",
+    closeLabel: "− Close Add Employee"
+});
 
+setupEmployeeForm({
+    source: "factory",
+    label: "Factory",
+    prefix: "factoryNewEmployee",
+    buttonId: "showAddFactoryEmployeeButton",
+    formId: "addFactoryEmployeeForm",
+    saveId: "saveNewFactoryEmployeeButton",
+    editId: "editLastSavedFactoryEmployeeButton",
+    statusId: "addFactoryEmployeeStatus",
+    openLabel: "+ Add New Employee (Factory)",
+    closeLabel: "− Close Factory Form"
+});
 
 
 
@@ -2457,14 +3071,16 @@ if (saveNewEmployeeButton) {
     const appTitle = document.getElementById("appTitle");
     const bottomLogo = document.getElementById("homeBottomLogo");
     const employeeList = document.getElementById("employeeList");
+    const adminButton = document.getElementById("adminButton");
 
     if (!button || !page || !backButton) return;
 
     button.addEventListener("click", function () {
         if (dashboard) dashboard.style.display = "none";
-        if (appTitle) appTitle.style.display = "none";
+        if (appTitle) appTitle.style.setProperty("display", "none", "important");
         if (bottomLogo) bottomLogo.style.display = "none";
         if (employeeList) employeeList.style.display = "none";
+        if (adminButton) adminButton.style.setProperty("display", "none", "important");
         page.style.display = "block";
         page.style.background = "#fff";
         page.style.minHeight = "100vh";
@@ -2473,9 +3089,47 @@ if (saveNewEmployeeButton) {
     backButton.addEventListener("click", function () {
         page.style.display = "none";
         if (dashboard) dashboard.style.display = "";
-        if (appTitle) appTitle.style.display = "";
+        if (appTitle) appTitle.style.removeProperty("display");
         if (bottomLogo) bottomLogo.style.display = "";
         if (employeeList) employeeList.style.display = "";
+        if (adminButton) adminButton.style.removeProperty("display");
+    });
+})();
+
+
+
+/* HOLIDAY CALENDAR PAGE NAVIGATION */
+(function () {
+    const button = document.getElementById("holidayCalendarButton");
+    const page = document.getElementById("holidayCalendarPage");
+    const backButton = document.getElementById("holidayCalendarBackButton");
+    const dashboard = document.getElementById("departmentSection");
+    const appTitle = document.getElementById("appTitle");
+    const bottomLogo = document.getElementById("homeBottomLogo");
+    const employeeList = document.getElementById("employeeList");
+    const adminButton = document.getElementById("adminButton");
+
+    if (!button || !page || !backButton) return;
+
+    button.addEventListener("click", function () {
+        if (dashboard) dashboard.style.display = "none";
+        if (appTitle) appTitle.style.setProperty("display", "none", "important");
+        if (bottomLogo) bottomLogo.style.display = "none";
+        if (employeeList) employeeList.style.display = "none";
+        if (adminButton) adminButton.style.setProperty("display", "none", "important");
+
+        page.style.display = "block";
+        window.scrollTo(0, 0);
+    });
+
+    backButton.addEventListener("click", function () {
+        page.style.display = "none";
+        if (dashboard) dashboard.style.display = "";
+        if (appTitle) appTitle.style.removeProperty("display");
+        if (bottomLogo) bottomLogo.style.display = "";
+        if (employeeList) employeeList.style.display = "";
+        if (adminButton) adminButton.style.removeProperty("display");
+        window.scrollTo(0, 0);
     });
 })();
 
@@ -2483,7 +3137,7 @@ if (saveNewEmployeeButton) {
 (function () {
     "use strict";
 
-    const ADMIN_UID = "e5090917-b885-41b4-8062-e208fd6ab287";
+    const ADMIN_UID = "f0fcbd2e-003e-4fc2-bc2e-51b13c5f0814";
 
     document.addEventListener("DOMContentLoaded", function () {
         const $ = id => document.getElementById(id);
@@ -2635,6 +3289,71 @@ if (saveNewEmployeeButton) {
         if (monthInput) monthInput.value = currentMonth;
         if (slipMonth) slipMonth.value = currentMonth;
 
+        // Monthly Pay Slip year and month selector
+        const paySlipYearSelect = $("paySlipYear");
+        const paySlipMonthGrid = $("paySlipMonthGrid");
+
+        if (paySlipYearSelect && paySlipMonthGrid && slipMonth) {
+            const currentYear = new Date().getFullYear();
+            const monthNames = [
+                "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+            ];
+
+            for (let year = 2011; year <= currentYear + 10; year++) {
+                const option = document.createElement("option");
+                option.value = String(year);
+                option.textContent = String(year);
+                paySlipYearSelect.appendChild(option);
+            }
+
+            const initialYear = Number(slipMonth.value.slice(0, 4));
+            const initialMonth = slipMonth.value.slice(5, 7);
+            paySlipYearSelect.value = String(
+                initialYear >= 2011 && initialYear <= currentYear
+                    ? initialYear : currentYear
+            );
+
+            monthNames.forEach((name, index) => {
+                const monthNumber = String(index + 1).padStart(2, "0");
+                const button = document.createElement("button");
+                button.type = "button";
+                button.className = "payslip-month-button";
+                button.textContent = name;
+                button.dataset.month = monthNumber;
+                button.setAttribute("aria-pressed", "false");
+
+                button.addEventListener("click", function () {
+                    slipMonth.value =
+                        paySlipYearSelect.value + "-" + monthNumber;
+                    updatePaySlipMonthSelection();
+                });
+
+                paySlipMonthGrid.appendChild(button);
+            });
+
+            function updatePaySlipMonthSelection() {
+                const selectedMonth = slipMonth.value.slice(5, 7);
+                paySlipMonthGrid.querySelectorAll(".payslip-month-button")
+                    .forEach(button => {
+                        const selected = button.dataset.month === selectedMonth;
+                        button.classList.toggle("selected", selected);
+                        button.setAttribute("aria-pressed", String(selected));
+                    });
+            }
+
+            paySlipYearSelect.addEventListener("change", function () {
+                const selectedMonth = slipMonth.value.slice(5, 7) || "01";
+                slipMonth.value = paySlipYearSelect.value + "-" + selectedMonth;
+                updatePaySlipMonthSelection();
+            });
+
+            slipMonth.value =
+                paySlipYearSelect.value + "-" +
+                (initialMonth || String(new Date().getMonth() + 1).padStart(2, "0"));
+            updatePaySlipMonthSelection();
+        }
+
         let employeeNumbers = new Set();
         let employeeInfo = new Map();
 
@@ -2667,7 +3386,7 @@ if (saveNewEmployeeButton) {
         async function loadEmployees() {
             const response = await fetch(
                 SUPABASE_URL +
-                "/rest/v1/employee_dekko_v2?select=employee_no,employee_name,department,designation,joining_date,bank_name,account_no&order=employee_name.asc",
+                "/rest/v1/all_employee_headoffice?select=employee_no,employee_name,department,designation,joining_date,birthday,date_of_birth,nid,tin_no,bank_name,account_no&order=employee_name.asc",
                 { headers: apiHeaders() }
             );
 
@@ -3361,7 +4080,7 @@ if (slipEmployee) {
                         if (number >= 20) {
                             result += tens[Math.floor(number / 10)];
                             number %= 10;
-                            if (number) result += "-" + ones[number];
+                            if (number) result += " " + ones[number];
                         } else if (number > 0 || !result) {
                             result += ones[number];
                         }
@@ -3392,7 +4111,7 @@ if (slipEmployee) {
                             }
                         }
 
-                        return parts.join(" ") + " Taka Only";
+                        return parts.join(" ") + " Taka Only.";
                     }
 
                     const optionalDetails = [
@@ -3518,7 +4237,7 @@ if (slipEmployee) {
                             </section>
 
                             <section class="payslip-words">
-                                <p><strong>Net Pay (in Words):</strong> ${Number(netPay) ? safe(amountInWords(netPay)) : "-"}</p>
+                                <p><strong>Net Pay (In Words):</strong> ${Number(netPay) ? safe(amountInWords(netPay)) : "-"}</p>
                             </section>
 
                             <footer class="payslip-footer">
@@ -3582,4 +4301,1467 @@ if (slipEmployee) {
             });
         }
     });
+})();
+
+
+if (departmentFilter) {
+    departmentFilter.addEventListener("change", function () {
+        const selectedDepartment = this.value;
+        const selectedDesignation = designationFilter ? designationFilter.value : "";
+        const selectedBloodGroup = bloodGroupFilter ? bloodGroupFilter.value : "";
+        const searchText = searchInput.value.toLowerCase().trim();
+
+        const filtered = employees.filter(employee => {
+            const matchesDesignation = !selectedDesignation ||
+                normalizeDesignation(employee.designation) === selectedDesignation;
+            const matchesBloodGroup = !selectedBloodGroup ||
+                String(employee.blood_group || "").trim().toUpperCase() === selectedBloodGroup;
+            const matchesDepartment = !selectedDepartment ||
+                String(employee.department || "Other").trim().toLowerCase() === selectedDepartment.toLowerCase();
+
+            const text = `${employee.employee_name || ""} ${employee.employee_no || ""} ${employee.company || ""} ${employee.department || ""} ${employee.designation || ""}`;
+            const matchesSearch = !searchText || text.toLowerCase().includes(searchText);
+
+            return matchesDesignation && matchesBloodGroup && matchesDepartment && matchesSearch;
+        });
+
+        showEmployees(filtered);
+    });
+}
+
+if (bloodGroupFilter) {
+    bloodGroupFilter.addEventListener("change", function () {
+        const selectedBloodGroup = this.value;
+        const selectedDepartment = departmentFilter ? departmentFilter.value : "";
+        const selectedDesignation = designationFilter ? designationFilter.value : "";
+        const searchText = searchInput.value.toLowerCase().trim();
+
+        const filtered = employees.filter(employee => {
+            const matchesDesignation = !selectedDesignation ||
+                normalizeDesignation(employee.designation) === selectedDesignation;
+            const matchesBloodGroup = !selectedBloodGroup ||
+                String(employee.blood_group || "").trim().toUpperCase() === selectedBloodGroup;
+            const text = `${employee.employee_name || ""} ${employee.employee_no || ""} ${employee.company || ""} ${employee.department || ""} ${employee.designation || ""}`;
+            const matchesSearch = !searchText || text.toLowerCase().includes(searchText);
+            return matchesDesignation &&
+                matchesBloodGroup &&
+                (!selectedDepartment ||
+                    String(employee.department || "Other").trim().toLowerCase() === selectedDepartment.toLowerCase()) &&
+                matchesSearch;
+        });
+
+        showEmployees(filtered);
+    });
+}
+
+
+
+/* HOLIDAY CALENDAR DATA AND DISPLAY LOGIC */
+(function () {
+    "use strict";
+
+    const $ = id => document.getElementById(id);
+    const yearSelect = $("holidayCalendarYear");
+    const monthButtons = $("holidayCalendarMonths");
+    const status = $("holidayCalendarStatus");
+    const summary = $("holidayCalendarSummary");
+    const grid = $("holidayCalendarGrid");
+    const monthTitle = $("holidayCalendarMonthTitle");
+    const eventList = $("holidayCalendarEventList");
+
+    if (!yearSelect || !monthButtons || !grid || !summary || !eventList) return;
+
+    const MONTHS = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    ];
+
+    let selectedYear = new Date().getFullYear();
+    let selectedMonth = new Date().getMonth();
+    let calendarRecords = [];
+    let loadRequest = 0;
+
+    function escapeHTML(value) {
+        return String(value ?? "").replace(/[&<>"']/g, char => ({
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;"
+        })[char]);
+    }
+
+    function dateKey(year, month, day) {
+        return year + "-" +
+            String(month + 1).padStart(2, "0") + "-" +
+            String(day).padStart(2, "0");
+    }
+
+    function recordsForDate(key) {
+        return calendarRecords.filter(record => record.event_date === key);
+    }
+
+    function dayInfo(year, month, day) {
+        const key = dateKey(year, month, day);
+        const records = recordsForDate(key);
+        const date = new Date(year, month, day);
+        const special = records.some(r => r.event_type === "Special Working Day");
+        const government = !special &&
+            records.some(r => r.event_type === "Government");
+        const office = !special && (
+            records.some(r => r.event_type === "Office") ||
+            (
+                date.getDay() === 6 &&
+                day !== 8 &&
+                (day === 1 || day > 8)
+            )
+        );
+        const weekly = !special && (
+            date.getDay() === 5 ||
+            (records.some(r => r.event_type === "Weekly") &&
+             date.getDay() !== 6)
+        );
+        return {
+            key,
+            records,
+            special,
+            government,
+            office,
+            weekly,
+            holiday: !special && (government || office || weekly)
+        };
+    }
+
+    function buildYearSelector() {
+        yearSelect.replaceChildren();
+        for (let year = selectedYear - 2; year <= selectedYear + 2; year++) {
+            const option = document.createElement("option");
+            option.value = String(year);
+            option.textContent = String(year);
+            yearSelect.appendChild(option);
+        }
+        yearSelect.value = String(selectedYear);
+    }
+
+    function buildMonthButtons() {
+        monthButtons.innerHTML = MONTHS.map((name, index) =>
+            '<button type="button" class="holiday-calendar-month' +
+            (index === selectedMonth ? ' active' : '') +
+            '" data-month="' + index + '">' + name + '</button>'
+        ).join("");
+
+        monthButtons.querySelectorAll("[data-month]").forEach(button => {
+            button.addEventListener("click", () => {
+                selectedMonth = Number(button.dataset.month);
+                renderCalendar();
+            });
+        });
+    }
+
+    function renderSummary(daysInMonth) {
+        let governmentDays = 0;
+        let officeDays = 0;
+        let weeklyDays = 0;
+        let totalHolidays = 0;
+
+        for (let day = 1; day <= daysInMonth; day++) {
+            const info = dayInfo(selectedYear, selectedMonth, day);
+            if (info.government) governmentDays++;
+            if (info.office) officeDays++;
+            if (info.weekly) weeklyDays++;
+            if (info.holiday) totalHolidays++;
+        }
+
+        const items = [
+            ["Government Holidays", governmentDays],
+            ["Office Holidays", officeDays],
+            ["Weekly Holidays", weeklyDays],
+            ["Working Days", daysInMonth - totalHolidays],
+            ["Total Holidays", totalHolidays]
+        ];
+
+        summary.innerHTML = items.map(item =>
+            '<div class="holiday-summary-item"><strong>' + item[1] +
+            '</strong><span>' + item[0] + '</span></div>'
+        ).join("");
+    }
+
+    function renderGrid(daysInMonth) {
+        const firstWeekday = new Date(
+            selectedYear, selectedMonth, 1
+        ).getDay();
+
+        const cells = [];
+        for (let i = 0; i < firstWeekday; i++) {
+            cells.push('<div class="holiday-calendar-day empty" aria-hidden="true"></div>');
+        }
+
+        for (let day = 1; day <= daysInMonth; day++) {
+            const info = dayInfo(selectedYear, selectedMonth, day);
+            let classes = "holiday-calendar-day";
+            const labels = [];
+
+            if (info.special) {
+                classes += " special-working";
+                labels.push("Special Working Day");
+            } else {
+                if (info.government) {
+                    classes += " government";
+                    labels.push("Government Holiday");
+                }
+                if (info.office) {
+                    classes += " office";
+                    labels.push("Office Holiday");
+                }
+                if (info.weekly) {
+                    if (!info.government && !info.office) {
+                        classes += " weekly";
+                    } else {
+                        classes += " mixed";
+                    }
+
+                }
+            }
+
+            cells.push(
+                '<div class="' + classes + '" data-date="' + info.key + '">' +
+                '<span class="day-number">' + day + '</span>' +
+                labels.map(label =>
+                    '<span class="day-label">' + escapeHTML(label) + '</span>'
+                ).join("") +
+                '</div>'
+            );
+        }
+
+        grid.innerHTML = cells.join("");
+    }
+
+    function renderEvents(daysInMonth) {
+        const entries = [];
+
+        for (let day = 1; day <= daysInMonth; day++) {
+            const info = dayInfo(selectedYear, selectedMonth, day);
+            if (!info.holiday && !info.special && !info.records.length) continue;
+
+            const titles = info.records.map(record => record.title).filter(Boolean);
+            const categories = [];
+
+            if (info.special) {
+                categories.push("Special Working Day");
+            } else {
+                if (info.government) categories.push("Government Holiday");
+                if (info.office) categories.push("Office Holiday");
+                if (info.weekly) categories.push("Weekly Holiday");
+            }
+
+            if (categories.length || titles.length) {
+                entries.push({
+                    date: info.key,
+                    categories,
+                    titles,
+                    records: info.records
+                });
+            }
+        }
+
+        if (!entries.length) {
+            eventList.innerHTML = '<p>No holidays or calendar entries for this month.</p>';
+            return;
+        }
+
+        eventList.innerHTML = entries.map(entry => {
+            const date = new Date(entry.date + "T00:00:00");
+            const readableDate = date.toLocaleDateString("en-GB", {
+                day: "numeric", month: "long", year: "numeric"
+            });
+            const title = entry.titles.length
+                ? entry.titles.join(" · ")
+                : entry.categories.join(" · ");
+
+            const descriptions = entry.records
+                .map(record => record.description)
+                .filter(Boolean)
+                .map(text => '<p>' + escapeHTML(text) + '</p>')
+                .join("");
+
+            const actions = window.holidayCalendarIsAdmin
+                ? entry.records.map(record =>
+                    '<div class="holiday-calendar-event-actions">' +
+                    '<button type="button" data-calendar-edit="' +
+                    escapeHTML(record.id) + '">Edit</button>' +
+                    '<button type="button" data-calendar-delete="' +
+                    escapeHTML(record.id) + '">Delete</button>' +
+                    '</div>'
+                ).join("")
+                : "";
+
+            return '<article class="holiday-calendar-event">' +
+                '<strong>' + escapeHTML(readableDate) + ' — ' +
+                escapeHTML(title) + '</strong>' +
+                '<p>' + escapeHTML(entry.categories.join(" · ")) + '</p>' +
+                descriptions + actions + '</article>';
+        }).join("");
+    }
+
+    function renderCalendar() {
+        const daysInMonth = new Date(
+            selectedYear, selectedMonth + 1, 0
+        ).getDate();
+
+        monthTitle.textContent = MONTHS[selectedMonth] + " " + selectedYear;
+        buildMonthButtons();
+        renderSummary(daysInMonth);
+        renderGrid(daysInMonth);
+        renderEvents(daysInMonth);
+    }
+
+    async function loadYearRecords() {
+        const requestId = ++loadRequest;
+        const year = selectedYear;
+        status.textContent = "Loading calendar data...";
+
+        try {
+            const response = await fetch(
+                SUPABASE_URL + "/rest/v1/office_calendar?select=*&event_date=gte." +
+                year + "-01-01&event_date=lte." + year + "-12-31&order=event_date.asc",
+                {
+                    headers: {
+                        apikey: SUPABASE_KEY,
+                        Authorization: "Bearer " + SUPABASE_KEY
+                    }
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error("Could not load calendar data (HTTP " +
+                    response.status + ").");
+            }
+
+            const records = await response.json();
+            if (requestId !== loadRequest) return;
+
+            calendarRecords = Array.isArray(records) ? records : [];
+            renderCalendar();
+            status.textContent = "";
+        } catch (error) {
+            if (requestId !== loadRequest) return;
+            calendarRecords = [];
+            renderCalendar();
+            status.textContent =
+                "Could not load saved holidays. " + error.message;
+        }
+    }
+
+    yearSelect.addEventListener("change", () => {
+        selectedYear = Number(yearSelect.value);
+        loadYearRecords();
+    });
+
+    buildYearSelector();
+    renderCalendar();
+
+    const calendarButton = $("holidayCalendarButton");
+    if (calendarButton) {
+        calendarButton.addEventListener("click", loadYearRecords);
+    }
+
+    window.addEventListener("holidayCalendarRefresh", loadYearRecords);
+})();
+
+
+
+/* HOLIDAY CALENDAR ADMIN CRUD */
+(function () {
+    "use strict";
+
+    const ADMIN_UID = "f0fcbd2e-003e-4fc2-bc2e-51b13c5f0814";
+    const $ = id => document.getElementById(id);
+
+    const adminPanel = $("holidayCalendarAdmin");
+    const form = $("holidayCalendarForm");
+    const formTitle = $("holidayCalendarFormTitle");
+    const recordId = $("holidayCalendarRecordId");
+    const dateInput = $("holidayCalendarEventDate");
+    const typeInput = $("holidayCalendarEventType");
+    const titleInput = $("holidayCalendarEventTitle");
+    const descriptionInput = $("holidayCalendarEventDescription");
+    const saveButton = $("holidayCalendarSaveButton");
+    const cancelButton = $("holidayCalendarCancelEdit");
+    const adminStatus = $("holidayCalendarAdminStatus");
+    const eventList = $("holidayCalendarEventList");
+    const calendarButton = $("holidayCalendarButton");
+    const logoutButton = $("logoutButton");
+
+    if (!adminPanel || !form || !eventList) return;
+
+    window.holidayCalendarIsAdmin = false;
+    adminPanel.style.display = "none";
+
+    async function verifyAdmin() {
+        if (!accessToken) return false;
+
+        const response = await fetch(SUPABASE_URL + "/auth/v1/user", {
+            headers: {
+                apikey: SUPABASE_KEY,
+                Authorization: "Bearer " + accessToken
+            }
+        });
+
+        if (!response.ok) return false;
+
+        const user = await response.json();
+        return user && user.id === ADMIN_UID;
+    }
+
+    function resetForm() {
+        form.reset();
+        recordId.value = "";
+        formTitle.textContent = "Manage Holiday";
+        saveButton.textContent = "Save Holiday";
+        cancelButton.style.display = "none";
+    }
+
+    function showAdminStatus(message) {
+        adminStatus.textContent = message;
+    }
+
+    async function refreshCalendar() {
+        window.dispatchEvent(new Event("holidayCalendarRefresh"));
+    }
+
+    async function requestCalendar(url, options) {
+        const response = await fetch(url, options);
+        const body = await response.text();
+        let data = null;
+
+        try {
+            data = body ? JSON.parse(body) : null;
+        } catch (_) {
+            data = null;
+        }
+
+        if (!response.ok) {
+            throw new Error(
+                (data && (data.message || data.error_description || data.error)) ||
+                ("Request failed (HTTP " + response.status + ").")
+            );
+        }
+
+        return data;
+    }
+
+    function authHeaders() {
+        return {
+            apikey: SUPABASE_KEY,
+            Authorization: "Bearer " + accessToken,
+            "Content-Type": "application/json",
+            Prefer: "return=representation"
+        };
+    }
+
+    async function enableAdminIfValid() {
+        try {
+            const validAdmin = await verifyAdmin();
+            window.holidayCalendarIsAdmin = validAdmin;
+            adminPanel.style.display = validAdmin ? "block" : "none";
+
+            if (validAdmin) {
+                await refreshCalendar();
+            }
+        } catch (error) {
+            window.holidayCalendarIsAdmin = false;
+            adminPanel.style.display = "none";
+        }
+    }
+
+    if (calendarButton) {
+        calendarButton.addEventListener("click", enableAdminIfValid);
+    }
+
+    eventList.addEventListener("click", async function (event) {
+        const editButton = event.target.closest("[data-calendar-edit]");
+        const deleteButton = event.target.closest("[data-calendar-delete]");
+
+        if (!editButton && !deleteButton) return;
+
+        try {
+            if (!(await verifyAdmin())) {
+                window.holidayCalendarIsAdmin = false;
+                adminPanel.style.display = "none";
+                showAdminStatus("Admin verification failed. Please log in again.");
+                return;
+            }
+
+            const id = (editButton || deleteButton).dataset[
+                editButton ? "calendarEdit" : "calendarDelete"
+            ];
+
+            const response = await requestCalendar(
+                SUPABASE_URL + "/rest/v1/office_calendar?select=*&id=eq." +
+                encodeURIComponent(id),
+                { headers: authHeaders() }
+            );
+
+            const record = Array.isArray(response) ? response[0] : response;
+            if (!record) throw new Error("Calendar record was not found.");
+
+            if (editButton) {
+                recordId.value = String(record.id);
+                dateInput.value = record.event_date;
+                typeInput.value = record.event_type;
+                titleInput.value = record.title || "";
+                descriptionInput.value = record.description || "";
+                formTitle.textContent = "Edit Calendar Entry";
+                saveButton.textContent = "Update Entry";
+                cancelButton.style.display = "inline-block";
+                showAdminStatus("Editing selected entry.");
+                adminPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+                return;
+            }
+
+            if (!window.confirm(
+                'Delete "' + (record.title || "this calendar entry") +
+                '" on ' + record.event_date + '?'
+            )) return;
+
+            await requestCalendar(
+                SUPABASE_URL + "/rest/v1/office_calendar?id=eq." +
+                encodeURIComponent(id),
+                {
+                    method: "DELETE",
+                    headers: authHeaders()
+                }
+            );
+
+            resetForm();
+            showAdminStatus("Calendar entry deleted.");
+            await refreshCalendar();
+        } catch (error) {
+            showAdminStatus(error.message);
+        }
+    });
+
+    form.addEventListener("submit", async function (event) {
+        event.preventDefault();
+        saveButton.disabled = true;
+        showAdminStatus("Verifying Admin and saving...");
+
+        try {
+            if (!(await verifyAdmin())) {
+                window.holidayCalendarIsAdmin = false;
+                adminPanel.style.display = "none";
+                throw new Error("Admin verification failed. Please log in again.");
+            }
+
+            const eventType = typeInput.value;
+            const payload = {
+                event_date: dateInput.value,
+                event_type: eventType,
+                title: titleInput.value.trim(),
+                description: descriptionInput.value.trim() || null,
+                is_working_day: eventType === "Special Working Day",
+                updated_at: new Date().toISOString()
+            };
+
+            if (!payload.event_date || !payload.title) {
+                throw new Error("Please enter a date and title.");
+            }
+
+            let url = SUPABASE_URL + "/rest/v1/office_calendar";
+            let method = "POST";
+
+            if (recordId.value) {
+                url += "?id=eq." + encodeURIComponent(recordId.value);
+                method = "PATCH";
+            } else {
+                payload.created_by = ADMIN_UID;
+            }
+
+            await requestCalendar(url, {
+                method,
+                headers: authHeaders(),
+                body: JSON.stringify(payload)
+            });
+
+            resetForm();
+            showAdminStatus("Calendar entry saved successfully.");
+            await refreshCalendar();
+        } catch (error) {
+            showAdminStatus(error.message);
+        } finally {
+            saveButton.disabled = false;
+        }
+    });
+
+    cancelButton.addEventListener("click", function () {
+        resetForm();
+        showAdminStatus("");
+    });
+
+    if (logoutButton) {
+        logoutButton.addEventListener("click", function () {
+            window.holidayCalendarIsAdmin = false;
+            adminPanel.style.display = "none";
+        });
+    }
+})();
+
+/* Show today's date and month in the Dashboard Holiday Calendar icon */
+(function () {
+    function updateHolidayTodayDate() {
+        const dateElement = document.getElementById("holidayTodayDate");
+        if (!dateElement) return;
+
+        const now = new Date();
+        dateElement.innerHTML =
+            '<span class="holiday-today-day">' + now.getDate() + '</span>' +
+            '<span class="holiday-today-month">' +
+            now.toLocaleString("en-US", { month: "short" }).toUpperCase() +
+            '</span>';
+    }
+
+    updateHolidayTodayDate();
+    setInterval(updateHolidayTodayDate, 60000);
+})();
+
+/* Show today's date and month beside the Holiday Calendar page heading */
+(function () {
+    function updateHolidayPageTodayDate() {
+        const day = document.getElementById("holidayPageTodayDay");
+        const month = document.getElementById("holidayPageTodayMonth");
+        if (!day || !month) return;
+
+        const now = new Date();
+        day.textContent = now.getDate();
+        month.textContent = now.toLocaleString("en-US", { month: "short" }).toUpperCase();
+    }
+
+    updateHolidayPageTodayDate();
+    setInterval(updateHolidayPageTodayDate, 60000);
+})();
+
+
+
+/* ORGANOGRAM CHAIRMAN OPTIONAL NAME + EMPLOYEE SEARCH V1 */
+/* ORGANOGRAM TREE MODULE V1 */
+(function () {
+    "use strict";
+
+    const ADMIN_UID = "f0fcbd2e-003e-4fc2-bc2e-51b13c5f0814";
+    const $ = id => document.getElementById(id);
+
+    const page = $("organogramPage");
+    if (!page) return;
+
+    const tree = $("organogramTree");
+    const status = $("organogramStatus");
+    const editButton = $("organogramEditButton");
+    const panel = $("organogramAdminPanel");
+    const form = $("organogramForm");
+    const recordId = $("organogramRecordId");
+    const typeInput = $("organogramNodeType");
+    const employeeSelect = $("organogramEmployeeSelect");
+    const employeeSearch = $("organogramEmployeeSearch");
+    const employeeSuggestions = $("organogramEmployeeSuggestions");
+    const nameInput = $("organogramName");
+    const designationInput = $("organogramDesignation");
+    const departmentInput = $("organogramDepartment");
+    const departmentField = $("organogramDepartmentField");
+    const parentInput = $("organogramParent");
+    const sortInput = $("organogramSortOrder");
+    const saveButton = $("organogramSaveButton");
+    const cancelButton = $("organogramCancelButton");
+    const adminStatus = $("organogramAdminStatus");
+    const adminList = $("organogramAdminList");
+    const chartSelect = $("organogramSelect");
+    const createPanel = $("organogramCreatePanel");
+    const createChartButton = $("organogramCreateButton");
+    const renameChartButton = $("organogramRenameButton");
+    const createChartStatus = $("organogramCreateStatus");
+    const chartsEndpoint = SUPABASE_URL + "/rest/v1/organogram_charts";
+    let currentOrganogramName = "Organogram-Marketing";
+
+    const endpoint = SUPABASE_URL + "/rest/v1/organogram_nodes";
+    const employeeEndpoint =
+        SUPABASE_URL + "/rest/v1/employee_directory_public";
+
+    let nodes = [];
+    let directory = [];
+    let isAdmin = false;
+    let editing = false;
+
+    function apiHeaders(write = false) {
+        const headers = {
+            apikey: SUPABASE_KEY,
+            Authorization: "Bearer " + (write ? accessToken : SUPABASE_KEY)
+        };
+        if (write) headers["Content-Type"] = "application/json";
+        return headers;
+    }
+
+    async function verifyOrganogramAdmin() {
+        if (!accessToken) return false;
+        try {
+            const response = await fetch(SUPABASE_URL + "/auth/v1/user", {
+                headers: {
+                    apikey: SUPABASE_KEY,
+                    Authorization: "Bearer " + accessToken
+                }
+            });
+            if (!response.ok) return false;
+            const user = await response.json();
+            return Boolean(user && user.id === ADMIN_UID);
+        } catch (error) {
+            console.error("Organogram admin verification failed:", error);
+            return false;
+        }
+    }
+
+    function setStatus(message) {
+        if (status) status.textContent = message;
+    }
+
+    function setAdminStatus(message) {
+        if (adminStatus) adminStatus.textContent = message;
+    }
+
+    async function loadDirectory() {
+        const response = await fetch(
+            employeeEndpoint + "?select=employee_no,employee_name,designation,department&order=employee_name.asc",
+            { headers: apiHeaders(false) }
+        );
+        if (!response.ok) {
+            throw new Error("Employee Directory load failed (" + response.status + ").");
+        }
+        directory = await response.json();
+        fillEmployeeOptions();
+        fillDepartmentOptions();
+    }
+
+    async function loadNodes() {
+        const response = await fetch(
+            endpoint + "?select=*&order=sort_order.asc,id.asc",
+            { headers: apiHeaders(false) }
+        );
+        if (!response.ok) {
+            throw new Error("Organogram load failed (" + response.status + ").");
+        }
+        const allNodes = await response.json();
+        nodes = allNodes.filter(node =>
+            String(node.organogram_name || "Organogram-Marketing") === currentOrganogramName
+        );
+        renderTree();
+        renderAdminList();
+        fillParentOptions();
+    }
+
+    function employeeNumber(employee) {
+        return String(employee && employee.employee_no || "").trim();
+    }
+
+    function displayName(employee) {
+        return String(employee && employee.employee_name || "").trim();
+    }
+
+    function employeeLabel(employee) {
+        return [
+            displayName(employee),
+            employee.designation || "",
+            employeeNumber(employee)
+        ].filter(Boolean).join(" · ");
+    }
+
+    function fillEmployeeOptions(selectedNo = "") {
+        if (!employeeSelect) return;
+        employeeSelect.replaceChildren(new Option("Choose an employee", ""));
+        employeeSuggestions.replaceChildren();
+
+        directory.forEach(employee => {
+            const no = employeeNumber(employee);
+            const label = employeeLabel(employee);
+            if (!label) return;
+            if (no) employeeSelect.add(new Option(label, no));
+            employeeSuggestions.appendChild(new Option(label));
+        });
+
+        employeeSelect.value = selectedNo;
+        const selected = directory.find(
+            employee => employeeNumber(employee) === selectedNo
+        );
+        employeeSearch.value = selected ? employeeLabel(selected) : "";
+    }
+
+    function fillDepartmentOptions(selected = "") {
+        if (!departmentInput) return;
+        const departments = [...new Set(
+            directory.map(employee => String(employee.department || "").trim())
+                .filter(Boolean)
+        )].sort((a, b) => a.localeCompare(b));
+
+        departmentInput.replaceChildren(new Option("Choose department", ""));
+        departments.forEach(department => {
+            departmentInput.add(new Option(department, department));
+        });
+        departmentInput.value = selected;
+    }
+
+    function fillParentOptions(selected = "") {
+        if (!parentInput) return;
+
+        const type = typeInput.value;
+        let allowed = [];
+        let placeholder = "Choose reporting position";
+
+        if (type === "chairman") {
+            placeholder = "Top level";
+        } else if (type === "executive_director") {
+            allowed = nodes.filter(node => node.node_type === "chairman");
+        } else if (type === "chief_marketing_officer") {
+            allowed = nodes.filter(node => node.node_type === "executive_director");
+        } else if (type === "department_head") {
+            allowed = nodes.filter(node => node.node_type === "chief_marketing_officer");
+        }
+
+        parentInput.replaceChildren(new Option(placeholder, ""));
+
+        allowed.forEach(node => {
+            const title = String(node.name || node.designation || "Unnamed position");
+            const designation = String(node.designation || "");
+            parentInput.add(new Option(
+                designation && title !== designation
+                    ? title + " — " + designation
+                    : title,
+                String(node.id)
+            ));
+        });
+
+        if (type !== "chairman" && allowed.length === 0) {
+            parentInput.options[0].textContent =
+                type === "executive_director"
+                    ? "Add a Chairman position first"
+                    : type === "chief_marketing_officer"
+                        ? "Add an Executive Director position first"
+                        : type === "department_head"
+                            ? "Add a Chief Marketing Officer position first"
+                            : "No reporting position available";
+        }
+
+        parentInput.value = selected;
+    }
+
+    function updateFormForType() {
+        const type = typeInput.value;
+        const isHead = type === "department_head";
+        departmentField.style.display = isHead ? "" : "none";
+        nameInput.required = type !== "chairman";
+        employeeSelect.required = false;
+        departmentInput.required = isHead;
+        fillParentOptions();
+    }
+
+    function makePhoto(employee) {
+        const no = employeeNumber(employee);
+        if (!no) {
+            const placeholder = document.createElement("div");
+            placeholder.className = "organogram-photo-placeholder";
+            placeholder.textContent = "No Photo";
+            return placeholder;
+        }
+        const image = document.createElement("img");
+        image.className = "organogram-photo";
+        image.alt = "Employee photo";
+        image.loading = "lazy";
+        image.src = "https://res.cloudinary.com/lnhd3otv/image/upload/" +
+            encodeURIComponent(no) + ".jpg";
+        image.onerror = function () {
+            const placeholder = document.createElement("div");
+            placeholder.className = "organogram-photo-placeholder";
+            placeholder.textContent = "No Photo";
+            image.replaceWith(placeholder);
+        };
+        return image;
+    }
+
+    function makePersonCard(name, designation, employee = null, extraClass = "") {
+        const card = document.createElement("div");
+        card.className = "organogram-person " + extraClass;
+
+        if (extraClass.split(/\s+/).includes("organogram-role-chairman")) {
+            const image = document.createElement("img");
+            image.className = "organogram-photo";
+            image.alt = "Chairman photo";
+            image.loading = "lazy";
+            image.src = String.fromCharCode(104,116,116,112,115,58,47,47)+"res.cloudinary.com/lnhd3otv/image/upload/v1793243174/Photo-Chairman_Sir2.jpg";
+            image.onerror = function () {
+                const placeholder = document.createElement("div");
+                placeholder.className = "organogram-photo-placeholder";
+                placeholder.textContent = "No Photo";
+                image.replaceWith(placeholder);
+            };
+            card.appendChild(image);
+        } else if (employee) {
+            card.appendChild(makePhoto(employee));
+        }
+
+        const info = document.createElement("div");
+        info.className = "organogram-person-info";
+
+        if (name && String(name).trim()) {
+            const nameEl = document.createElement("strong");
+            nameEl.textContent = name;
+            info.appendChild(nameEl);
+        }
+
+        const designationEl = document.createElement("span");
+        designationEl.textContent = designation || "";
+        info.appendChild(designationEl);
+
+        if (employee && employee.employee_no) {
+            const idEl = document.createElement("small");
+            idEl.textContent = "ID: " + employee.employee_no;
+            info.appendChild(idEl);
+        }
+
+        card.appendChild(info);
+        return card;
+    }
+
+function renderTree() {
+        tree.replaceChildren();
+
+        if (!nodes.length) {
+            const empty = document.createElement("div");
+            empty.className = "organogram-empty-state";
+            empty.textContent = isAdmin
+                ? "No positions saved yet. Select Edit Organogram to add the Chairman first."
+                : "The organization chart has not been configured yet.";
+            tree.appendChild(empty);
+            setStatus("No organization positions have been saved yet.");
+            return;
+        }
+
+        const childrenByParent = new Map();
+        nodes.forEach(node => {
+            const key = node.parent_id == null ? "root" : String(node.parent_id);
+            if (!childrenByParent.has(key)) childrenByParent.set(key, []);
+            childrenByParent.get(key).push(node);
+        });
+
+        const seen = new Set();
+
+        function renderNode(node, depth) {
+            if (seen.has(String(node.id))) return document.createElement("div");
+            seen.add(String(node.id));
+
+            const wrapper = document.createElement("div");
+            wrapper.className = "organogram-branch depth-" + Math.min(depth, 3);
+
+            let linkedEmployee = directory.find(
+                employee => employeeNumber(employee) === String(node.employee_no || "")
+            ) || null;
+
+            wrapper.appendChild(makePersonCard(
+                node.name,
+                node.designation,
+                linkedEmployee,
+                "organogram-role-" + node.node_type
+            ));
+
+            const childNodes = childrenByParent.get(String(node.id)) || [];
+            if (childNodes.length) {
+                const childGroup = document.createElement("div");
+                childGroup.className = "organogram-children";
+                childNodes.forEach(child => {
+                    const childWrapper = renderNode(child, depth + 1);
+                    childGroup.appendChild(childWrapper);
+
+                    if (child.node_type === "department_head") {
+                        const department = String(child.department || "").trim();
+                        const headNo = String(child.employee_no || "").trim();
+                        const staff = directory.filter(employee =>
+                            String(employee.department || "").trim().toLowerCase() === department.toLowerCase() &&
+                            employeeNumber(employee) !== headNo
+                        );
+
+                        staff.sort((a, b) => {
+                            const rankA = DESIGNATION_RANK.has(
+                                normalizeDesignation(a.designation)
+                            ) ? DESIGNATION_RANK.get(
+                                normalizeDesignation(a.designation)
+                            ) : DESIGNATION_ORDER.length;
+
+                            const rankB = DESIGNATION_RANK.has(
+                                normalizeDesignation(b.designation)
+                            ) ? DESIGNATION_RANK.get(
+                                normalizeDesignation(b.designation)
+                            ) : DESIGNATION_ORDER.length;
+
+                            return rankA - rankB ||
+                                String(a.employee_name || "").localeCompare(
+                                    String(b.employee_name || "")
+                                );
+                        });
+
+                        if (staff.length) {
+                            const staffGroup = document.createElement("div");
+                            staffGroup.className = "organogram-staff";
+                            const staffTitle = document.createElement("h4");
+                            staffTitle.textContent = (department || "Department") +
+                                " — Team (" + staff.length + ")";
+                            staffGroup.appendChild(staffTitle);
+
+                            const staffGrid = document.createElement("div");
+                            staffGrid.className = "organogram-staff-grid";
+                            staff.forEach(employee => {
+                                staffGrid.appendChild(makePersonCard(
+                                    displayName(employee),
+                                    employee.designation || "",
+                                    employee,
+                                    "organogram-role-employee"
+                                ));
+                            });
+                            staffGroup.appendChild(staffGrid);
+                            childWrapper.appendChild(staffGroup);
+                        }
+                    }
+                });
+                wrapper.appendChild(childGroup);
+            }
+            return wrapper;
+        }
+
+        const roots = childrenByParent.get("root") || [];
+        roots.forEach(node => tree.appendChild(renderNode(node, 0)));
+
+        if (!roots.length) {
+            setStatus("No top-level position found. Check the saved reporting relationships.");
+        } else {
+            setStatus("");
+        }
+    }
+
+    function renderAdminList() {
+        if (!adminList) return;
+        adminList.replaceChildren();
+
+        if (!isAdmin) return;
+
+        nodes.forEach(node => {
+            const row = document.createElement("div");
+            row.className = "organogram-admin-row";
+
+            const info = document.createElement("span");
+            info.textContent = node.name + " — " + node.designation +
+                (node.department ? " (" + node.department + ")" : "");
+            row.appendChild(info);
+
+            const edit = document.createElement("button");
+            edit.type = "button";
+            edit.className = "organogram-cancel";
+            edit.textContent = "Edit";
+            edit.addEventListener("click", () => startEdit(node));
+            row.appendChild(edit);
+
+            const remove = document.createElement("button");
+            remove.type = "button";
+            remove.className = "organogram-delete";
+            remove.textContent = "Delete";
+            remove.addEventListener("click", () => deleteNode(node));
+            row.appendChild(remove);
+
+            adminList.appendChild(row);
+        });
+    }
+
+    function resetForm() {
+        form.reset();
+        recordId.value = "";
+        editing = false;
+        saveButton.textContent = "Save Position";
+        typeInput.disabled = false;
+        fillEmployeeOptions();
+        fillDepartmentOptions();
+        updateFormForType();
+        setAdminStatus("");
+    }
+
+    function startEdit(node) {
+        panel.style.display = "block";
+        form.reset();
+        recordId.value = String(node.id);
+        typeInput.value = node.node_type;
+        typeInput.disabled = false;
+        nameInput.value = node.name || "";
+        designationInput.value = node.designation || "";
+        sortInput.value = String(node.sort_order || 0);
+        updateFormForType();
+        employeeSelect.value = String(node.employee_no || "");
+        const linkedEmployee = directory.find(
+            employee => employeeNumber(employee) === String(node.employee_no || "")
+        );
+        employeeSearch.value = linkedEmployee ? employeeLabel(linkedEmployee) : "";
+        departmentInput.value = String(node.department || "");
+        fillParentOptions(String(node.parent_id || ""));
+        editing = true;
+        saveButton.textContent = "Update Position";
+        setAdminStatus("Editing " + node.name);
+        panel.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    async function deleteNode(node) {
+        if (!isAdmin || !accessToken) return;
+        if (nodes.some(item => String(item.parent_id) === String(node.id))) {
+            setAdminStatus("Delete child positions first, then delete this position.");
+            return;
+        }
+        if (!window.confirm("Delete " + node.name + " from the Organogram?")) return;
+
+        try {
+            const response = await fetch(endpoint + "?id=eq." + encodeURIComponent(node.id), {
+                method: "DELETE",
+                headers: apiHeaders(true)
+            });
+            if (!response.ok) throw new Error(await response.text());
+            setAdminStatus("Position deleted.");
+            await loadNodes();
+        } catch (error) {
+            console.error(error);
+            setAdminStatus("Delete failed. Check Admin access and Supabase RLS.");
+        }
+    }
+
+    employeeSelect.addEventListener("change", function () {
+        const employee = directory.find(
+            item => employeeNumber(item) === employeeSelect.value
+        );
+        if (!employee) return;
+
+        nameInput.value = displayName(employee);
+        designationInput.value = employee.designation || "";
+        if (typeInput.value === "department_head") {
+            departmentInput.value = String(employee.department || "").trim();
+        }
+    });
+
+    function syncEmployeeSearchSelection() {
+        const query = employeeSearch.value.trim().toLocaleLowerCase();
+
+        if (!query) {
+            employeeSelect.value = "";
+            return;
+        }
+
+        const match = directory.find(employee => {
+            const name = displayName(employee).toLocaleLowerCase();
+            const label = employeeLabel(employee).toLocaleLowerCase();
+            const no = employeeNumber(employee).toLocaleLowerCase();
+
+            return name === query || label === query || no === query;
+        });
+
+        employeeSelect.value = match ? employeeNumber(match) : "";
+
+        if (match && employeeNumber(match)) {
+            employeeSelect.dispatchEvent(new Event("change"));
+        }
+    }
+
+    employeeSearch.addEventListener("input", syncEmployeeSearchSelection);
+    employeeSearch.addEventListener("change", syncEmployeeSearchSelection);
+
+    typeInput.addEventListener("change", function () {
+        updateFormForType();
+    });
+
+    editButton.addEventListener("click", function () {
+        if (!isAdmin) return;
+        panel.style.display = panel.style.display === "none" ? "block" : "none";
+        if (panel.style.display === "block") resetForm();
+    });
+
+    cancelButton.addEventListener("click", function () {
+        resetForm();
+        panel.style.display = "none";
+    });
+
+    form.addEventListener("submit", async function (event) {
+        event.preventDefault();
+        if (!isAdmin || !accessToken) {
+            setAdminStatus("Admin login required.");
+            return;
+        }
+
+        const type = typeInput.value;
+        const selectedEmployee = directory.find(
+            employee => employeeNumber(employee) === employeeSelect.value
+        ) || null;
+
+        if (type === "department_head" && !selectedEmployee) {
+            setAdminStatus("Choose the Department Head from Employee Directory.");
+            return;
+        }
+        if (type !== "chairman" && !parentInput.value) {
+            setAdminStatus("Choose the required reporting position.");
+            return;
+        }
+        if (type === "department_head" && !departmentInput.value) {
+            setAdminStatus("Choose the Department.");
+            return;
+        }
+
+        const payload = {
+            organogram_name: currentOrganogramName,
+            name: nameInput.value.trim(),
+            designation: designationInput.value.trim(),
+            department: type === "department_head" ? departmentInput.value : null,
+            employee_no: selectedEmployee ? employeeNumber(selectedEmployee) : null,
+            node_type: type,
+            parent_id: parentInput.value ? Number(parentInput.value) : null,
+            sort_order: Math.max(0, Number(sortInput.value) || 0),
+            updated_at: new Date().toISOString()
+        };
+
+        if (type !== "chairman" && !payload.name) {
+            setAdminStatus("Name is required.");
+            return;
+        }
+
+        if (type === "chairman") payload.parent_id = null;
+
+        try {
+            const isUpdate = Boolean(recordId.value);
+            const url = isUpdate
+                ? endpoint + "?id=eq." + encodeURIComponent(recordId.value)
+                : endpoint;
+            const response = await fetch(url, {
+                method: isUpdate ? "PATCH" : "POST",
+                headers: {
+                    ...apiHeaders(true),
+                    Prefer: "return=representation"
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                throw new Error(await response.text());
+            }
+
+            setAdminStatus(isUpdate ? "Position updated." : "Position saved.");
+            resetForm();
+            await loadNodes();
+        } catch (error) {
+            console.error("Organogram save failed:", error);
+            const detail = String(error && error.message || error || "Unknown error");
+            setAdminStatus("Save failed: " + detail);
+        }
+    });
+
+    async function loadOrganogramCharts(preferredName) {
+        const response = await fetch(
+            chartsEndpoint + "?select=name&order=name.asc",
+            { headers: apiHeaders(false) }
+        );
+        if (!response.ok) {
+            throw new Error("Organogram list load failed (" + response.status + ").");
+        }
+
+        const rows = await response.json();
+        const names = [...new Set(
+            rows.map(row => String(row.name || "").trim()).filter(Boolean)
+        )];
+        if (!names.includes("Organogram-Marketing")) {
+            names.unshift("Organogram-Marketing");
+        }
+
+        chartSelect.replaceChildren();
+        names.forEach(name => {
+            const option = document.createElement("option");
+            option.value = name;
+            option.textContent = name;
+            chartSelect.appendChild(option);
+        });
+
+        currentOrganogramName = names.includes(preferredName)
+            ? preferredName
+            : "Organogram-Marketing";
+        chartSelect.value = currentOrganogramName;
+    }
+
+    createChartButton.addEventListener("click", async function () {
+        if (!isAdmin) return;
+
+        const enteredName = window.prompt(
+            "Enter Organogram Name (e.g. Organogram-Factory):"
+        );
+        if (enteredName === null) return;
+        const name = String(enteredName || "").trim();
+        if (!name) {
+            createChartStatus.textContent = "Please enter an Organogram Name.";
+            return;
+        }
+
+        createChartButton.disabled = true;
+        createChartStatus.textContent = "Creating organogram...";
+        try {
+            const response = await fetch(chartsEndpoint, {
+                method: "POST",
+                headers: {
+                    ...apiHeaders(true),
+                    Prefer: "return=representation"
+                },
+                body: JSON.stringify({ name })
+            });
+            if (!response.ok) {
+                const detail = await response.text();
+                throw new Error("Create failed (" + response.status + "): " + detail);
+            }
+
+            await loadOrganogramCharts(name);
+            panel.style.display = "none";
+            resetForm();
+            await loadNodes();
+            renderAdminList();
+            createChartStatus.textContent = "Created: " + name;
+            setStatus("Loaded " + name + ".");
+        } catch (error) {
+            console.error("Organogram creation failed:", error);
+            createChartStatus.textContent = String(error.message || error);
+        } finally {
+            createChartButton.disabled = false;
+        }
+    });
+
+
+    renameChartButton.addEventListener("click", async function () {
+        if (!isAdmin) return;
+
+        const oldName = currentOrganogramName;
+        const enteredName = window.prompt(
+            "Enter the new name for " + oldName + ":",
+            oldName
+        );
+        if (enteredName === null) return;
+
+        const newName = String(enteredName).trim();
+        if (!newName) {
+            createChartStatus.textContent = "Organogram name cannot be empty.";
+            return;
+        }
+        if (newName === oldName) {
+            createChartStatus.textContent = "The name has not changed.";
+            return;
+        }
+
+        renameChartButton.disabled = true;
+        createChartStatus.textContent = "Renaming organogram...";
+        try {
+            const checkResponse = await fetch(
+                chartsEndpoint + "?select=name&name=eq." +
+                encodeURIComponent(newName),
+                { headers: apiHeaders(false) }
+            );
+            if (!checkResponse.ok) {
+                throw new Error("Could not check the new name (" +
+                    checkResponse.status + ").");
+            }
+            const matches = await checkResponse.json();
+            if (matches.some(row => row.name !== oldName)) {
+                throw new Error("An Organogram with that name already exists.");
+            }
+
+            const chartResponse = await fetch(
+                chartsEndpoint + "?name=eq." + encodeURIComponent(oldName),
+                {
+                    method: "PATCH",
+                    headers: {
+                        ...apiHeaders(true),
+                        Prefer: "return=representation"
+                    },
+                    body: JSON.stringify({ name: newName })
+                }
+            );
+            if (!chartResponse.ok) {
+                throw new Error("Chart rename failed (" +
+                    chartResponse.status + "): " +
+                    await chartResponse.text());
+            }
+
+            const nodesResponse = await fetch(
+                endpoint + "?organogram_name=eq." +
+                encodeURIComponent(oldName),
+                {
+                    method: "PATCH",
+                    headers: {
+                        ...apiHeaders(true),
+                        Prefer: "return=minimal"
+                    },
+                    body: JSON.stringify({ organogram_name: newName })
+                }
+            );
+            if (!nodesResponse.ok) {
+                throw new Error(
+                    "Chart name changed, but position records could not be renamed. " +
+                    "Please report this message. Details: " +
+                    await nodesResponse.text()
+                );
+            }
+
+            currentOrganogramName = newName;
+            await loadOrganogramCharts(newName);
+            await loadNodes();
+            renderAdminList();
+            createChartStatus.textContent = "Renamed to: " + newName;
+            setStatus("Loaded " + newName + ".");
+        } catch (error) {
+            console.error("Organogram rename failed:", error);
+            createChartStatus.textContent = String(error.message || error);
+            try {
+                await loadOrganogramCharts(currentOrganogramName);
+                await loadNodes();
+            } catch (refreshError) {
+                console.error("Organogram refresh failed:", refreshError);
+            }
+        } finally {
+            renameChartButton.disabled = false;
+        }
+    });
+
+    async function openOrganogram() {
+        setStatus("Loading organization structure...");
+        try {
+            isAdmin = await verifyOrganogramAdmin();
+            createPanel.style.display = isAdmin ? "flex" : "none";
+            await loadOrganogramCharts(currentOrganogramName);
+            editButton.style.display = isAdmin ? "inline-flex" : "none";
+            panel.style.display = "none";
+            await loadDirectory();
+            await loadNodes();
+            renderAdminList();
+        } catch (error) {
+            console.error("Organogram load error:", error);
+            tree.replaceChildren();
+            setStatus("Could not load Organogram: " + error.message);
+        }
+    }
+
+    chartSelect.addEventListener("change", async function () {
+        currentOrganogramName = chartSelect.value || "Organogram-Marketing";
+        panel.style.display = "none";
+        resetForm();
+        setStatus("Loading " + currentOrganogramName + "...");
+        try {
+            await loadNodes();
+        } catch (error) {
+            console.error("Organogram switch failed:", error);
+            setStatus("Could not load Organogram: " + error.message);
+        }
+    });
+
+    $("organogramButton").addEventListener("click", openOrganogram);
+
+    $("organogramBackButton").addEventListener("click", function () {
+        panel.style.display = "none";
+    });
+
+    updateFormForType();
 })();

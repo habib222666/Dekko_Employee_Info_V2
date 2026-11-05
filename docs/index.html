@@ -429,17 +429,17 @@
 
 <label for="employeeSearchInput">Search Employee</label>
 
-<div style="display:flex;gap:8px;align-items:stretch;margin-bottom:10px;">
-  <input
-    type="search"
-    id="employeeSearchInput"
-    list="employeeSearchSuggestions"
-    placeholder="Type employee name or ID..."
-    autocomplete="off"
-    style="flex:1;min-width:0;"
-  >
-  <datalist id="employeeSearchSuggestions"></datalist>
-  <button type="button" id="employeeSearchButton" style="white-space:nowrap;">Search</button>
+<div class="employee-photo-search">
+  <div class="employee-photo-search-row">
+    <input
+      type="search"
+      id="employeeSearchInput"
+      placeholder="Type employee name or ID..."
+      autocomplete="off"
+    >
+    <button type="button" id="employeeSearchButton">Search</button>
+  </div>
+  <div id="employeeSearchSuggestions" class="employee-search-suggestions" hidden></div>
 </div>
 
 <select id="employeeSelect" hidden aria-hidden="true">
@@ -467,16 +467,19 @@
 
 <label for="editExistingEmployeeInput">Search Employee by Name or ID</label>
 <div class="edit-existing-search">
-<input type="search" id="editExistingEmployeeInput"
-       placeholder="Enter employee name or ID..."
-       autocomplete="off">
-<button type="button" id="editExistingEmployeeSearch">Search</button>
+  <input
+    type="search"
+    id="editExistingEmployeeInput"
+    placeholder="Type employee name or ID..."
+    autocomplete="off"
+  >
+  <button type="button" id="editExistingEmployeeSearch">Search</button>
+  <div
+    id="editExistingEmployeeSuggestions"
+    class="edit-existing-suggestions"
+    hidden
+  ></div>
 </div>
-
-<label for="editExistingEmployeeResults">Search Results</label>
-<select id="editExistingEmployeeResults" size="5" hidden>
-<option value="">No results</option>
-</select>
 
 <button type="button" id="editExistingEmployeeOpen" disabled>
 View Employee Details &amp; Edit

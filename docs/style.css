@@ -6188,3 +6188,91 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
         flex-direction: column;
     }
 }
+
+/* ===== Employee Live Search Suggestions ===== */
+
+.employee-photo-search {
+    position: relative;
+    margin-bottom: 12px;
+}
+
+.employee-photo-search-row {
+    display: flex;
+    gap: 8px;
+    align-items: stretch;
+}
+
+.employee-photo-search-row input {
+    flex: 1;
+    min-width: 0;
+    box-sizing: border-box;
+    border-radius: 12px !important;
+}
+
+.employee-search-suggestions,
+.edit-existing-suggestions {
+    position: absolute;
+    top: calc(100% + 3px);
+    left: 0;
+    right: 0;
+    z-index: 10000;
+    max-height: 260px;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid #cbd5e1;
+    border-radius: 9px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.16);
+}
+
+.employee-search-suggestion {
+    display: block;
+    width: 100%;
+    padding: 11px 12px;
+    border: 0;
+    border-bottom: 1px solid #e5e7eb;
+    border-radius: 0;
+    background: #fff;
+    color: #111827;
+    text-align: left;
+    font: inherit;
+    cursor: pointer;
+}
+
+.employee-search-suggestion:last-child {
+    border-bottom: 0;
+}
+
+.employee-search-suggestion:hover,
+.employee-search-suggestion:focus {
+    background: #eff6ff;
+    color: #111827;
+    outline: none;
+}
+
+.employee-search-empty {
+    padding: 12px;
+    color: #64748b;
+    font-size: 13px;
+}
+
+#editExistingEmployeeCard .edit-existing-search {
+    position: relative;
+    display: block;
+}
+
+#editExistingEmployeeCard .edit-existing-search input {
+    box-sizing: border-box;
+    width: 100%;
+}
+
+#editExistingEmployeeCard .edit-existing-suggestions {
+    position: absolute;
+}
+
+@media (max-width: 420px) {
+    .employee-photo-search-row {
+        gap: 6px;
+    }
+}
+
+/* ===== End Employee Live Search Suggestions ===== */
