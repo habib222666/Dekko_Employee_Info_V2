@@ -192,7 +192,7 @@ const DESIGNATION_RANK = new Map([
     ["Team Lead", 9],
     ["Regional Team Lead", 9],
     ["Sr. Executive", 10],
-    ["Supply Chain Analyst", 10],
+    ["Supply Chain Analyst", 11],
     ["Sr. Designer", 10],
     ["Executive", 11],
     ["Designer", 11],
