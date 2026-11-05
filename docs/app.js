@@ -1841,6 +1841,34 @@ forgotPasswordButton.addEventListener(
 );
 
 
+const EMPLOYEE_ADMIN_UID = "f0fcbd2e-003e-4fc2-bc2e-51b13c5f0814";
+
+async function verifyEmployeeAdminAccess() {
+    if (!accessToken) return false;
+
+    try {
+        const response = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+            headers: {
+                apikey: SUPABASE_KEY,
+                Authorization: "Bearer " + accessToken
+            }
+        });
+
+        if (!response.ok) return false;
+
+        const user = await response.json();
+        return user.id === EMPLOYEE_ADMIN_UID;
+    } catch (error) {
+        console.error("Admin verification failed:", error);
+        return false;
+    }
+}
+
+function setEmployeeAdminPanelVisible(allowed) {
+    const panel = document.getElementById("employeeAddAdminOnly");
+    if (panel) panel.style.display = allowed ? "block" : "none";
+}
+
 /* =========================
    RESTORE SAVED ADMIN SESSION
 ========================= */
@@ -1886,8 +1914,17 @@ async function restoreSavedAdminSession() {
             return;
         }
 
-        accessToken =
-            session.access_token;
+        const sessionUser = await response.json();
+
+        if (sessionUser.id !== EMPLOYEE_ADMIN_UID) {
+            localStorage.removeItem("dekko_admin_session");
+            accessToken = null;
+            setEmployeeAdminPanelVisible(false);
+            return;
+        }
+
+        accessToken = session.access_token;
+        setEmployeeAdminPanelVisible(true);
 
         loginPage.style.display =
             "none";
@@ -1994,8 +2031,16 @@ loginButton.addEventListener(
             }
 
 
-            accessToken =
-                data.access_token;
+            accessToken = data.access_token;
+
+            if (!(await verifyEmployeeAdminAccess())) {
+                accessToken = null;
+                localStorage.removeItem("dekko_admin_session");
+                setEmployeeAdminPanelVisible(false);
+                throw new Error("This account is not authorized. Only the designated Admin can access this panel.");
+            }
+
+            setEmployeeAdminPanelVisible(true);
 
             if (rememberLogin && rememberLogin.checked) {
 
@@ -2886,13 +2931,25 @@ function setupEmployeeForm(config) {
     let editingEmployeeNo = null;
     let lastSavedEmployee = null;
 
-    button.addEventListener("click", function() {
+    button.addEventListener("click", async function() {
+        if (!(await verifyEmployeeAdminAccess())) {
+            setEmployeeAdminPanelVisible(false);
+            alert("Only the designated Admin can add or edit employees.");
+            return;
+        }
+
+        setEmployeeAdminPanelVisible(true);
         const opening = form.style.display === "none";
         form.style.display = opening ? "block" : "none";
         button.textContent = opening ? config.closeLabel : config.openLabel;
     });
 
-    editButton.addEventListener("click", function() {
+    editButton.addEventListener("click", async function() {
+        if (!(await verifyEmployeeAdminAccess())) {
+            setEmployeeAdminPanelVisible(false);
+            alert("Only the designated Admin can add or edit employees.");
+            return;
+        }
         if (!lastSavedEmployee) return;
 
         const employee = lastSavedEmployee;
@@ -2929,6 +2986,12 @@ function setupEmployeeForm(config) {
     });
 
     saveButton.addEventListener("click", async function() {
+        if (!(await verifyEmployeeAdminAccess())) {
+            setEmployeeAdminPanelVisible(false);
+            alert("Only the designated Admin can add or edit employees.");
+            return;
+        }
+
         const read = suffix => {
             const input = field(suffix);
             return input ? input.value.trim() : "";
