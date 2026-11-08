@@ -4442,9 +4442,10 @@ if (bloodGroupFilter) {
     const summary = $("holidayCalendarSummary");
     const grid = $("holidayCalendarGrid");
     const monthTitle = $("holidayCalendarMonthTitle");
+    const holidayPage = $("holidayCalendarPage");
     const eventList = $("holidayCalendarEventList");
 
-    if (!yearSelect || !monthButtons || !grid || !summary || !eventList) return;
+    if (!yearSelect || !monthButtons || !grid || !summary || !monthTitle || !holidayPage || !eventList) return;
 
     const MONTHS = [
         "January", "February", "March", "April", "May", "June",
@@ -4551,8 +4552,8 @@ if (bloodGroupFilter) {
             ["Government Holidays", governmentDays],
             ["Office Holidays", officeDays],
             ["Weekly Holidays", weeklyDays],
-            ["Working Days", daysInMonth - totalHolidays],
-            ["Total Holidays", totalHolidays]
+            ["Total Holidays", totalHolidays],
+            ["Working Days", daysInMonth - totalHolidays]
         ];
 
         summary.innerHTML = items.map(item =>
@@ -4612,55 +4613,45 @@ if (bloodGroupFilter) {
     }
 
     function renderEvents(daysInMonth) {
-        const entries = [];
+        const groups = {
+            government: [],
+            office: [],
+            weekly: [],
+            other: []
+        };
 
-        for (let day = 1; day <= daysInMonth; day++) {
-            const info = dayInfo(selectedYear, selectedMonth, day);
-            if (!info.holiday && !info.special && !info.records.length) continue;
-
-            const titles = info.records.map(record => record.title).filter(Boolean);
-            const categories = [];
-
-            if (info.special) {
-                categories.push("Special Working Day");
-            } else {
-                if (info.government) categories.push("Government Holiday");
-                if (info.office) categories.push("Office Holiday");
-                if (info.weekly) categories.push("Weekly Holiday");
-            }
-
-            if (categories.length || titles.length) {
-                entries.push({
-                    date: info.key,
-                    categories,
-                    titles,
-                    records: info.records
-                });
-            }
-        }
-
-        if (!entries.length) {
-            eventList.innerHTML = '<p>No holidays or calendar entries for this month.</p>';
-            return;
-        }
-
-        eventList.innerHTML = entries.map(entry => {
-            const date = new Date(entry.date + "T00:00:00");
+        function renderEntry(day, info, category) {
+            const date = new Date(info.key + "T00:00:00");
             const readableDate = date.toLocaleDateString("en-GB", {
                 day: "numeric", month: "long", year: "numeric"
             });
-            const title = entry.titles.length
-                ? entry.titles.join(" · ")
-                : entry.categories.join(" · ");
 
-            const descriptions = entry.records
+            const titles = info.records
+                .map(record => record.title)
+                .filter(Boolean);
+
+            const title = titles.length
+                ? titles.join(" · ")
+                : category;
+
+            const isCategoryHoliday = [
+                "Government Holiday",
+                "Office Holiday",
+                "Weekly Holiday"
+            ].includes(category);
+
+            const displayHeading = isCategoryHoliday
+                ? readableDate + " (" + date.toLocaleDateString("en-US", { weekday: "long" }) + ")"
+                : readableDate + " — " + title;
+
+            const descriptions = info.records
                 .map(record => record.description)
                 .filter(Boolean)
                 .map(text => '<p>' + escapeHTML(text) + '</p>')
                 .join("");
 
             const actions = window.holidayCalendarIsAdmin
-                ? entry.records.map(record =>
+                ? info.records.map(record =>
                     '<div class="holiday-calendar-event-actions">' +
                     '<button type="button" data-calendar-edit="' +
                     escapeHTML(record.id) + '">Edit</button>' +
@@ -4671,11 +4662,73 @@ if (bloodGroupFilter) {
                 : "";
 
             return '<article class="holiday-calendar-event">' +
-                '<strong>' + escapeHTML(readableDate) + ' — ' +
-                escapeHTML(title) + '</strong>' +
-                '<p>' + escapeHTML(entry.categories.join(" · ")) + '</p>' +
-                descriptions + actions + '</article>';
-        }).join("");
+                '<strong>' + escapeHTML(displayHeading) + '</strong>' +
+                (!isCategoryHoliday && category ? '<p>' + escapeHTML(category) + '</p>' : '') +
+                (isCategoryHoliday ? '' : descriptions) + actions + '</article>';
+        }
+
+        for (let day = 1; day <= daysInMonth; day++) {
+            const info = dayInfo(selectedYear, selectedMonth, day);
+
+            if (!info.holiday && !info.special && !info.records.length) {
+                continue;
+            }
+
+            if (info.special) {
+                groups.other.push(
+                    renderEntry(day, info, "Special Working Day")
+                );
+                continue;
+            }
+
+            let assigned = false;
+
+            if (info.government) {
+                groups.government.push(
+                    renderEntry(day, info, "Government Holiday")
+                );
+                assigned = true;
+            }
+
+            if (info.office) {
+                groups.office.push(
+                    renderEntry(day, info, "Office Holiday")
+                );
+                assigned = true;
+            }
+
+            if (info.weekly) {
+                groups.weekly.push(
+                    renderEntry(day, info, "Weekly Holiday")
+                );
+                assigned = true;
+            }
+
+            if (!assigned && info.records.length) {
+                groups.other.push(renderEntry(day, info, ""));
+            }
+        }
+
+        const targets = {
+            government: "holidayGovernmentList",
+            office: "holidayOfficeList",
+            weekly: "holidayWeeklyList"
+        };
+
+        Object.entries(targets).forEach(([group, id]) => {
+            const target = document.getElementById(id);
+            if (target) {
+                target.innerHTML = groups[group].length
+                    ? groups[group].join("")
+                    : '<p class="holiday-empty">No holidays this month.</p>';
+            }
+        });
+
+        if (eventList) {
+            eventList.innerHTML = groups.other.length
+                ? groups.other.join("")
+                : '<p class="holiday-empty">No special working days or other entries this month.</p>';
+        }
     }
 
     function renderCalendar() {
@@ -4684,6 +4737,7 @@ if (bloodGroupFilter) {
         ).getDate();
 
         monthTitle.textContent = MONTHS[selectedMonth] + " " + selectedYear;
+        holidayPage.dataset.month = String(selectedMonth);
         buildMonthButtons();
         renderSummary(daysInMonth);
         renderGrid(daysInMonth);
@@ -4853,7 +4907,7 @@ if (bloodGroupFilter) {
         calendarButton.addEventListener("click", enableAdminIfValid);
     }
 
-    eventList.addEventListener("click", async function (event) {
+    const handleCalendarEventClick = async function (event) {
         const editButton = event.target.closest("[data-calendar-edit]");
         const deleteButton = event.target.closest("[data-calendar-delete]");
 
@@ -4914,6 +4968,15 @@ if (bloodGroupFilter) {
         } catch (error) {
             showAdminStatus(error.message);
         }
+    };
+
+    [
+        eventList,
+        $("holidayGovernmentList"),
+        $("holidayOfficeList"),
+        $("holidayWeeklyList")
+    ].filter(Boolean).forEach(container => {
+        container.addEventListener("click", handleCalendarEventClick);
     });
 
     form.addEventListener("submit", async function (event) {
