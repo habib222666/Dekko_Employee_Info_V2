@@ -6607,3 +6607,16 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
     box-shadow: inset 0 0 0 1px rgba(30, 58, 138, 0.12);
     font-weight: 800 !important;
 }
+
+
+/* Holiday detail boxes: vertical full-width layout */
+#holidayCalendarPage .holiday-calendar-legend {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 12px !important;
+}
+
+#holidayCalendarPage .holiday-calendar-legend .holiday-detail-box {
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
