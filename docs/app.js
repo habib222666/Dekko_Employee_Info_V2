@@ -4550,8 +4550,8 @@ if (bloodGroupFilter) {
 
         const items = [
             ["Government Holidays", governmentDays],
-            ["Office Holidays", officeDays],
             ["Weekly Holidays", weeklyDays],
+            ["Office Holidays", officeDays],
             ["Total Holidays", totalHolidays],
             ["Working Days", daysInMonth - totalHolidays]
         ];
