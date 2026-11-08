@@ -234,9 +234,8 @@ html[data-theme="dark"] body #holidayCalendarPage .holiday-calendar-selected-mon
     background-color: #000000 !important;
     color: #ffffff !important;
     -webkit-text-fill-color: #ffffff !important;
-    border: 2px solid #ff0000 !important;
+    border: 1px solid #777777 !important;
     border-radius: 10px !important;
-    box-shadow: 0 0 0 1px rgba(255, 0, 0, 0.25) !important;
 }
 
 html[data-theme="dark"] body #holidayCalendarPage .holiday-calendar-date-box {
@@ -316,4 +315,11 @@ html[data-theme="dark"] body #holidayCalendarPage #holidayCalendarGrid .holiday-
     border-color: #15803d !important;
     color: #ffffff !important;
     -webkit-text-fill-color: #ffffff !important;
+}
+
+/* DARK MODE: CLEARLY HIGHLIGHT SELECTED HOLIDAY MONTH BUTTON */
+html[data-theme="dark"] body #holidayCalendarPage .holiday-calendar-month-box .holiday-calendar-month.active {
+    border: 3px solid #DC2626 !important;
+    box-shadow: inset 0 0 0 1px rgba(220, 38, 38, 0.25) !important;
+    font-weight: 800 !important;
 }
