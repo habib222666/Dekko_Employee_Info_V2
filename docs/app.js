@@ -4644,6 +4644,18 @@ if (bloodGroupFilter) {
                 ? readableDate + " (" + date.toLocaleDateString("en-US", { weekday: "long" }) + ")"
                 : readableDate + " — " + title;
 
+            const governmentNames = category === "Government Holiday"
+                ? info.records
+                    .filter(record => record.event_type === "Government")
+                    .map(record => record.title)
+                    .filter(Boolean)
+                    .map(name =>
+                        '<p class="holiday-calendar-event-title">' +
+                        escapeHTML(name) + '</p>'
+                    )
+                    .join("")
+                : "";
+
             const descriptions = info.records
                 .map(record => record.description)
                 .filter(Boolean)
@@ -4663,6 +4675,7 @@ if (bloodGroupFilter) {
 
             return '<article class="holiday-calendar-event">' +
                 '<strong>' + escapeHTML(displayHeading) + '</strong>' +
+                governmentNames +
                 (!isCategoryHoliday && category ? '<p>' + escapeHTML(category) + '</p>' : '') +
                 (isCategoryHoliday ? '' : descriptions) + actions + '</article>';
         }
