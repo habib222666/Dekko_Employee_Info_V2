@@ -234,8 +234,9 @@ html[data-theme="dark"] body #holidayCalendarPage .holiday-calendar-selected-mon
     background-color: #000000 !important;
     color: #ffffff !important;
     -webkit-text-fill-color: #ffffff !important;
-    border: 1px solid #777777 !important;
+    border: 2px solid #ff0000 !important;
     border-radius: 10px !important;
+    box-shadow: 0 0 0 1px rgba(255, 0, 0, 0.25) !important;
 }
 
 html[data-theme="dark"] body #holidayCalendarPage .holiday-calendar-date-box {
