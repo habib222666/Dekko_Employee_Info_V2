@@ -6369,7 +6369,7 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
     align-items: center;
     gap: 8px;
     margin: 0 0 10px;
-    font-size: 15px;
+    font-size: 14px;
 }
 
 .holiday-detail-list .holiday-calendar-event {
@@ -6446,7 +6446,7 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
 .holiday-calendar-selected-month {
     margin: 18px 0 12px;
     text-align: center;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 800;
     color: var(--text-color, #24313b);
 }

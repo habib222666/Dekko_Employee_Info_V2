@@ -203,3 +203,116 @@ html[data-theme="dark"] body #holidayCalendarGrid .day-label {
     color: #ffffff !important;
     -webkit-text-fill-color: #ffffff !important;
 }
+
+/* ===== FINAL DARK MODE TEXT VISIBILITY FIX ===== */
+
+html[data-theme="dark"] body *:not(#dekkoThemeToggle) {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+html[data-theme="dark"] body :is(
+    h1, h2, h3, h4, h5, h6,
+    p, span, small, strong, b,
+    label, a, li, td, th,
+    legend, summary
+) {
+    opacity: 1 !important;
+}
+
+html[data-theme="dark"] input::placeholder,
+html[data-theme="dark"] textarea::placeholder {
+    color: #cccccc !important;
+    -webkit-text-fill-color: #cccccc !important;
+    opacity: 1 !important;
+}
+
+/* ===== DARK MODE: HOLIDAY CALENDAR VISIBILITY FIX ===== */
+
+html[data-theme="dark"] body #holidayCalendarPage .holiday-calendar-selected-month {
+    background: #000000 !important;
+    background-color: #000000 !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    border: 1px solid #777777 !important;
+    border-radius: 10px !important;
+}
+
+html[data-theme="dark"] body #holidayCalendarPage .holiday-calendar-date-box {
+    background: #000000 !important;
+    background-color: #000000 !important;
+    border: 1px solid #666666 !important;
+}
+
+html[data-theme="dark"] body #holidayCalendarPage .holiday-calendar-weekdays,
+html[data-theme="dark"] body #holidayCalendarPage .holiday-calendar-weekdays span {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    background: #111111 !important;
+}
+
+html[data-theme="dark"] body #holidayCalendarPage #holidayCalendarGrid .holiday-calendar-day:not(.empty) {
+    background: #171717 !important;
+    background-color: #171717 !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    border: 1px solid #666666 !important;
+}
+
+html[data-theme="dark"] body #holidayCalendarPage #holidayCalendarGrid .holiday-calendar-day .day-number,
+html[data-theme="dark"] body #holidayCalendarPage #holidayCalendarGrid .holiday-calendar-day .day-label {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    opacity: 1 !important;
+}
+
+html[data-theme="dark"] body #holidayCalendarPage #holidayCalendarGrid .holiday-calendar-day.empty {
+    background: transparent !important;
+    border-color: transparent !important;
+}
+
+/* DARK MODE: REMOVE EXTRA BLACK BOX BEHIND DATE NUMBERS */
+
+html[data-theme="dark"] body #holidayCalendarPage #holidayCalendarGrid .holiday-calendar-day .day-number,
+html[data-theme="dark"] body #holidayCalendarPage #holidayCalendarGrid .holiday-calendar-day .day-label {
+    background: transparent !important;
+    background-color: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+}
+
+/* DARK MODE: MATCH HOLIDAY COLORS WITH LIGHT MODE */
+
+html[data-theme="dark"] body #holidayCalendarPage #holidayCalendarGrid .holiday-calendar-day.government,
+html[data-theme="dark"] body #holidayCalendarPage #holidayCalendarGrid .holiday-calendar-day.government.office,
+html[data-theme="dark"] body #holidayCalendarPage #holidayCalendarGrid .holiday-calendar-day.government.mixed {
+    background: #dc2626 !important;
+    background-color: #dc2626 !important;
+    border-color: #b91c1c !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+html[data-theme="dark"] body #holidayCalendarPage #holidayCalendarGrid .holiday-calendar-day.office.mixed:not(.government) {
+    background: #2563eb !important;
+    background-color: #2563eb !important;
+    border-color: #1d4ed8 !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+html[data-theme="dark"] body #holidayCalendarPage #holidayCalendarGrid .holiday-calendar-day.weekly:not(.government):not(.office) {
+    background: #7c3aed !important;
+    background-color: #7c3aed !important;
+    border-color: #6d28d9 !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+html[data-theme="dark"] body #holidayCalendarPage #holidayCalendarGrid .holiday-calendar-day.special-working {
+    background: #16a34a !important;
+    background-color: #16a34a !important;
+    border-color: #15803d !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
