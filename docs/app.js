@@ -4639,8 +4639,9 @@ if (bloodGroupFilter) {
                 "Office Holiday",
                 "Weekly Holiday"
             ].includes(category);
+            const isSpecialWorkingDay = category === "Special Working Day";
 
-            const displayHeading = isCategoryHoliday
+            const displayHeading = (isCategoryHoliday || isSpecialWorkingDay)
                 ? readableDate + " (" + date.toLocaleDateString("en-US", { weekday: "long" }) + ")"
                 : readableDate + " — " + title;
 
@@ -4676,7 +4677,9 @@ if (bloodGroupFilter) {
             return '<article class="holiday-calendar-event">' +
                 '<strong>' + escapeHTML(displayHeading) + '</strong>' +
                 governmentNames +
-                (!isCategoryHoliday && category ? '<p>' + escapeHTML(category) + '</p>' : '') +
+                (isSpecialWorkingDay
+                    ? '<p>' + escapeHTML(category + (titles.length ? ' — ' + titles.join(" · ") : '')) + '</p>'
+                    : (!isCategoryHoliday && category ? '<p>' + escapeHTML(category) + '</p>' : '')) +
                 (isCategoryHoliday ? '' : descriptions) + actions + '</article>';
         }
 
