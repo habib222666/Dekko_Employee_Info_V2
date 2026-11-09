@@ -721,26 +721,41 @@ html body button#dekkoThemeToggle {
     }
 }
 
-/* FINAL: Dashboard Admin and Theme Toggle - Right Aligned Two Rows */
-html body #listPage > #adminButton {
-    display: block !important;
-    margin: 0 0 8px auto !important;
+/* FINAL: Dashboard Admin Login and Dark Mode in One Row */
+html body #listPage > #dashboardTopActions {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 8px !important;
+    width: 100% !important;
+    margin: 0 0 18px auto !important;
 }
 
-html body #listPage > button#dekkoThemeToggle {
+html body #dashboardTopActions > #adminButton,
+html body #dashboardTopActions > #dekkoThemeToggle {
     position: static !important;
-    display: flex !important;
+    display: inline-flex !important;
+    flex: 0 0 auto !important;
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    height: 36px !important;
+    min-height: 36px !important;
+    max-height: 36px !important;
+    margin: 0 !important;
+    padding: 0 10px !important;
+    box-sizing: border-box !important;
+    align-items: center !important;
+    justify-content: center !important;
+    white-space: nowrap !important;
+    border-radius: 9px !important;
+}
+
+html body #dashboardTopActions > #dekkoThemeToggle {
     width: 120px !important;
     min-width: 120px !important;
     max-width: 120px !important;
-    height: 40px !important;
-    min-height: 40px !important;
-    max-height: 40px !important;
-    margin: 0 0 18px auto !important;
-    padding: 0 10px !important;
-    box-sizing: border-box !important;
-    justify-content: center !important;
-    border-radius: 9px !important;
 }
 
 /* DARK MODE: CLEAR WELCOME AND BIRTHDAY SECTION BORDERS */
