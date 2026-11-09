@@ -7488,7 +7488,7 @@ html body button#adminButton {
 /* FINAL FIX: ANDROID + WEB DASHBOARD 10 CARDS */
 @media (max-width: 900px) {
     #listPage {
-        padding-top: 42px !important;
+        padding-top: 18px !important;
     }
 
     #appTitle {
@@ -7565,7 +7565,7 @@ html body button#adminButton {
 
 @media (max-width: 520px) {
     #listPage {
-        padding-top: 38px !important;
+        padding-top: 14px !important;
     }
 
     #departmentHeader {
