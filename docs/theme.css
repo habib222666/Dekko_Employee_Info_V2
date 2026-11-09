@@ -911,3 +911,19 @@ html body #listPage::before {
         background-position: center 48% !important;
     }
 }
+
+/* FINAL: Full Width Desktop Watermark and Increased Visibility */
+
+html body #listPage::before {
+    background-size: 100% auto !important;
+    background-position: center 48% !important;
+    opacity: 0.085 !important;
+}
+
+@media (max-width: 600px) {
+    html body #listPage::before {
+        background-size: clamp(300px, 88vw, 560px) auto !important;
+        background-position: center 48% !important;
+        opacity: 0.085 !important;
+    }
+}
