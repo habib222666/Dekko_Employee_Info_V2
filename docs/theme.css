@@ -888,3 +888,12 @@ html[data-theme="dark"] body #homeBirthdaySection .home-birthday-card {
     background: #000000 !important;
     background-color: #000000 !important;
 }
+
+/* FINAL: Slightly Smaller Welcome Heading and Description */
+html body #appTitle .welcome-title {
+    font-size: clamp(20px, 3.2vw, 30px) !important;
+}
+
+html body #appTitle .welcome-subtitle {
+    font-size: clamp(13px, 1.8vw, 16px) !important;
+}
