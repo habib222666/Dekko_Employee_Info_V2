@@ -2275,11 +2275,6 @@ async function restoreSavedAdminSession() {
         }
     }
 
-    document.getElementById("employeePabxListMenuButton")?.addEventListener("click", () => {
-        openFeaturePage("employeePabxListPage");
-        loadEmployeePabxList("headoffice");
-        window.scrollTo(0, 0);
-    });
 
     headOfficePabxButton?.addEventListener("click", () => loadEmployeePabxList("headoffice"));
     factoryPabxButton?.addEventListener("click", () => loadEmployeePabxList("factory"));
