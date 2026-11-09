@@ -7483,3 +7483,97 @@ html body button#adminButton {
         font-size: 13px;
     }
 }
+
+
+/* FINAL FIX: ANDROID + WEB DASHBOARD 10 CARDS */
+@media (max-width: 900px) {
+    #listPage {
+        padding-top: 42px !important;
+    }
+
+    #appTitle {
+        margin-top: 0 !important;
+        margin-bottom: 14px !important;
+    }
+
+    #departmentSection {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+
+    #departmentSection::before {
+        display: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        height: 0 !important;
+    }
+
+    #departmentHeader {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 10px !important;
+        width: 100% !important;
+        margin: 0 !important;
+    }
+
+    #departmentHeader > button {
+        display: grid !important;
+        grid-template-columns: 40px minmax(0, 1fr) !important;
+        grid-template-rows: 40px auto auto !important;
+        min-width: 0 !important;
+        min-height: 100px !important;
+        height: auto !important;
+        padding: 10px !important;
+        gap: 4px 8px !important;
+    }
+
+    #departmentHeader > button > .dashboard-icon {
+        grid-column: 1 !important;
+        grid-row: 1 !important;
+        width: 40px !important;
+        height: 40px !important;
+        min-width: 40px !important;
+        min-height: 40px !important;
+    }
+
+    #departmentHeader > button > .dashboard-label {
+        display: contents !important;
+    }
+
+    #departmentHeader > button .dashboard-kicker {
+        grid-column: 2 !important;
+        grid-row: 1 !important;
+        justify-self: end !important;
+        align-self: start !important;
+        font-size: 9px !important;
+    }
+
+    #departmentHeader > button .dashboard-title {
+        grid-column: 1 / -1 !important;
+        grid-row: 2 !important;
+        font-size: 13px !important;
+        text-align: left !important;
+    }
+
+    #departmentHeader > button .dashboard-subtitle {
+        grid-column: 1 / -1 !important;
+        grid-row: 3 !important;
+        font-size: 10px !important;
+        text-align: left !important;
+    }
+}
+
+@media (max-width: 520px) {
+    #listPage {
+        padding-top: 38px !important;
+    }
+
+    #departmentHeader {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    #departmentHeader > button {
+        min-height: 96px !important;
+        padding: 9px !important;
+    }
+}
