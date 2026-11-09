@@ -897,3 +897,17 @@ html body #appTitle .welcome-title {
 html body #appTitle .welcome-subtitle {
     font-size: clamp(13px, 1.8vw, 16px) !important;
 }
+
+/* FINAL: Responsive Dashboard Watermark Size */
+
+html body #listPage::before {
+    background-size: clamp(520px, 70vw, 900px) auto !important;
+    background-position: center 48% !important;
+}
+
+@media (max-width: 600px) {
+    html body #listPage::before {
+        background-size: clamp(300px, 88vw, 560px) auto !important;
+        background-position: center 48% !important;
+    }
+}
