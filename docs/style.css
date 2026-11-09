@@ -480,7 +480,7 @@ button:active {
     opacity: 1 !important;
     width: 100%;
     background: #2563eb !important;
-    color: #ffffff !important;
+    color: #1e293b !important;
     margin: 12px 0 !important;
 }
 
@@ -963,7 +963,7 @@ button:active {
 
 #allDepartmentsButton {
     background-color: #2e7d32 !important;
-    color: #ffffff !important;
+    color: #1e293b !important;
 }
 
 .department-color-21 { background: #f8d7da; }
@@ -995,7 +995,7 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
 
 #birthdayButton {
     background-color: #e91e63 !important;
-    color: #ffffff !important;
+    color: #1e293b !important;
 }
 
 #birthdayPage {
@@ -1115,22 +1115,22 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
 
 #allDepartmentsButton {
     background-color: #2e7d32 !important;
-    color: #ffffff !important;
+    color: #1e293b !important;
 }
 
 #allEmployeesButton {
     background-color: #4F81BD !important;
-    color: #ffffff !important;
+    color: #1e293b !important;
 }
 
 #favoriteEmployeesButton {
     background-color: #E85D75 !important;
-    color: #ffffff !important;
+    color: #1e293b !important;
 }
 
 #birthdayButton {
     background-color: #e91e63 !important;
-    color: #ffffff !important;
+    color: #1e293b !important;
 }
 
 @media (max-width: 600px) {
@@ -1172,7 +1172,7 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
 #birthdayMonths button:hover,
 #birthdayMonths button.active {
     background-color: #e91e63 !important;
-    color: #ffffff !important;
+    color: #1e293b !important;
     border-color: #c2185b !important;
 }
 
@@ -1194,12 +1194,12 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
 
 #birthdayMonths button:hover {
     background-color: #f06292 !important;
-    color: #ffffff !important;
+    color: #1e293b !important;
 }
 
 #birthdayMonths button.active {
     background-color: #c2185b !important;
-    color: #ffffff !important;
+    color: #1e293b !important;
     border-color: #880e4f !important;
 }
 
@@ -1251,7 +1251,7 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
 
 /* Selected month */
 #birthdayMonths button.active {
-    color: #ffffff !important;
+    color: #1e293b !important;
     background: #c2185b !important;
     border-color: #880e4f !important;
 }
@@ -1398,7 +1398,7 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
 #departmentHeader {
     display: grid !important;
     grid-template-columns: 1fr 1fr !important;
-    gap: 12px !important;
+    gap: 8px !important;
     width: 100% !important;
     margin-top: 4px !important;
 }
@@ -1414,7 +1414,7 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
     font-size: 15px !important;
     font-weight: 700 !important;
     letter-spacing: 0.2px !important;
-    color: #ffffff !important;
+    color: #1e293b !important;
     cursor: pointer !important;
     box-shadow: 0 4px 10px rgba(0,0,0,0.15) !important;
     transition: transform 0.15s ease, box-shadow 0.15s ease !important;
@@ -1498,22 +1498,22 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
 
 #allDepartmentsButton {
     background: #43a047 !important;
-    color: #ffffff !important;
+    color: #1e293b !important;
 }
 
 #allEmployeesButton {
     background: #1976d2 !important;
-    color: #ffffff !important;
+    color: #1e293b !important;
 }
 
 #favoriteEmployeesButton {
     background: #8e44ad !important;
-    color: #ffffff !important;
+    color: #1e293b !important;
 }
 
 #birthdayButton {
     background: #f39c12 !important;
-    color: #ffffff !important;
+    color: #1e293b !important;
 }
 
 #departmentHeader button:hover {
@@ -1578,7 +1578,7 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
 
 #birthdayButton {
     background: #00897b !important;
-    color: #ffffff !important;
+    color: #1e293b !important;
 }
 
 /* FINAL OVERRIDE - DASHBOARD BUTTONS */
@@ -1942,7 +1942,7 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
 
 #birthdayPage .birthday-table thead th {
     background-color: #00897b !important;
-    color: #ffffff !important;
+    color: #1e293b !important;
     border-color: #00796b !important;
 }
 
@@ -2161,7 +2161,7 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
 
 #salaryButton {
     background: #b8860b !important;
-    color: #ffffff !important;
+    color: #1e293b !important;
 }
 
 
@@ -2183,7 +2183,7 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
 
 #allEmployeesButton {
     background: #1976d2 !important;
-    color: #ffffff !important;
+    color: #1e293b !important;
 }
 
 @media (max-width: 600px) {
@@ -2244,6 +2244,19 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
     gap: 8px !important;
     margin-bottom: 24px !important;
 }
+#appTitle .welcome-badge {
+    display: inline-flex !important;
+    align-items: center !important;
+    padding: 5px 12px !important;
+    border: 1px solid rgba(255, 255, 255, 0.35) !important;
+    border-radius: 20px !important;
+    background: rgba(255, 255, 255, 0.14) !important;
+    color: #1e293b !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.5px !important;
+}
+
 #appTitle .welcome-title {
     color: #17365D !important;
     font-family: "Times New Roman", serif !important;
@@ -3673,17 +3686,17 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
 #holidayCalendarButton {
     background: #1e3a8a !important;
     border-color: #1e3a8a !important;
-    color: #ffffff !important;
+    color: #1e293b !important;
 }
 
 #holidayCalendarButton:hover {
-    background: #172554 !important;
-    border-color: #172554 !important;
+    background: #ffffff !important;
+    border-color: #e2e8f0 !important;
 }
 
 #holidayCalendarButton .dashboard-icon,
 #holidayCalendarButton .dashboard-label {
-    color: #ffffff !important;
+    color: #1e293b !important;
 }
 
 /* Calendar heading and icon */
@@ -4178,7 +4191,7 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
 
 .holiday-calendar-day.office {
     background: #1e3a8a !important;
-    border-color: #172554 !important;
+    border-color: #e2e8f0 !important;
     color: #fff !important;
 }
 
@@ -4579,7 +4592,7 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
 
 #allFactoryEmployeesButton {
     background: #455a64 !important;
-    color: #ffffff !important;
+    color: #1e293b !important;
 }
 
 
@@ -4608,28 +4621,28 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
 .holiday-calendar-day.government.mixed {
     background: #dc2626 !important;
     border-color: #b91c1c !important;
-    color: #ffffff !important;
+    color: #1e293b !important;
 }
 
 /* Office + Weekly, without Government: BLUE */
 .holiday-calendar-day.office.mixed:not(.government) {
     background: #2563eb !important;
     border-color: #1d4ed8 !important;
-    color: #ffffff !important;
+    color: #1e293b !important;
 }
 
 /* Weekly only: PURPLE */
 .holiday-calendar-day.weekly:not(.government):not(.office) {
     background: #7c3aed !important;
     border-color: #6d28d9 !important;
-    color: #ffffff !important;
+    color: #1e293b !important;
 }
 
 /* Special Working Day remains GREEN */
 .holiday-calendar-day.special-working {
     background: #16a34a !important;
     border-color: #15803d !important;
-    color: #ffffff !important;
+    color: #1e293b !important;
 }
 
 
@@ -6619,4 +6632,854 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
 #holidayCalendarPage .holiday-calendar-legend .holiday-detail-box {
     width: 100% !important;
     box-sizing: border-box !important;
+}
+
+
+/* =====================================================
+   DEKKO DASHBOARD REDESIGN - PHASE 1
+   Modern Corporate HR Dashboard
+   Existing HTML IDs and JavaScript preserved
+===================================================== */
+
+#listPage {
+    width: 100% !important;
+    max-width: 1180px !important;
+    min-height: 100vh;
+    margin: 0 auto !important;
+    padding: 22px 24px 110px !important;
+    background: transparent;
+}
+
+#listPage::before {
+    background-size: 440px auto !important;
+    background-position: center 48% !important;
+    opacity: 0.035 !important;
+}
+
+/* Admin button */
+
+#listPage > #adminButton {
+    display: block !important;
+    width: auto !important;
+    min-width: 105px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    margin: 0 0 18px auto !important;
+    padding: 0 20px !important;
+    border: 0 !important;
+    border-radius: 10px !important;
+    background: #17365d !important;
+    color: #ffffff !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    box-shadow: 0 3px 9px rgba(23, 54, 93, 0.18) !important;
+}
+
+/* Welcome hero */
+
+#appTitle {
+    width: 100% !important;
+    min-height: 140px !important;
+    margin: 0 0 30px !important;
+    padding: 20px 24px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    text-align: left !important;
+    border-radius: 22px !important;
+    background: linear-gradient(120deg, #102f56 0%, #17609a 58%, #2385b8 100%) !important;
+    box-shadow: 0 12px 28px rgba(23, 65, 105, 0.18) !important;
+}
+
+#appTitle .welcome-title {
+    color: #1e293b !important;
+    font-family: "Trebuchet MS", sans-serif !important;
+    font-size: clamp(24px, 3.5vw, 34px) !important;
+    font-weight: 800 !important;
+    font-style: normal !important;
+    line-height: 1.25 !important;
+}
+
+#appTitle .welcome-subtitle {
+    color: #e2efff !important;
+    font-family: "Trebuchet MS", sans-serif !important;
+    font-size: clamp(14px, 2vw, 17px) !important;
+    font-style: normal !important;
+    line-height: 1.5 !important;
+}
+
+/* Dashboard module area */
+
+#departmentSection {
+    width: 100% !important;
+    margin: 0 auto !important;
+}
+
+#departmentSection::before {
+    margin-bottom: 0 !important;
+}
+
+#departmentHeader {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 18px !important;
+    width: 100% !important;
+    margin: 0 !important;
+}
+
+#departmentHeader > button {
+    --module-color: #2563eb;
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 125px !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 20px 12px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 15px !important;
+    border: 1px solid #e2e8f0 !important;
+    border-top: 4px solid var(--module-color) !important;
+    border-radius: 17px !important;
+    background: #ffffff !important;
+    color: #1e293b !important;
+    box-shadow: 0 5px 16px rgba(15, 23, 42, 0.055) !important;
+    font-family: "Trebuchet MS", sans-serif !important;
+    text-align: center !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+#departmentHeader > button:hover {
+    transform: translateY(-4px) !important;
+    box-shadow: 0 11px 23px rgba(15, 23, 42, 0.11) !important;
+}
+
+#departmentHeader > button:active {
+    transform: scale(0.98) !important;
+}
+
+/* Module accent colors */
+
+#departmentHeader > button:nth-child(1) {
+    --module-color: #16845b;
+}
+
+#departmentHeader > button:nth-child(2) {
+    --module-color: #2563eb;
+}
+
+#departmentHeader > button:nth-child(3) {
+    --module-color: #8b5cf6;
+}
+
+#departmentHeader > button:nth-child(4) {
+    --module-color: #db8b18;
+}
+
+#departmentHeader > button:nth-child(5) {
+    --module-color: #0d9488;
+}
+
+#departmentHeader > button:nth-child(6) {
+    --module-color: #475569;
+}
+
+#departmentHeader > button:nth-child(7) {
+    --module-color: #dc5545;
+}
+
+#departmentHeader > button:nth-child(8) {
+    --module-color: #64748b;
+}
+
+/* Module icon containers */
+
+#departmentHeader .dashboard-icon {
+    width: 58px !important;
+    height: 58px !important;
+    min-height: 58px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 16px !important;
+    background: color-mix(in srgb, var(--module-color, #2563eb) 11%, white) !important;
+    color: var(--module-color, #2563eb) !important;
+    font-size: 29px !important;
+    line-height: 1 !important;
+}
+
+#departmentHeader .employee-group-icon,
+#departmentHeader .organogram-dashboard-icon {
+    width: 38px !important;
+    height: 34px !important;
+    color: inherit !important;
+}
+
+#departmentHeader .dashboard-label {
+    display: block !important;
+    color: #26364a !important;
+    font-size: 15px !important;
+    font-weight: 800 !important;
+    line-height: 1.35 !important;
+    text-align: center !important;
+}
+
+#departmentHeader .dashboard-label small {
+    display: block !important;
+    margin-top: 3px !important;
+    color: #64748b !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+}
+
+/* Holiday calendar date icon */
+
+#holidayCalendarButton .dashboard-icon {
+    font-size: 20px !important;
+    font-weight: 800 !important;
+}
+
+/* Birthday section */
+
+#homeBirthdaySection {
+    width: 100% !important;
+    margin: 30px auto 26px !important;
+    padding: 24px !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 20px !important;
+    background: #ffffff !important;
+    box-shadow: 0 6px 20px rgba(15, 23, 42, 0.055) !important;
+}
+
+#homeBirthdayTitle {
+    color: #17365d !important;
+    font-family: "Trebuchet MS", sans-serif !important;
+    font-size: 22px !important;
+    font-weight: 800 !important;
+}
+
+#homeBirthdaySection .home-birthday-subtitle {
+    margin: 8px 0 18px !important;
+    color: #64748b !important;
+    font-size: 14px !important;
+}
+
+.home-birthday-card {
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 14px !important;
+    background: #f8fafc !important;
+}
+
+/* Theme toggle */
+
+body button#dekkoThemeToggle {
+    position: fixed !important;
+    top: 12px !important;
+    left: 12px !important;
+    z-index: 9999 !important;
+    padding: 9px 13px !important;
+    border: 1px solid #dbe3ed !important;
+    border-radius: 10px !important;
+    background: #ffffff !important;
+    color: #17365d !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    box-shadow: 0 3px 10px rgba(15, 23, 42, 0.08) !important;
+}
+
+/* Tablet */
+
+@media (max-width: 900px) {
+    #departmentHeader {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 14px !important;
+    }
+
+    #departmentHeader > button {
+        min-height: 132px !important;
+    }
+}
+
+/* Mobile */
+
+@media (max-width: 600px) {
+    #listPage {
+        padding: 58px 14px 100px !important;
+    }
+
+    #listPage > #adminButton {
+        margin-bottom: 14px !important;
+    }
+
+    #appTitle {
+        min-height: 125px !important;
+        margin-bottom: 20px !important;
+        padding: 16px 19px !important;
+        border-radius: 17px !important;
+    }
+
+    #departmentHeader {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 12px !important;
+    }
+
+    #departmentHeader > button {
+        min-height: 125px !important;
+        padding: 15px 7px !important;
+        gap: 12px !important;
+        border-radius: 14px !important;
+    }
+
+    #departmentHeader .dashboard-icon {
+        width: 49px !important;
+        height: 49px !important;
+        min-height: 49px !important;
+        border-radius: 13px !important;
+        font-size: 25px !important;
+    }
+
+    #departmentHeader .dashboard-label {
+        font-size: 13px !important;
+    }
+
+    #departmentHeader .dashboard-label small {
+        font-size: 11px !important;
+    }
+
+    #homeBirthdaySection {
+        margin-top: 22px !important;
+        padding: 16px !important;
+        border-radius: 16px !important;
+    }
+}
+
+
+/* Dark Mode button compact */
+body button#dekkoThemeToggle {
+    width: auto !important;
+    min-width: 0 !important;
+    height: 28px !important;
+    min-height: 28px !important;
+    padding: 4px 8px !important;
+    font-size: 10px !important;
+    line-height: 1 !important;
+    border-radius: 7px !important;
+    box-shadow: none !important;
+}
+
+/* =========================================
+   CREATE NEW EMPLOYEE MENU & FEATURE PAGES
+========================================= */
+
+/* Dashboard Create New Employee accent */
+#departmentHeader > button:nth-child(9) {
+    --module-color: #0f766e;
+}
+
+/* Four feature menu cards */
+.create-employee-menu {
+    width: 100%;
+    max-width: 1050px;
+    margin: 24px auto;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.create-employee-menu > button {
+    width: 100%;
+    min-height: 125px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    border: 1px solid #dbe5ef;
+    border-top: 4px solid #0f766e;
+    border-radius: 16px;
+    background: #ffffff;
+    color: #26364a;
+    box-shadow: 0 5px 16px rgba(15, 23, 42, 0.06);
+    font-size: 16px;
+    font-weight: 800;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.create-employee-menu > button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.11);
+}
+
+.create-employee-menu > button:nth-child(2) {
+    border-top-color: #2563eb;
+}
+
+.create-employee-menu > button:nth-child(3) {
+    border-top-color: #8b5cf6;
+}
+
+.create-employee-menu > button:nth-child(4) {
+    border-top-color: #db8b18;
+}
+
+.create-employee-menu-icon {
+    width: 54px;
+    height: 54px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px;
+    background: #f0fdfa;
+    font-size: 27px;
+}
+
+.create-employee-menu > button:nth-child(2) .create-employee-menu-icon {
+    background: #eff6ff;
+}
+
+.create-employee-menu > button:nth-child(3) .create-employee-menu-icon {
+    background: #f5f3ff;
+}
+
+.create-employee-menu > button:nth-child(4) .create-employee-menu-icon {
+    background: #fffbeb;
+}
+
+/* Individual feature pages */
+.create-employee-feature-page {
+    width: 100%;
+    max-width: 1100px;
+    margin: 20px auto;
+    padding: 20px;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    background: #ffffff;
+    box-shadow: 0 5px 18px rgba(15, 23, 42, 0.05);
+}
+
+.create-employee-feature-page > h1 {
+    margin: 15px 0 22px;
+    color: #17365d;
+    font-size: 23px;
+    font-weight: 800;
+}
+
+.create-employee-back-button {
+    min-height: 40px;
+    padding: 9px 17px;
+    border: 1px solid #cbd5e1;
+    border-radius: 9px;
+    background: #f1f5f9;
+    color: #17365d;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.create-employee-feature-page .admin-card {
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+    .create-employee-menu {
+        gap: 12px;
+        margin: 18px auto;
+    }
+
+    .create-employee-menu > button {
+        min-height: 115px;
+        padding: 13px 7px;
+        gap: 9px;
+        border-radius: 13px;
+        font-size: 13px;
+    }
+
+    .create-employee-menu-icon {
+        width: 46px;
+        height: 46px;
+        font-size: 24px;
+    }
+
+    .create-employee-feature-page {
+        padding: 14px;
+        border-radius: 13px;
+    }
+
+    .create-employee-feature-page > h1 {
+        font-size: 19px;
+    }
+}
+
+/* ==================================================
+   DASHBOARD MODERN HORIZONTAL CARDS
+================================================== */
+
+#departmentHeader {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 14px !important;
+    width: 100% !important;
+}
+
+#departmentHeader > button {
+    --module-color: #2563eb;
+    min-width: 0 !important;
+    min-height: 112px !important;
+    height: auto !important;
+    padding: 16px 13px !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 12px !important;
+    border: 1px solid #e2e8f0 !important;
+    border-top: 1px solid #e2e8f0 !important;
+    border-left: 4px solid var(--module-color) !important;
+    border-radius: 15px !important;
+    background: #ffffff !important;
+    color: #1e293b !important;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06) !important;
+    text-align: left !important;
+    transition: transform .2s ease, box-shadow .2s ease !important;
+}
+
+#departmentHeader > button:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 9px 20px rgba(15, 23, 42, 0.11) !important;
+}
+
+#departmentHeader > button:active {
+    transform: scale(.98) !important;
+}
+
+#departmentHeader > button:nth-child(1) { --module-color: #16845b; }
+#departmentHeader > button:nth-child(2) { --module-color: #2563eb; }
+#departmentHeader > button:nth-child(3) { --module-color: #8b5cf6; }
+#departmentHeader > button:nth-child(4) { --module-color: #db8b18; }
+#departmentHeader > button:nth-child(5) { --module-color: #0d9488; }
+#departmentHeader > button:nth-child(6) { --module-color: #475569; }
+#departmentHeader > button:nth-child(7) { --module-color: #dc5545; }
+#departmentHeader > button:nth-child(8) { --module-color: #64748b; }
+#departmentHeader > button:nth-child(9) { --module-color: #0f766e; }
+
+#departmentHeader .dashboard-icon {
+    width: 43px !important;
+    height: 43px !important;
+    min-width: 43px !important;
+    min-height: 43px !important;
+    flex: 0 0 43px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 12px !important;
+    background: color-mix(in srgb, var(--module-color) 11%, white) !important;
+    color: var(--module-color) !important;
+    font-size: 20px !important;
+}
+
+#departmentHeader .dashboard-icon .employee-group-icon,
+#departmentHeader .dashboard-icon .organogram-dashboard-icon {
+    width: 29px !important;
+    height: 25px !important;
+}
+
+#departmentHeader .dashboard-icon.holiday-today-icon {
+    width: 43px !important;
+    height: 43px !important;
+    min-width: 43px !important;
+}
+
+#departmentHeader .dashboard-label {
+    min-width: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
+    gap: 3px !important;
+    text-align: left !important;
+    line-height: 1.25 !important;
+    font-weight: 400 !important;
+}
+
+#departmentHeader .dashboard-kicker {
+    color: var(--module-color) !important;
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    letter-spacing: .7px !important;
+    text-transform: uppercase !important;
+}
+
+#departmentHeader .dashboard-title {
+    color: #1e293b !important;
+    font-size: 15px !important;
+    font-weight: 800 !important;
+    line-height: 1.25 !important;
+}
+
+#departmentHeader .dashboard-subtitle {
+    color: #64748b !important;
+    font-size: 11px !important;
+    font-weight: 500 !important;
+    line-height: 1.35 !important;
+}
+
+@media (max-width: 900px) {
+    #departmentHeader {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+}
+
+@media (max-width: 520px) {
+    #departmentHeader {
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+    }
+
+    #departmentHeader > button {
+        min-height: 88px !important;
+        padding: 12px !important;
+    }
+
+    #departmentHeader .dashboard-icon {
+        width: 40px !important;
+        height: 40px !important;
+        min-width: 40px !important;
+        min-height: 40px !important;
+        flex-basis: 40px !important;
+    }
+}
+
+
+/* DASHBOARD CARD: ICON TOP-LEFT, LABEL TOP-RIGHT, TITLE BELOW */
+#departmentHeader > button {
+    display: grid !important;
+    grid-template-columns: 46px minmax(0, 1fr);
+    grid-template-rows: 46px auto auto;
+    align-items: start;
+    justify-items: start;
+    column-gap: 10px;
+    row-gap: 5px;
+    text-align: left;
+    padding: 14px;
+    min-height: 132px;
+}
+
+#departmentHeader > button .dashboard-icon {
+    grid-column: 1;
+    grid-row: 1;
+    align-self: start;
+    justify-self: start;
+    margin: 0;
+}
+
+#departmentHeader > button .dashboard-label {
+    display: contents;
+}
+
+#departmentHeader > button .dashboard-kicker {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+    align-self: start;
+    margin: 3px 0 0;
+    text-align: right;
+}
+
+#departmentHeader > button .dashboard-title {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    margin: 0;
+    text-align: left;
+}
+
+#departmentHeader > button .dashboard-subtitle {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    margin: 0;
+    text-align: left;
+}
+
+
+/* Dashboard card: icon left, kicker right, title and subtitle below */
+#departmentHeader > button {
+    display: grid !important;
+    grid-template-columns: 46px minmax(0, 1fr) !important;
+    grid-template-rows: 46px auto auto !important;
+    align-items: center !important;
+    column-gap: 10px !important;
+    row-gap: 5px !important;
+    min-height: 132px !important;
+    padding: 15px !important;
+}
+
+#departmentHeader > button > .dashboard-icon {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    justify-self: start !important;
+    align-self: center !important;
+}
+
+#departmentHeader > button > .dashboard-label {
+    display: contents !important;
+}
+
+#departmentHeader > button .dashboard-kicker {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    justify-self: end !important;
+    align-self: center !important;
+    text-align: right !important;
+}
+
+#departmentHeader > button .dashboard-title {
+    grid-column: 1 / -1 !important;
+    grid-row: 2 !important;
+    text-align: left !important;
+    justify-self: start !important;
+}
+
+#departmentHeader > button .dashboard-subtitle {
+    grid-column: 1 / -1 !important;
+    grid-row: 3 !important;
+    text-align: left !important;
+    justify-self: start !important;
+}
+
+/* Welcome badge and title: always white */
+#appTitle .welcome-badge,
+#appTitle .welcome-title {
+    color: #ffffff !important;
+}
+
+/* Dashboard Admin Login text: white */
+html body button#adminButton {
+    color: #ffffff !important;
+}
+
+/* Back buttons: match the existing departmentBackButton style */
+#salaryPage > #salaryBackButton,
+#createEmployeeMenuPage > #createEmployeeMenuBackButton,
+.create-employee-feature-page > .create-employee-back-button {
+    margin: 0 0 15px 0 !important;
+    padding: 10px 16px !important;
+    border: none !important;
+    border-radius: 10px !important;
+    background: #374151 !important;
+    color: white !important;
+    font-size: 15px !important;
+    cursor: pointer !important;
+}
+
+/* Create New Employee Menu: Back button and heading alignment */
+#createEmployeeMenuPage > #createEmployeeMenuBackButton {
+    display: block;
+    margin: 0 0 15px 0 !important;
+}
+
+#createEmployeeMenuPage > h1 {
+    display: block;
+    width: 100%;
+    margin: 0 0 24px 0;
+    padding: 0;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+/* Create New Employee Menu: match Department page alignment */
+#createEmployeeMenuPage {
+    width: 100% !important;
+    max-width: 600px !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+}
+
+@media (min-width: 601px) {
+    #createEmployeeMenuPage {
+        max-width: 600px !important;
+    }
+}
+
+/* Employee PABX List */
+.create-employee-menu > button:nth-child(5) {
+    border-top-color: #0d9488;
+}
+
+.create-employee-menu > button:nth-child(5) .create-employee-menu-icon {
+    background: #ccfbf1;
+}
+
+.pabx-source-buttons {
+    display: flex;
+    gap: 12px;
+    margin: 16px 0;
+}
+
+.pabx-source-buttons button {
+    flex: 1;
+    min-height: 44px;
+    padding: 10px 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 9px;
+    background: #f8fafc;
+    color: #334155;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.pabx-source-buttons button.active {
+    border-color: #0f766e;
+    background: #0f766e;
+    color: #ffffff;
+}
+
+.employee-pabx-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+    font-size: 14px;
+}
+
+.employee-pabx-table th,
+.employee-pabx-table td {
+    padding: 10px 8px;
+    border: 1px solid #dbe5ef;
+    text-align: left;
+    vertical-align: middle;
+}
+
+.employee-pabx-table th {
+    background: #f1f5f9;
+    color: #17365d;
+    font-weight: 800;
+}
+
+.employee-pabx-table tbody tr:nth-child(even) {
+    background: #f8fafc;
+}
+
+@media (max-width: 600px) {
+    .employee-pabx-table {
+        font-size: 12px;
+    }
+
+    .employee-pabx-table th,
+    .employee-pabx-table td {
+        padding: 8px 5px;
+    }
+
+    .pabx-source-buttons button {
+        font-size: 13px;
+    }
 }

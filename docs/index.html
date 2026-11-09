@@ -10,20 +10,22 @@
 </head>
 
 <body>
-<button id="dekkoThemeToggle" type="button">☾ Dark Mode</button>
+
 
 <div id="listPage">
 
-<button id="adminButton">Admin</button>
+<button id="adminButton" type="button">Admin Login</button>
+<button id="dekkoThemeToggle" type="button">☾ Dark Mode</button>
 
 <div id="appTitle">
+    <div class="welcome-badge">Corporate HR Portal</div>
     <div class="welcome-title">Welcome to Dekko Employee Info!</div>
-    <div class="welcome-subtitle">Explore employee information quickly and easily.</div>
+    <div class="welcome-subtitle">Explore employee records, organizational directory, birthday calendars, and department details quickly and effortlessly.</div>
 </div>
 
 <div id="departmentSection">
     <div id="departmentHeader">
-        <button id="allDepartmentsButton"><span class="dashboard-icon">🏢</span><span class="dashboard-label">All Departments<br><small>(Head Office)</small></span></button>
+        <button id="allDepartmentsButton"><span class="dashboard-icon">🏢</span><span class="dashboard-label"><span class="dashboard-kicker">Depts</span><span class="dashboard-title">All Departments</span><span class="dashboard-subtitle">Head Office Division</span></span></button>
         <button id="allEmployeesButton"><span class="dashboard-icon"><svg class="employee-group-icon" viewBox="0 0 48 36" aria-label="3 people" role="img">
 <circle cx="24" cy="8" r="5" fill="currentColor"/>
 <circle cx="10" cy="12" r="3.5" fill="currentColor"/>
@@ -31,10 +33,10 @@
 <path d="M14 32v-5c0-5 4-8 10-8s10 3 10 8v5z" fill="currentColor"/>
 <path d="M2 30v-4c0-4 3-7 8-7 2 0 4 1 5 2-2 2-3 4-3 7v2z" fill="currentColor"/>
 <path d="M46 30v-4c0-4-3-7-8-7-2 0-4 1-5 2 2 2 3 4 3 7v2z" fill="currentColor"/>
-</svg></span><span class="dashboard-label">All Employees<br><small>(Head Office)</small></span></button>
-        <button id="favoriteEmployeesButton"><span class="dashboard-icon">❤️</span><span class="dashboard-label">Favorite Employees</span></button>
-        <button id="birthdayButton"><span class="dashboard-icon">🎂</span><span class="dashboard-label">Birthday</span></button>
-        <button id="salaryButton"><span class="dashboard-icon">💰</span><span class="dashboard-label">Salary 🔒</span></button>
+</svg></span><span class="dashboard-label"><span class="dashboard-kicker">Staff</span><span class="dashboard-title">All Employees</span><span class="dashboard-subtitle">Head Office Corporate</span></span></button>
+        <button id="favoriteEmployeesButton"><span class="dashboard-icon">❤️</span><span class="dashboard-label"><span class="dashboard-kicker">Saved</span><span class="dashboard-title">Favorite Employees</span><span class="dashboard-subtitle">Quick Access Contacts</span></span></button>
+        <button id="birthdayButton"><span class="dashboard-icon">🎂</span><span class="dashboard-label"><span class="dashboard-kicker">This Week</span><span class="dashboard-title">Birthday Calendar</span><span class="dashboard-subtitle">Upcoming Celebrations</span></span></button>
+        <button id="salaryButton"><span class="dashboard-icon">💰</span><span class="dashboard-label"><span class="dashboard-kicker">ADMIN ONLY</span><span class="dashboard-title">Salary Portal</span><span class="dashboard-subtitle">Confidential Payslips & Tax</span></span></button>
         <button id="organogramButton"><span class="dashboard-icon"><svg class="organogram-dashboard-icon" viewBox="0 0 48 40" aria-label="Organization Chart" role="img">
 <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
 <path d="M24 12v7M11 19h26M11 19v5M24 19v5M37 19v5"/>
@@ -43,8 +45,17 @@
 <rect x="16" y="24" width="16" height="12" rx="2" fill="currentColor" stroke="none"/>
 <rect x="29" y="24" width="16" height="12" rx="2" fill="currentColor" stroke="none"/>
 </g>
-</svg></span><span class="dashboard-label">Organogram</span></button>
-        <button id="holidayCalendarButton"><span class="dashboard-icon holiday-today-icon"><span id="holidayTodayDate"></span></span><span class="dashboard-label">Holiday Calendar</span></button>
+</svg></span><span class="dashboard-label"><span class="dashboard-kicker">HEAD OFFICE</span><span class="dashboard-title">Organogram</span><span class="dashboard-subtitle">Company Hierarchy Tree</span></span></button>
+        <button id="holidayCalendarButton"><span class="dashboard-icon holiday-today-icon"><span id="holidayTodayDate"></span></span><span class="dashboard-label"><span class="dashboard-kicker">2026 CALENDAR</span><span class="dashboard-title">Holiday Calendar</span><span class="dashboard-subtitle">Annual Scheduled Holidays</span></span></button>
+        <button id="employeePabxDashboardButton" type="button">
+            <span class="dashboard-icon">☎️</span>
+            <span class="dashboard-label">
+                <span class="dashboard-kicker">DIRECTORY</span>
+                <span class="dashboard-title">Employee PABX List</span>
+                <span class="dashboard-subtitle">Head Office &amp; Factory Contacts</span>
+            </span>
+        </button>
+        <button id="createNewEmployeeButton" type="button"><span class="dashboard-icon">➕</span><span class="dashboard-label"><span class="dashboard-kicker">ADMIN ONLY</span><span class="dashboard-title">Create New Employee</span><span class="dashboard-subtitle">Add or Update Employee Records</span></span></button>
         <button id="allFactoryEmployeesButton" type="button"><span class="dashboard-icon"><svg class="employee-group-icon" viewBox="0 0 48 36" aria-label="5 people" role="img">
 <circle cx="24" cy="7" r="5" fill="currentColor"/>
 <circle cx="15" cy="11" r="3.8" fill="currentColor"/>
@@ -56,7 +67,7 @@
 <path d="M41 32v-4c0-4-3-7-8-7-1 0-2 0-3 1 2 2 3 4 3 7v3z" fill="currentColor"/>
 <path d="M0 30v-3c0-3 2-5 5-5 2 0 3 1 4 2-1 2-2 4-2 6z" fill="currentColor"/>
 <path d="M48 30v-3c0-3-2-5-5-5-2 0-3 1-4 2 1 2 2 4 2 6z" fill="currentColor"/>
-</svg></span><span class="dashboard-label">All Employees<br><small>(Factory)</small></span></button>
+</svg></span><span class="dashboard-label"><span class="dashboard-kicker">Staff</span><span class="dashboard-title">All Employees</span><span class="dashboard-subtitle">Factory & Production Units</span></span></button>
     </div>
     <section id="homeBirthdaySection" aria-labelledby="homeBirthdayTitle">
         <h2 id="homeBirthdayTitle">🎂 Birthday Celebrations</h2>
@@ -344,7 +355,7 @@
 </div>
 
 <div id="departmentPage" style="display:none;">
-    <button id="departmentBackButton">← Back to Departments</button>
+    <button id="departmentBackButton">← Back</button>
     <h1 id="departmentPageTitle">🏢 All Departments</h1>
     <div id="departmentCards"></div>
     <div id="departmentEmployeeList"></div>
@@ -434,7 +445,7 @@
 <button id="adminBackButton">← Back</button>
 
 <h1>Admin</h1>
-<button id="createUserButton" style="display:block !important;width:100%;background:#2563eb !important;color:white !important;">Create New User</button>
+
 
 <button id="logoutButton">Logout</button>
 
@@ -722,6 +733,70 @@ View Employee Details &amp; Edit
 
 </div>
 
+</div>
+
+<div id="createEmployeeMenuPage" style="display:none;">
+    <button type="button" id="createEmployeeMenuBackButton">← Back</button>
+    <h1>Create New Employee</h1>
+<div id="createEmployeeMenu" class="create-employee-menu">
+    <button type="button" id="addHeadOfficeEmployeeMenuButton">
+        <span class="create-employee-menu-icon">🏢</span>
+        <span>Add New Employee (Head Office)</span>
+    </button>
+    <button type="button" id="addFactoryEmployeeMenuButton">
+        <span class="create-employee-menu-icon">🏭</span>
+        <span>Add New Employee (Factory)</span>
+    </button>
+    <button type="button" id="employeePhotoUploadMenuButton">
+        <span class="create-employee-menu-icon">📷</span>
+        <span>Employee Photo Upload</span>
+    </button>
+    <button type="button" id="editExistingEmployeeMenuButton">
+        <span class="create-employee-menu-icon">✏️</span>
+        <span>Edit Existing Employee</span>
+    </button>
+    <button type="button" id="employeePabxListMenuButton">
+        <span class="create-employee-menu-icon">☎️</span>
+        <span>Employee PABX List</span>
+    </button>
+</div>
+</div>
+
+<div id="addHeadOfficeEmployeePage" class="create-employee-feature-page" style="display:none;">
+    <button type="button" class="create-employee-back-button" data-create-employee-back>← Back</button>
+    <h1>Add New Employee (Head Office)</h1>
+    <div id="addHeadOfficeEmployeeContent"></div>
+</div>
+
+<div id="addFactoryEmployeePage" class="create-employee-feature-page" style="display:none;">
+    <button type="button" class="create-employee-back-button" data-create-employee-back>← Back</button>
+    <h1>Add New Employee (Factory)</h1>
+    <div id="addFactoryEmployeeContent"></div>
+</div>
+
+<div id="employeePhotoUploadPage" class="create-employee-feature-page" style="display:none;">
+    <button type="button" class="create-employee-back-button" data-create-employee-back>← Back</button>
+    <h1>Employee Photo Upload</h1>
+    <div id="employeePhotoUploadContent"></div>
+</div>
+
+<div id="editExistingEmployeePage" class="create-employee-feature-page" style="display:none;">
+    <button type="button" class="create-employee-back-button" data-create-employee-back>← Back</button>
+    <h1>Edit Existing Employee</h1>
+    <div id="editExistingEmployeeContent"></div>
+</div>
+
+<div id="employeePabxListPage" class="create-employee-feature-page" style="display:none;">
+    <button type="button" id="employeePabxListBackButton" class="create-employee-back-button">← Back</button>
+    <h1>Employee PABX List</h1>
+
+    <div class="pabx-source-buttons">
+        <button type="button" id="headOfficePabxButton" class="active">Head Office</button>
+        <button type="button" id="factoryPabxButton">Factory</button>
+    </div>
+
+    <p id="employeePabxListStatus" role="status" aria-live="polite"></p>
+    <div id="employeePabxListContent"></div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>

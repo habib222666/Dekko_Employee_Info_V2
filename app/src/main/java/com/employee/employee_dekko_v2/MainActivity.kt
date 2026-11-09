@@ -144,6 +144,14 @@ class MainActivity : AppCompatActivity() {
                             }
                         }
 
+                        const holidayCalendarPage = document.getElementById('holidayCalendarPage');
+                        if (holidayCalendarPage && holidayCalendarPage.style.display !== 'none') {
+                            const back = document.getElementById('holidayCalendarBackButton');
+                            if (back) {
+                                back.click();
+                                return true;
+                            }
+                        }
                         const attendancePage = document.getElementById('attendancePage');
                         if (attendancePage && attendancePage.style.display !== 'none') {
                             const back = document.getElementById('attendanceBackButton');

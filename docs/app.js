@@ -120,6 +120,34 @@ const backButton = document.getElementById("backButton");
 
 const adminButton = document.getElementById("adminButton");
 
+function updateDashboardAdminState() {
+    const adminBtn = document.getElementById("adminButton");
+    const salaryBtn = document.getElementById("salaryButton");
+    const createBtn = document.getElementById("createNewEmployeeButton");
+
+    const unlocked = Boolean(accessToken);
+
+    if (adminBtn) adminBtn.textContent = unlocked ? "Logout" : "Admin Login";
+
+    [salaryBtn, createBtn].forEach(button => {
+        if (!button) return;
+        const label = button.querySelector(".dashboard-label");
+        if (!label) return;
+
+        const title = label.querySelector(".dashboard-title");
+        if (title) {
+            if (button.id === "salaryButton") {
+                title.textContent = unlocked ? "Salary Portal" : "Salary Portal 🔒";
+            } else {
+                title.textContent = unlocked
+                    ? "Create New Employee"
+                    : "Create New Employee 🔒";
+            }
+        }
+    });
+}
+
+
 const loginPage = document.getElementById("loginPage");
 const loginBackButton = document.getElementById("loginBackButton");
 const adminEmail = document.getElementById("adminEmail");
@@ -359,6 +387,18 @@ async function loadEmployees(source = "headoffice") {
 
         employees = await response.json();
 
+        const staffKicker = document.querySelector(
+            source === "factory"
+                ? "#allFactoryEmployeesButton .dashboard-kicker"
+                : "#allEmployeesButton .dashboard-kicker"
+        );
+        if (staffKicker) {
+            staffKicker.textContent = source === "factory"
+                ? `${employees.length} FACTORY STAFF`
+                : `${employees.length} STAFF`;
+        }
+
+
         // Restore favorites saved on this device.
         favoriteEmployees = JSON.parse(
             localStorage.getItem(favoriteStorageKey(source)) || "[]"
@@ -477,6 +517,14 @@ function showDepartmentCards() {
             a.localeCompare(b)
         );
 
+    const departmentKicker = document.querySelector(
+        "#allDepartmentsButton .dashboard-kicker"
+    );
+    if (departmentKicker) {
+        departmentKicker.textContent =
+            `${departmentNames.length} DEPTS`;
+    }
+
     departmentNames.forEach((department, index) => {
 
         const card =
@@ -572,7 +620,24 @@ function showDepartmentCards() {
         departmentNames.length ? "block" : "none";
 }
 
+async function updateFavoriteDashboardCount() {
+    const headOffice = JSON.parse(
+        localStorage.getItem(favoriteStorageKey("headoffice")) || "[]"
+    );
+    const factory = JSON.parse(
+        localStorage.getItem(favoriteStorageKey("factory")) || "[]"
+    );
+    const kicker = document.querySelector(
+        "#favoriteEmployeesButton .dashboard-kicker"
+    );
+    if (kicker) {
+        kicker.textContent = `${headOffice.length + factory.length} SAVED`;
+    }
+}
+
 async function showFavoriteEmployees() {
+    updateFavoriteDashboardCount();
+
     favoriteEmployeeList.innerHTML = "<p>Loading favorite employees...</p>";
 
     const sources = [
@@ -1677,23 +1742,25 @@ editExistingEmployeeOpen?.addEventListener("click", () => {
     }
 
     currentEmployeeSource = editExistingEmployeeSource.value;
-    adminPage.style.display = "none";
+    const editPage = document.getElementById("editExistingEmployeePage");
+    if (editPage) editPage.style.display = "none";
     showDetails(employee, "adminEdit");
 });
 
 
 if (adminButton) {
-    adminButton.addEventListener(
-        "click",
-        function() {
-
-            listPage.style.display = "none";
-            detailsPage.style.display = "none";
-            loginPage.style.display = "block";
-            loginStatus.textContent = "";
-
+    adminButton.addEventListener("click", function() {
+        if (accessToken) {
+            logoutButton.click();
+            window.scrollTo(0, 0);
+            return;
         }
-    );
+
+        listPage.style.display = "none";
+        detailsPage.style.display = "none";
+        loginPage.style.display = "block";
+        loginStatus.textContent = "";
+    });
 }
 
 
@@ -1877,7 +1944,22 @@ async function verifyEmployeeAdminAccess() {
 
 function setEmployeeAdminPanelVisible(allowed) {
     const panel = document.getElementById("employeeAddAdminOnly");
-    if (panel) panel.style.display = allowed ? "block" : "none";
+
+    // The Add Employee cards are moved into separate feature pages.
+    // Keep the old wrapper hidden; Admin UID verification remains unchanged.
+    if (panel) panel.style.display = "none";
+
+    if (!allowed) {
+        [
+            "addHeadOfficeEmployeePage",
+            "addFactoryEmployeePage",
+            "employeePhotoUploadPage",
+            "editExistingEmployeePage",
+        ].forEach(id => {
+            const page = document.getElementById(id);
+            if (page) page.style.display = "none";
+        });
+    }
 }
 
 /* =========================
@@ -1940,8 +2022,9 @@ async function restoreSavedAdminSession() {
         loginPage.style.display =
             "none";
 
-        adminPage.style.display =
-            "block";
+        adminPage.style.display = "none";
+        listPage.style.display = "block";
+        updateDashboardAdminState();
 
         uploadStatus.textContent = "";
         loadEmployeeSelect();
@@ -1963,6 +2046,253 @@ async function restoreSavedAdminSession() {
     }
 }
 
+
+/* =========================
+   CREATE NEW EMPLOYEE NAVIGATION
+========================= */
+(function setupCreateEmployeeNavigation() {
+    const pageIds = [
+        "addHeadOfficeEmployeePage",
+        "addFactoryEmployeePage",
+        "employeePhotoUploadPage",
+        "editExistingEmployeePage",
+        "employeePabxListPage"
+    ];
+
+    function hideFeaturePages() {
+        pageIds.forEach(id => {
+            const page = document.getElementById(id);
+            if (page) page.style.display = "none";
+        });
+    }
+
+    function openFeaturePage(id) {
+        if (!accessToken) return;
+        hideFeaturePages();
+        adminPage.style.display = "none";
+        document.getElementById("createEmployeeMenuPage").style.display = "none";
+        listPage.style.display = "none";
+        document.getElementById(id).style.display = "block";
+    }
+
+    const photoCard = document.querySelector("#adminPage > .admin-card");
+    const editCard = document.getElementById("editExistingEmployeeCard");
+    const addCards = document.querySelectorAll("#employeeAddAdminOnly > .admin-card");
+
+    if (photoCard) document.getElementById("employeePhotoUploadContent").appendChild(photoCard);
+    if (editCard) document.getElementById("editExistingEmployeeContent").appendChild(editCard);
+
+    if (addCards.length >= 2) {
+        document.getElementById("addHeadOfficeEmployeeContent").appendChild(addCards[0]);
+        document.getElementById("addFactoryEmployeeContent").appendChild(addCards[1]);
+    }
+
+    const oldWrapper = document.getElementById("employeeAddAdminOnly");
+    if (oldWrapper) oldWrapper.style.display = "none";
+
+    document.getElementById("createNewEmployeeButton")?.addEventListener("click", () => {
+        if (!accessToken) {
+            updateDashboardAdminState();
+            return;
+        }
+
+        hideFeaturePages();
+        listPage.style.display = "none";
+        adminPage.style.display = "none";
+        document.getElementById("createEmployeeMenuPage").style.display = "block";
+        window.scrollTo(0, 0);
+    });
+
+    document.getElementById("createEmployeeMenuBackButton")?.addEventListener("click", () => {
+        document.getElementById("createEmployeeMenuPage").style.display = "none";
+        listPage.style.display = "block";
+        window.scrollTo(0, 0);
+    });
+
+    document.getElementById("addHeadOfficeEmployeeMenuButton")?.addEventListener("click", () => openFeaturePage("addHeadOfficeEmployeePage"));
+    document.getElementById("addFactoryEmployeeMenuButton")?.addEventListener("click", () => openFeaturePage("addFactoryEmployeePage"));
+    document.getElementById("employeePhotoUploadMenuButton")?.addEventListener("click", () => openFeaturePage("employeePhotoUploadPage"));
+    document.getElementById("editExistingEmployeeMenuButton")?.addEventListener("click", () => openFeaturePage("editExistingEmployeePage"));
+
+    // Public PABX List access from Dashboard; Admin login is not required.
+    document.getElementById("employeePabxDashboardButton")?.addEventListener("click", () => {
+        hideFeaturePages();
+        listPage.style.display = "none";
+        adminPage.style.display = "none";
+        document.getElementById("createEmployeeMenuPage").style.display = "none";
+        document.getElementById("employeePabxListPage").style.display = "block";
+        loadEmployeePabxList("headoffice");
+        window.scrollTo(0, 0);
+    });
+
+    document.getElementById("employeePabxListBackButton")?.addEventListener("click", () => {
+        hideFeaturePages();
+        listPage.style.display = "block";
+        window.scrollTo(0, 0);
+    });
+
+    const pabxStatus = document.getElementById("employeePabxListStatus");
+    const pabxContent = document.getElementById("employeePabxListContent");
+    const headOfficePabxButton = document.getElementById("headOfficePabxButton");
+    const factoryPabxButton = document.getElementById("factoryPabxButton");
+
+    async function loadEmployeePabxList(source) {
+        if (!pabxContent || !pabxStatus) return;
+
+        const isFactory = source === "factory";
+        const viewName = isFactory
+            ? "employee_directory_factory_public"
+            : "employee_directory_public";
+
+        headOfficePabxButton?.classList.toggle("active", !isFactory);
+        factoryPabxButton?.classList.toggle("active", isFactory);
+        pabxStatus.textContent = "Loading employees...";
+        pabxContent.replaceChildren();
+
+        try {
+            const response = await fetch(
+                `${SUPABASE_URL}/rest/v1/${viewName}?select=department,employee_name,designation,pabx_number&order=department.asc,employee_name.asc`,
+                {
+                    headers: {
+                        apikey: SUPABASE_KEY,
+                        Authorization: `Bearer ${SUPABASE_KEY}`
+                    }
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error("Employee list could not load (" + response.status + ").");
+            }
+
+            const employees = await response.json();
+
+            // Same designation ranking as All Employees List.
+            employees.sort((a, b) => {
+                const departmentA = String(a.department || "-").trim();
+                const departmentB = String(b.department || "-").trim();
+
+                const departmentCompare = departmentA.localeCompare(
+                    departmentB,
+                    undefined,
+                    { sensitivity: "base" }
+                );
+
+                if (departmentCompare !== 0) return departmentCompare;
+
+                const designationA = normalizeDesignation(a.designation);
+                const designationB = normalizeDesignation(b.designation);
+
+                const rankA = DESIGNATION_RANK.has(designationA)
+                    ? DESIGNATION_RANK.get(designationA)
+                    : DESIGNATION_ORDER.length;
+
+                const rankB = DESIGNATION_RANK.has(designationB)
+                    ? DESIGNATION_RANK.get(designationB)
+                    : DESIGNATION_ORDER.length;
+
+                if (rankA !== rankB) return rankA - rankB;
+
+                return String(a.employee_name || "").localeCompare(
+                    String(b.employee_name || "")
+                );
+            });
+
+            const table = document.createElement("table");
+            table.className = "employee-pabx-table";
+
+            const thead = document.createElement("thead");
+            const headerRow = document.createElement("tr");
+
+            ["Sl.", "Department", "Name", "Designation", "PABX No."].forEach(label => {
+                const th = document.createElement("th");
+                th.textContent = label;
+                headerRow.appendChild(th);
+            });
+
+            thead.appendChild(headerRow);
+            table.appendChild(thead);
+
+            const tbody = document.createElement("tbody");
+            let departmentSerial = 0;
+
+            employees.forEach((employee, index) => {
+                const row = document.createElement("tr");
+
+                const previousDepartment = index > 0
+                    ? String(employees[index - 1].department || "-").trim()
+                    : null;
+
+                const currentDepartment = String(employee.department || "-").trim();
+
+                const isNewDepartment = currentDepartment !== previousDepartment;
+
+                departmentSerial = isNewDepartment ? 1 : departmentSerial + 1;
+
+                const cells = [
+                    departmentSerial,
+                    employee.employee_name || "-",
+                    employee.designation || "-",
+                    employee.pabx_number || "-"
+                ];
+
+                const slCell = document.createElement("td");
+                slCell.textContent = String(cells[0]);
+                row.appendChild(slCell);
+
+                if (isNewDepartment) {
+                    const departmentCount = employees
+                        .slice(index)
+                        .findIndex(item =>
+                            String(item.department || "-").trim() !== currentDepartment
+                        );
+
+                    const departmentCell = document.createElement("td");
+                    departmentCell.textContent = currentDepartment;
+                    departmentCell.rowSpan = departmentCount === -1
+                        ? employees.length - index
+                        : departmentCount;
+                    departmentCell.className = "pabx-department-cell";
+                    row.appendChild(departmentCell);
+                }
+
+                cells.slice(1).forEach(value => {
+                    const td = document.createElement("td");
+                    td.textContent = String(value);
+                    row.appendChild(td);
+                });
+
+                tbody.appendChild(row);
+            });
+
+            table.appendChild(tbody);
+            pabxContent.appendChild(table);
+
+            pabxStatus.textContent = employees.length
+                ? `${isFactory ? "Factory" : "Head Office"}: ${employees.length} employees`
+                : "No employees found.";
+        } catch (error) {
+            pabxStatus.textContent = error.message;
+        }
+    }
+
+    document.getElementById("employeePabxListMenuButton")?.addEventListener("click", () => {
+        openFeaturePage("employeePabxListPage");
+        loadEmployeePabxList("headoffice");
+        window.scrollTo(0, 0);
+    });
+
+    headOfficePabxButton?.addEventListener("click", () => loadEmployeePabxList("headoffice"));
+    factoryPabxButton?.addEventListener("click", () => loadEmployeePabxList("factory"));
+
+    document.querySelectorAll("[data-create-employee-back]").forEach(button => {
+        button.addEventListener("click", () => {
+            hideFeaturePages();
+            document.getElementById("createEmployeeMenuPage").style.display = "block";
+        });
+    });
+})();
+
+updateDashboardAdminState();
 restoreSavedAdminSession();
 
 
@@ -2080,13 +2410,12 @@ loginButton.addEventListener(
             adminPassword.value = "";
 
 
-            loginPage.style.display =
-                "none";
-
-
-            adminPage.style.display =
-                "block";
-
+            loginPage.style.display = "none";
+            adminPage.style.display = "none";
+            document.getElementById("createEmployeeMenuPage").style.display = "none";
+            listPage.style.display = "block";
+            setEmployeeAdminPanelVisible(true);
+            updateDashboardAdminState();
 
             uploadStatus.textContent = "";
         loadEmployeeSelect();
@@ -2120,58 +2449,47 @@ loginButton.addEventListener(
    ADMIN BACK
 ========================= */
 
-adminBackButton.addEventListener(
-    "click",
-    function() {
 
-        adminPage.style.display =
-            "none";
+adminBackButton.addEventListener("click", function() {
+    [
+        "addHeadOfficeEmployeePage",
+        "addFactoryEmployeePage",
+        "employeePhotoUploadPage",
+        "editExistingEmployeePage"
+    ].forEach(id => {
+        const page = document.getElementById(id);
+        if (page) page.style.display = "none";
+    });
 
+    adminPage.style.display = "none";
+    document.getElementById("createEmployeeMenuPage").style.display = "none";
+    listPage.style.display = "block";
+    uploadStatus.textContent = "";
+    updateDashboardAdminState();
+});
 
-        listPage.style.display =
-            "block";
+logoutButton.addEventListener("click", function() {
+    accessToken = null;
+    localStorage.removeItem("dekko_admin_session");
 
+    [
+        "createEmployeeMenuPage",
+        "addHeadOfficeEmployeePage",
+        "addFactoryEmployeePage",
+        "employeePhotoUploadPage",
+        "editExistingEmployeePage"
+    ].forEach(id => {
+        const page = document.getElementById(id);
+        if (page) page.style.display = "none";
+    });
 
-        uploadStatus.textContent =
-            "";
-
-    }
-);
-
-
-/* =========================
-   LOGOUT
-========================= */
-
-logoutButton.addEventListener(
-    "click",
-    function() {
-
-        accessToken = null;
-
-        localStorage.removeItem(
-            "dekko_admin_session"
-        );
-
-
-        adminPage.style.display =
-            "none";
-
-
-        listPage.style.display =
-            "block";
-
-
-        uploadStatus.textContent =
-            "";
-
-    }
-);
-
-
-/* =========================
-   PHOTO UPLOAD
-========================= */
+    adminPage.style.display = "none";
+    loginPage.style.display = "none";
+    listPage.style.display = "block";
+    setEmployeeAdminPanelVisible(false);
+    updateDashboardAdminState();
+    uploadStatus.textContent = "";
+});
 
 uploadPhotoButton.addEventListener("click", async function() {
     if (!accessToken) {
@@ -2277,7 +2595,8 @@ backButton.addEventListener(
             allEmployeesPage.style.display = "none";
             departmentPage.style.display = "none";
             favoritePage.style.display = "none";
-            adminPage.style.display = "block";
+            const editPage = document.getElementById("editExistingEmployeePage");
+            if (editPage) editPage.style.display = "block";
         } else if (detailsPreviousPage === "favorite") {
 
             listPage.style.display =
@@ -2585,89 +2904,6 @@ loadEmployees();
 
 
 /* =========================
-   CREATE NEW USER
-========================= */
-
-document.addEventListener("DOMContentLoaded", function () {
-
-    const createUserButton = document.getElementById("createUserButton");
-
-    if (!createUserButton) return;
-
-    createUserButton.addEventListener("click", async function () {
-
-        const email = prompt("Enter new user email:");
-
-        if (!email) return;
-
-        const password = prompt("Enter password (minimum 6 characters):");
-
-        if (!password) return;
-
-        if (password.length < 6) {
-            alert("Password must be at least 6 characters.");
-            return;
-        }
-
-        createUserButton.disabled = true;
-        createUserButton.textContent = "Creating...";
-
-        try {
-
-            const response = await fetch(
-                `${SUPABASE_URL}/auth/v1/signup`,
-                {
-                    method: "POST",
-                    headers: {
-                        "apikey": SUPABASE_KEY,
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        email: email,
-                        password: password
-                    })
-                }
-            );
-
-            const data = await response.json();
-
-            console.log("Create User Response:", data);
-
-            if (!response.ok) {
-                throw new Error(
-                    data.msg ||
-                    data.message ||
-                    data.error_description ||
-                    "User creation failed"
-                );
-            }
-
-            alert(
-                "User created successfully!\n\n" +
-                "Email: " + email
-            );
-
-        } catch (error) {
-
-            console.error("Create User Error:", error);
-
-            alert(
-                "User creation failed:\n\n" +
-                error.message
-            );
-
-        } finally {
-
-            createUserButton.disabled = false;
-            createUserButton.textContent = "Create New User";
-
-        }
-
-    });
-
-});
-
-/* =========================
    BIRTHDAY FEATURE
 ========================= */
 
@@ -2727,6 +2963,13 @@ function renderHomeBirthdayCelebrations() {
         })
         .filter(Boolean)
         .sort((a, b) => a.order - b.order);
+
+    const birthdayKicker = document.querySelector(
+        "#birthdayButton .dashboard-kicker"
+    );
+    if (birthdayKicker) {
+        birthdayKicker.textContent = `${upcoming.length} BIRTHDAYS`;
+    }
 
     if (!upcoming.length) {
         list.innerHTML =
@@ -3543,16 +3786,8 @@ if (slipEmployee) {
                 await checkAdmin();
             } catch (error) {
                 if (!accessToken) {
-                    window.__openSalaryAfterLogin = true;
-
-                    if (listPage) listPage.style.display = "none";
-                    if (detailsPage) detailsPage.style.display = "none";
-                    if (loginPage) loginPage.style.display = "block";
-
-                    if (loginStatus) {
-                        loginStatus.textContent =
-                            "Please log in to access Salary Management.";
-                    }
+                    window.__openSalaryAfterLogin = false;
+                    updateDashboardAdminState();
                     return;
                 }
 
