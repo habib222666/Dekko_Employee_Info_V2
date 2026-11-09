@@ -915,7 +915,7 @@ html body #listPage::before {
 /* FINAL: Dashboard Watermark 5 Percent Visibility */
 
 html body #listPage::before {
-    background-size: 90% auto !important;
+    background-size: 95% auto !important;
     background-position: center 48% !important;
     opacity: 0.05 !important;
 }
