@@ -1519,7 +1519,11 @@ employeeSearchInput?.addEventListener("keydown", event => {
     }
 });
 
+let photoEmployeeSelectRequest = 0;
+
 async function loadEmployeeSelect() {
+    const requestId = ++photoEmployeeSelectRequest;
+
     employeeSelect.replaceChildren(new Option("Select employee", ""));
 
     try {
@@ -1546,12 +1550,21 @@ async function loadEmployeeSelect() {
             return { source, list: await response.json() };
         }));
 
+        if (requestId !== photoEmployeeSelectRequest) return;
+
+        const addedEmployees = new Set();
+
         results.forEach(({ source, list }) => {
             list.forEach(employee => {
                 if (employee.employee_no == null) return;
 
+                const employeeKey = `${source.key}::${employee.employee_no}`;
+                if (addedEmployees.has(employeeKey)) return;
+
+                addedEmployees.add(employeeKey);
+
                 const option = document.createElement("option");
-                option.value = `${source.key}::${employee.employee_no}`;
+                option.value = employeeKey;
                 option.dataset.source = source.key;
                 option.dataset.employeeNo = String(employee.employee_no);
                 option.dataset.employeeName = String(employee.employee_name || "");
@@ -1564,6 +1577,8 @@ async function loadEmployeeSelect() {
 
         renderPhotoEmployeeSuggestions();
     } catch (error) {
+        if (requestId !== photoEmployeeSelectRequest) return;
+
         console.error("Photo employee list error:", error);
         uploadStatus.textContent = "Employee list could not load: " + error.message;
     }
