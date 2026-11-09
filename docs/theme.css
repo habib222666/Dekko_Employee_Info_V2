@@ -877,3 +877,14 @@ html[data-theme="dark"] body #homeBirthdaySection .home-birthday-subtitle {
     outline: none !important;
     box-shadow: none !important;
 }
+
+/* FINAL: Birthday Section and Cards Pure Black in Dark Mode */
+html[data-theme="dark"] body #homeBirthdaySection {
+    background: #000000 !important;
+    background-color: #000000 !important;
+}
+
+html[data-theme="dark"] body #homeBirthdaySection .home-birthday-card {
+    background: #000000 !important;
+    background-color: #000000 !important;
+}
