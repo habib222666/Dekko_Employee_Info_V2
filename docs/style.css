@@ -7577,3 +7577,23 @@ html body button#adminButton {
         padding: 9px !important;
     }
 }
+
+/* Compact spacing below Back button on non-PABX feature pages */
+#addHeadOfficeEmployeePage > h1,
+#addFactoryEmployeePage > h1,
+#employeePhotoUploadPage > h1,
+#editExistingEmployeePage > h1 {
+    margin-top: 0 !important;
+    margin-bottom: 12px !important;
+}
+
+#addHeadOfficeEmployeePage > .admin-card,
+#addFactoryEmployeePage > .admin-card,
+#employeePhotoUploadPage > .admin-card,
+#editExistingEmployeePage > .admin-card,
+#addHeadOfficeEmployeeContent,
+#addFactoryEmployeeContent,
+#employeePhotoUploadContent,
+#editExistingEmployeeContent {
+    margin-top: 0 !important;
+}
