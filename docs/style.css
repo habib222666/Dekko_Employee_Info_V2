@@ -1858,7 +1858,7 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
    ADD EMPLOYEE - LABEL + INPUT SIDE BY SIDE
 ========================= */
 
-#addEmployeeForm {
+:is(#addEmployeeForm, #addFactoryEmployeeForm) {
     display: grid;
     grid-template-columns: 140px minmax(0, 1fr);
     column-gap: 14px;
@@ -1866,31 +1866,38 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
     align-items: center;
 }
 
-#addEmployeeForm label {
+:is(#addEmployeeForm, #addFactoryEmployeeForm) label {
     margin: 0 !important;
     font-size: 14px;
     font-weight: 600;
 }
 
-#addEmployeeForm input {
+:is(#addEmployeeForm, #addFactoryEmployeeForm) input {
     width: 100%;
     box-sizing: border-box;
     min-height: 42px;
 }
 
-#addEmployeeForm #saveNewEmployeeButton,
-#addEmployeeForm #addEmployeeStatus {
+:is(#addEmployeeForm, #addFactoryEmployeeForm) > :is(
+    .add-employee-row,
+    #saveNewEmployeeButton,
+    #saveNewFactoryEmployeeButton,
+    #editLastSavedEmployeeButton,
+    #editLastSavedFactoryEmployeeButton,
+    #addEmployeeStatus,
+    #addFactoryEmployeeStatus
+) {
     grid-column: 1 / -1;
 }
 
 @media (max-width: 600px) {
 
-    #addEmployeeForm {
+    :is(#addEmployeeForm, #addFactoryEmployeeForm) {
         grid-template-columns: 115px minmax(0, 1fr);
         column-gap: 10px;
     }
 
-    #addEmployeeForm label {
+    :is(#addEmployeeForm, #addFactoryEmployeeForm) label {
         font-size: 13px;
     }
 
@@ -1900,7 +1907,7 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
    ADD EMPLOYEE ROW LAYOUT
 ========================= */
 
-#addEmployeeForm .add-employee-row {
+:is(#addEmployeeForm, #addFactoryEmployeeForm) .add-employee-row {
     display: grid !important;
     grid-template-columns: 140px minmax(0, 1fr);
     column-gap: 14px;
@@ -1908,14 +1915,14 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
     margin-bottom: 12px;
 }
 
-#addEmployeeForm .add-employee-row label {
+:is(#addEmployeeForm, #addFactoryEmployeeForm) .add-employee-row label {
     display: block !important;
     margin: 0 !important;
     font-size: 14px;
     font-weight: 600;
 }
 
-#addEmployeeForm .add-employee-row input {
+:is(#addEmployeeForm, #addFactoryEmployeeForm) .add-employee-row input {
     width: 100% !important;
     min-height: 42px;
     box-sizing: border-box;
@@ -1923,12 +1930,12 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
 
 @media (max-width: 600px) {
 
-    #addEmployeeForm .add-employee-row {
+    :is(#addEmployeeForm, #addFactoryEmployeeForm) .add-employee-row {
         grid-template-columns: 115px minmax(0, 1fr);
         column-gap: 10px;
     }
 
-    #addEmployeeForm .add-employee-row label {
+    :is(#addEmployeeForm, #addFactoryEmployeeForm) .add-employee-row label {
         font-size: 13px;
     }
 
