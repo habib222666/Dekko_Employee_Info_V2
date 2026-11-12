@@ -4223,25 +4223,21 @@ if (slipEmployee) {
                     slipResult.innerHTML = `
                         <article class="professional-payslip">
                             <header class="payslip-company">
-                                <img src="assets/logo/Dekko%20logo.jpg" alt="Dekko Logo" class="payslip-company-logo">
-                                <div class="payslip-company-text">
-                                    <h2>Dekko Accessories Ltd.</h2>
-
-
-                                    <p>Head Office: Shimanto Shambhar (8th Floor),</p>
-                                    <p>Road No. 2, Dhanmondi, Dhaka-1205</p>
-                                    <p>Phone: +880 9666774400</p>
-                                    <p>www.dekkolegacy.com</p>
-                                </div>
-                            </header>
-
-                            <div class="payslip-heading">
-                                <h3>Pay Slip</h3>
-                                <p>For the Month of ${safe(monthName)}</p>
-                                <span class="payslip-status">${safe(record.payment_method || "BANK")}</span>
-                            </div>
-
-                            <section class="payslip-section payslip-employee-section">
+    <img src="assets/logo/Dekko%20logo.jpg" alt="Dekko Logo" class="payslip-company-logo">
+    <div class="payslip-company-text">
+        <h2>Dekko Accessories Ltd.</h2>
+        <p class="payslip-address">Head Office: Shimanto Shambhar (8th Floor), Road No. 2, Dhanmondi, Dhaka-1205</p>
+        <p class="payslip-contact">Phone: +880 9666774400 <span>|</span> www.dekkolegacy.com</p>
+    </div>
+</header>
+<div class="payslip-heading">
+    <h3>PAY SLIP</h3>
+    <div class="payslip-period-row">
+        <p>For the Month of ${safe(monthName)}</p>
+        <span class="payslip-status">${safe(record.payment_method || "BANK")}</span>
+    </div>
+</div>
+<section class="payslip-section payslip-employee-section">
                                 <h4><span aria-hidden="true">👤</span> Employee Information</h4>
                                 <div class="payslip-info-tables-grid">
                                     ${infoTable([
@@ -4316,13 +4312,13 @@ if (slipEmployee) {
                             </section>
 
                             <footer class="payslip-footer">
-                                <p>This is a system-generated payslip. For any query, please contact the HR Department.</p>
-                                <div class="payslip-signature">
-                                    <div class="payslip-signature-line"></div>
-                                    <strong>Authorized Signature</strong>
-                                    <span>HR Department</span>
-                                </div>
-                            </footer>
+    <p class="payslip-disclaimer">This is a system-generated payslip. For any query, please contact the HR Department.</p>
+    <div class="payslip-signature">
+        <div class="payslip-signature-line"></div>
+        <strong>Authorized Signature</strong>
+        <span>HR Department</span>
+    </div>
+</footer>
                         </article>
                     `;
 
@@ -4350,7 +4346,12 @@ if (slipEmployee) {
         const printButton = $("printPaySlipButton");
         if (printButton) {
             printButton.addEventListener("click", function () {
-                window.print();
+                if (window.AndroidPaySlipPdf &&
+                    typeof window.AndroidPaySlipPdf.downloadPaySlipPdf === "function") {
+                    window.AndroidPaySlipPdf.downloadPaySlipPdf();
+                } else {
+                    window.print();
+                }
             });
         }
 
@@ -4361,20 +4362,32 @@ if (slipEmployee) {
                 const salaryPage = $("salaryPage");
                 if (page) page.style.display = "none";
                 if (salaryPage) salaryPage.style.display = "block";
+                window.scrollTo({ top: 0, behavior: "smooth" });
             });
         }
 
         const paySlipPagePrintButton = $("paySlipPagePrintButton");
         if (paySlipPagePrintButton) {
             paySlipPagePrintButton.addEventListener("click", function () {
+
+                const actions = $("paySlipPage")?.querySelector(".payslip-page-actions");
+                const previousDisplay = actions ? actions.style.display : "";
+                if (actions) actions.style.display = "none";
+
+                const restoreActions = function () {
+                    if (actions) actions.style.display = previousDisplay;
+                };
                 if (window.AndroidPaySlipPdf &&
                     typeof window.AndroidPaySlipPdf.downloadPaySlipPdf === "function") {
                     window.AndroidPaySlipPdf.downloadPaySlipPdf();
+                    restoreActions();
                 } else {
+                    window.addEventListener("afterprint", restoreActions, { once: true });
                     window.print();
                 }
             });
         }
+
     });
 })();
 
@@ -5905,4 +5918,243 @@ function renderTree() {
     });
 
     updateFormForType();
+})();
+
+
+/* ==========================================
+   ANDROID DASHBOARD: PABX AND CREATE EMPLOYEE
+========================================== */
+(function () {
+    "use strict";
+
+    const pabxPage = document.getElementById("employeePabxListPage");
+    const pabxStatus = document.getElementById("employeePabxListStatus");
+    const pabxContent = document.getElementById("employeePabxListContent");
+    const headOfficeButton = document.getElementById("headOfficePabxButton");
+    const factoryButton = document.getElementById("factoryPabxButton");
+    const createButton = document.getElementById("createNewEmployeeButton");
+    const pabxDashboardButton = document.getElementById("employeePabxDashboardButton");
+
+    function hideDashboardPages() {
+        [
+            "listPage", "loginPage", "adminPage", "salaryPage",
+            "allEmployeesPage", "favoritePage", "birthdayPage",
+            "departmentPage", "detailsPage", "organogramPage",
+            "holidayCalendarPage"
+        ].forEach(function (id) {
+            const page = document.getElementById(id);
+            if (page) page.style.display = "none";
+        });
+    }
+
+    async function loadPabxList(source) {
+        if (!pabxContent || !pabxStatus) return;
+
+        const isFactory = source === "factory";
+        const viewName = isFactory
+            ? "employee_directory_factory_public"
+            : "employee_directory_public";
+
+        headOfficeButton?.classList.toggle("active", !isFactory);
+        factoryButton?.classList.toggle("active", isFactory);
+
+        pabxStatus.textContent = "Loading employees...";
+        pabxContent.replaceChildren();
+
+        try {
+            const response = await fetch(
+                `${SUPABASE_URL}/rest/v1/${viewName}?select=department,employee_name,designation,pabx_number&order=department.asc,employee_name.asc`,
+                {
+                    headers: {
+                        apikey: SUPABASE_KEY,
+                        Authorization: `Bearer ${SUPABASE_KEY}`
+                    }
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error("Employee list could not load (" + response.status + ").");
+            }
+
+            const employees = await response.json();
+
+            employees.sort(function (a, b) {
+                const deptA = String(a.department || "-").trim();
+                const deptB = String(b.department || "-").trim();
+                const deptCompare = deptA.localeCompare(deptB, undefined, {
+                    sensitivity: "base"
+                });
+
+                if (deptCompare !== 0) return deptCompare;
+
+                const designationA = normalizeDesignation(a.designation);
+                const designationB = normalizeDesignation(b.designation);
+
+                const rankA = DESIGNATION_RANK.has(designationA)
+                    ? DESIGNATION_RANK.get(designationA)
+                    : DESIGNATION_ORDER.length;
+
+                const rankB = DESIGNATION_RANK.has(designationB)
+                    ? DESIGNATION_RANK.get(designationB)
+                    : DESIGNATION_ORDER.length;
+
+                return rankA - rankB ||
+                    String(a.employee_name || "").localeCompare(
+                        String(b.employee_name || "")
+                    );
+            });
+
+            const wrapper = document.createElement("div");
+            wrapper.className = "pabx-table-wrapper";
+
+            const table = document.createElement("table");
+            table.className = "employee-pabx-table";
+
+            const thead = document.createElement("thead");
+            const headerRow = document.createElement("tr");
+
+            ["Sl.", "Department", "Name", "Designation", "PABX No."].forEach(function (label) {
+                const th = document.createElement("th");
+                th.textContent = label;
+                headerRow.appendChild(th);
+            });
+
+            thead.appendChild(headerRow);
+            table.appendChild(thead);
+
+            const tbody = document.createElement("tbody");
+            let departmentSerial = 0;
+
+            employees.forEach(function (employee, index) {
+                const row = document.createElement("tr");
+                const department = String(employee.department || "-").trim();
+                const previousDepartment = index > 0
+                    ? String(employees[index - 1].department || "-").trim()
+                    : null;
+                const isNewDepartment = department !== previousDepartment;
+
+                departmentSerial = isNewDepartment ? 1 : departmentSerial + 1;
+
+                const serialCell = document.createElement("td");
+                serialCell.textContent = String(departmentSerial);
+                row.appendChild(serialCell);
+
+                if (isNewDepartment) {
+                    const nextDifferent = employees.slice(index).findIndex(function (item) {
+                        return String(item.department || "-").trim() !== department;
+                    });
+
+                    const departmentCell = document.createElement("td");
+                    departmentCell.textContent = department;
+                    departmentCell.rowSpan = nextDifferent === -1
+                        ? employees.length - index
+                        : nextDifferent;
+                    departmentCell.className = "pabx-department-cell";
+                    row.appendChild(departmentCell);
+                }
+
+                [
+                    employee.employee_name || "-",
+                    employee.designation || "-",
+                    employee.pabx_number || "-"
+                ].forEach(function (value) {
+                    const cell = document.createElement("td");
+                    cell.textContent = String(value);
+                    row.appendChild(cell);
+                });
+
+                tbody.appendChild(row);
+            });
+
+            table.appendChild(tbody);
+            wrapper.appendChild(table);
+            pabxContent.appendChild(wrapper);
+
+            pabxStatus.textContent = employees.length
+                ? `${isFactory ? "Factory" : "Head Office"}: ${employees.length} employees`
+                : "No employees found.";
+
+        } catch (error) {
+            pabxStatus.textContent = error.message;
+        }
+    }
+
+    if (pabxDashboardButton && pabxPage) {
+        pabxDashboardButton.addEventListener("click", function () {
+            hideDashboardPages();
+            pabxPage.style.display = "block";
+            loadPabxList("headoffice");
+            window.scrollTo(0, 0);
+        });
+    }
+
+    headOfficeButton?.addEventListener("click", function () {
+        loadPabxList("headoffice");
+    });
+
+    factoryButton?.addEventListener("click", function () {
+        loadPabxList("factory");
+    });
+
+    document.getElementById("employeePabxListBackButton")?.addEventListener("click", function () {
+        if (pabxPage) pabxPage.style.display = "none";
+        document.getElementById("listPage").style.display = "block";
+        window.scrollTo(0, 0);
+    });
+
+    if (createButton) {
+        createButton.addEventListener("click", async function () {
+            const allowed = await verifyEmployeeAdminAccess();
+
+            if (!allowed) {
+                window.__openCreateEmployeeAfterLogin = true;
+                setEmployeeAdminPanelVisible(false);
+                hideDashboardPages();
+
+                const login = document.getElementById("loginPage");
+                if (login) login.style.display = "block";
+
+                const status = document.getElementById("loginStatus");
+                if (status) {
+                    status.textContent = "Please log in as the designated Admin to create employees.";
+                }
+
+                window.scrollTo(0, 0);
+                return;
+            }
+
+            setEmployeeAdminPanelVisible(true);
+            hideDashboardPages();
+
+            const admin = document.getElementById("adminPage");
+            if (admin) admin.style.display = "block";
+
+            const panel = document.getElementById("employeeAddAdminOnly");
+            panel?.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+    }
+
+    // After successful Admin login, open the existing protected employee forms.
+    const adminPage = document.getElementById("adminPage");
+    if (adminPage && window.MutationObserver) {
+        const observer = new MutationObserver(function () {
+            if (
+                window.__openCreateEmployeeAfterLogin &&
+                adminPage.style.display === "block"
+            ) {
+                window.__openCreateEmployeeAfterLogin = false;
+
+                const panel = document.getElementById("employeeAddAdminOnly");
+                if (panel) {
+                    panel.style.display = "block";
+                    panel.scrollIntoView({ behavior: "smooth", block: "start" });
+                }
+            }
+        });
+
+        observer.observe(adminPage, {
+            attributes: true,
+            attributeFilter: ["style"]
+        });
+    }
 })();

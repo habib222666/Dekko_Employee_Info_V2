@@ -316,3 +316,662 @@ html[data-theme="dark"] body #holidayCalendarPage #holidayCalendarGrid .holiday-
     color: #ffffff !important;
     -webkit-text-fill-color: #ffffff !important;
 }
+
+/* DARK MODE: CLEARLY HIGHLIGHT SELECTED HOLIDAY MONTH BUTTON */
+html[data-theme="dark"] body #holidayCalendarPage .holiday-calendar-month-box .holiday-calendar-month.active {
+    border: 3px solid #DC2626 !important;
+    box-shadow: inset 0 0 0 1px rgba(220, 38, 38, 0.25) !important;
+    font-weight: 800 !important;
+}
+
+
+/* DARK MODE: HOLIDAY DETAIL BOX CATEGORY COLORS */
+html[data-theme="dark"] #holidayCalendarPage .holiday-detail-box.government {
+    background-color: rgba(220, 38, 38, 0.22) !important;
+}
+
+html[data-theme="dark"] #holidayCalendarPage .holiday-detail-box.office {
+    background-color: rgba(37, 99, 235, 0.30) !important;
+}
+
+html[data-theme="dark"] #holidayCalendarPage .holiday-detail-box.weekly {
+    background-color: rgba(124, 58, 237, 0.25) !important;
+}
+
+html[data-theme="dark"] #holidayCalendarPage .holiday-detail-box .holiday-dot.government {
+    background-color: #dc2626 !important;
+}
+
+html[data-theme="dark"] #holidayCalendarPage .holiday-detail-box .holiday-dot.office {
+    background-color: #3b82f6 !important;
+}
+
+html[data-theme="dark"] #holidayCalendarPage .holiday-detail-box .holiday-dot.weekly {
+    background-color: #8b5cf6 !important;
+}
+
+
+/* FINAL DARK MODE: OFFICE HOLIDAY BOX BLUE FIX */
+html[data-theme="dark"] body #holidayCalendarPage .holiday-calendar-legend .holiday-detail-box.office {
+    background: rgba(37, 99, 235, 0.35) !important;
+    background-color: rgba(37, 99, 235, 0.35) !important;
+    border: 1px solid #3b82f6 !important;
+}
+
+/* FINAL: Compact Dark Mode Toggle */
+html body button#dekkoThemeToggle {
+    width: 82px !important;
+    min-width: 82px !important;
+    max-width: 82px !important;
+    height: 28px !important;
+    min-height: 28px !important;
+    max-height: 28px !important;
+    padding: 0 5px !important;
+    box-sizing: border-box !important;
+    font-size: 10px !important;
+    line-height: 1 !important;
+    border-radius: 7px !important;
+}
+
+/* Dark Mode button: align with Welcome card */
+html body button#dekkoThemeToggle {
+    position: fixed !important;
+    top: 12px !important;
+    left: max(14px, calc((100vw - 1180px) / 2 + 24px)) !important;
+    right: auto !important;
+    width: 96px !important;
+    min-width: 96px !important;
+    max-width: 96px !important;
+    height: 32px !important;
+    min-height: 32px !important;
+    max-height: 32px !important;
+    padding: 0 7px !important;
+    font-size: 11px !important;
+    border-radius: 8px !important;
+}
+
+/* FINAL: Keep all main pages at a consistent 1200px width */
+html body #listPage,
+html body #organogramPage,
+html body #holidayCalendarPage,
+html body #allEmployeesPage,
+html body #departmentPage,
+html body #favoritePage,
+html body #birthdayPage,
+html body #detailsPage,
+html body #loginPage,
+html body #resetPasswordPage,
+html body #adminPage,
+html body #salaryPage,
+html body #paySlipPage {
+    width: 100% !important;
+    max-width: 1200px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    box-sizing: border-box !important;
+}
+
+/* FINAL: Align every page content with Welcome card left edge */
+html body #listPage,
+html body #organogramPage,
+html body #holidayCalendarPage,
+html body #allEmployeesPage,
+html body #departmentPage,
+html body #favoritePage,
+html body #birthdayPage,
+html body #detailsPage,
+html body #loginPage,
+html body #resetPasswordPage,
+html body #adminPage,
+html body #salaryPage,
+html body #paySlipPage {
+    padding-left: 24px !important;
+    padding-right: 24px !important;
+}
+
+/* Remove inner centering that shifts content to the right */
+html body #organogramPage .organogram-header,
+html body #organogramPage .organogram-content,
+html body #holidayCalendarPage .holiday-calendar-header,
+html body #holidayCalendarPage .holiday-calendar-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+/* Employee lists start at the same left edge */
+html body #employeeList,
+html body #favoriteEmployeeList,
+html body #departmentEmployeeList,
+html body #birthdayPage .birthday-table-wrapper {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+/* Mobile alignment */
+@media (max-width: 600px) {
+    html body #listPage,
+    html body #organogramPage,
+    html body #holidayCalendarPage,
+    html body #allEmployeesPage,
+    html body #departmentPage,
+    html body #favoritePage,
+    html body #birthdayPage,
+    html body #detailsPage,
+    html body #loginPage,
+    html body #resetPasswordPage,
+    html body #adminPage,
+    html body #salaryPage,
+    html body #paySlipPage {
+        padding-left: 14px !important;
+        padding-right: 14px !important;
+    }
+}
+
+/* FINAL: Match every page top position with Home Welcome Card */
+@media (min-width: 601px) {
+    html body #organogramPage,
+    html body #holidayCalendarPage,
+    html body #allEmployeesPage,
+    html body #departmentPage,
+    html body #favoritePage,
+    html body #birthdayPage,
+    html body #detailsPage,
+    html body #loginPage,
+    html body #resetPasswordPage,
+    html body #adminPage,
+    html body #salaryPage,
+    html body #paySlipPage {
+        padding-top: 80px !important;
+    }
+}
+
+@media (max-width: 600px) {
+    html body #organogramPage,
+    html body #holidayCalendarPage,
+    html body #allEmployeesPage,
+    html body #departmentPage,
+    html body #favoritePage,
+    html body #birthdayPage,
+    html body #detailsPage,
+    html body #loginPage,
+    html body #resetPasswordPage,
+    html body #adminPage,
+    html body #salaryPage,
+    html body #paySlipPage {
+        padding-top: 112px !important;
+    }
+}
+
+/* FINAL: Unified Back Button Design and Position */
+html body #organogramBackButton,
+html body #holidayCalendarBackButton,
+html body #allEmployeesBackButton,
+html body #departmentBackButton,
+html body #favoriteBackButton,
+html body #birthdayBackButton,
+html body #backButton,
+html body #loginBackButton,
+html body #resetBackButton,
+html body #adminBackButton,
+html body #salaryBackButton,
+html body #paySlipPageBackButton {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 150px !important;
+    min-width: 150px !important;
+    max-width: 150px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    margin: 0 0 18px 0 !important;
+    padding: 0 12px !important;
+    box-sizing: border-box !important;
+    border: 0 !important;
+    border-radius: 9px !important;
+    background: #17365D !important;
+    color: #ffffff !important;
+    font-family: Arial, sans-serif !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+    text-align: center !important;
+    cursor: pointer !important;
+    box-shadow: 0 3px 9px rgba(23, 54, 93, 0.18) !important;
+    transition: background 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+html body #organogramBackButton:hover,
+html body #holidayCalendarBackButton:hover,
+html body #allEmployeesBackButton:hover,
+html body #departmentBackButton:hover,
+html body #favoriteBackButton:hover,
+html body #birthdayBackButton:hover,
+html body #backButton:hover,
+html body #loginBackButton:hover,
+html body #resetBackButton:hover,
+html body #adminBackButton:hover,
+html body #salaryBackButton:hover,
+html body #paySlipPageBackButton:hover {
+    background: #102847 !important;
+    color: #ffffff !important;
+}
+
+html body #organogramBackButton:active,
+html body #holidayCalendarBackButton:active,
+html body #allEmployeesBackButton:active,
+html body #departmentBackButton:active,
+html body #favoriteBackButton:active,
+html body #birthdayBackButton:active,
+html body #backButton:active,
+html body #loginBackButton:active,
+html body #resetBackButton:active,
+html body #adminBackButton:active,
+html body #salaryBackButton:active,
+html body #paySlipPageBackButton:active {
+    background: #0b1f38 !important;
+}
+
+/* Keep header-page Back Buttons above their headings */
+html body #organogramPage .organogram-header,
+html body #holidayCalendarPage .holiday-calendar-header {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 16px !important;
+}
+
+html body #paySlipPage .payslip-page-actions {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: min(100%, 780px) !important;
+    max-width: 780px !important;
+    margin: 0 auto 14px !important;
+    padding: 0 !important;
+    gap: 12px !important;
+}
+
+/* FINAL: Compact and Uniform Back Buttons */
+html body #organogramBackButton,
+html body #holidayCalendarBackButton,
+html body #allEmployeesBackButton,
+html body #departmentBackButton,
+html body #favoriteBackButton,
+html body #birthdayBackButton,
+html body #backButton,
+html body #loginBackButton,
+html body #resetBackButton,
+html body #adminBackButton,
+html body #salaryBackButton,
+html body #paySlipPageBackButton {
+    width: 120px !important;
+    min-width: 120px !important;
+    max-width: 120px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    max-height: 40px !important;
+    margin: 0 0 18px 0 !important;
+    padding: 0 8px !important;
+    font-size: 13px !important;
+    border-radius: 9px !important;
+}
+
+/* FINAL: Same Dark/Light Mode Toggle Size and Format */
+html body button#dekkoThemeToggle {
+    position: fixed !important;
+    top: 12px !important;
+    left: max(14px, calc((100vw - 1180px) / 2 + 24px)) !important;
+    right: auto !important;
+    width: 120px !important;
+    min-width: 120px !important;
+    max-width: 120px !important;
+    height: 36px !important;
+    min-height: 36px !important;
+    max-height: 36px !important;
+    padding: 0 10px !important;
+    box-sizing: border-box !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border: 1px solid #17365D !important;
+    border-radius: 9px !important;
+    background: #17365D !important;
+    color: #ffffff !important;
+    font-family: Arial, sans-serif !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+}
+
+html[data-theme="dark"] body button#dekkoThemeToggle {
+    background: #0b1f38 !important;
+    color: #ffffff !important;
+    border: 1px solid #7fa6d8 !important;
+}
+
+html body button#dekkoThemeToggle:hover {
+    background: #102847 !important;
+    color: #ffffff !important;
+}
+
+/* FINAL: Employee Filters - Full and Uniform Width */
+html body #allEmployeesPage #designationFilterBox,
+html body #allEmployeesPage #departmentFilterBox,
+html body #allEmployeesPage #bloodGroupFilterBox {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 12px 0 16px !important;
+    box-sizing: border-box !important;
+}
+
+html body #allEmployeesPage #designationFilter,
+html body #allEmployeesPage #departmentFilter,
+html body #allEmployeesPage #bloodGroupFilter {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 44px !important;
+    min-height: 44px !important;
+    padding: 0 14px !important;
+    box-sizing: border-box !important;
+    border: 1px solid #ccc !important;
+    border-radius: 8px !important;
+    font-family: "Trebuchet MS", sans-serif !important;
+    font-size: 16px !important;
+}
+
+/* FINAL: Head Office and Factory Employee Cards */
+html body #allEmployeesPage #employeeList {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+html body #allEmployeesPage #employeeList .employee-card {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    box-sizing: border-box !important;
+}
+
+/* FINAL: Dark/Light Toggle beside Back Button */
+html body button#dekkoThemeToggle {
+    top: 80px !important;
+    left: auto !important;
+    right: max(14px, calc((100vw - 1180px) / 2 + 24px)) !important;
+    width: 120px !important;
+    min-width: 120px !important;
+    max-width: 120px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    max-height: 40px !important;
+    border-radius: 9px !important;
+}
+
+@media (max-width: 600px) {
+    html body button#dekkoThemeToggle {
+        top: 112px !important;
+        right: 14px !important;
+    }
+}
+
+/* FINAL: Dashboard Admin Login and Dark Mode in One Row */
+html body #listPage > #dashboardTopActions {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 8px !important;
+    width: 100% !important;
+    margin: 0 0 18px auto !important;
+}
+
+html body #dashboardTopActions > #adminButton,
+html body #dashboardTopActions > #dekkoThemeToggle {
+    position: static !important;
+    display: inline-flex !important;
+    flex: 0 0 auto !important;
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    height: 36px !important;
+    min-height: 36px !important;
+    max-height: 36px !important;
+    margin: 0 !important;
+    padding: 0 10px !important;
+    box-sizing: border-box !important;
+    align-items: center !important;
+    justify-content: center !important;
+    white-space: nowrap !important;
+    border-radius: 9px !important;
+}
+
+html body #dashboardTopActions > #dekkoThemeToggle {
+    width: 120px !important;
+    min-width: 120px !important;
+    max-width: 120px !important;
+}
+
+/* DARK MODE: CLEAR WELCOME AND BIRTHDAY SECTION BORDERS */
+html[data-theme="dark"] body #appTitle {
+    border: 1px solid #64748b !important;
+    box-shadow: 0 0 0 1px rgba(148, 163, 184, 0.18) !important;
+}
+
+html[data-theme="dark"] body #homeBirthdaySection {
+    border: 1px solid #94a3b8 !important;
+    background: #111827 !important;
+    box-shadow: 0 0 0 1px rgba(148, 163, 184, 0.22) !important;
+}
+
+html[data-theme="dark"] body #homeBirthdayTitle {
+    color: #ffffff !important;
+}
+
+html[data-theme="dark"] body #homeBirthdaySection .home-birthday-subtitle {
+    color: #cbd5e1 !important;
+}
+
+html[data-theme="dark"] body #homeBirthdaySection .home-birthday-card {
+    border: 1px solid #64748b !important;
+    background: #1e293b !important;
+}
+
+/* FINAL DARK MODE BORDER FIX */
+html[data-theme="dark"] body #appTitle {
+    border: 2px solid #94a3b8 !important;
+    outline: 1px solid #475569 !important;
+    outline-offset: 2px !important;
+    box-shadow: none !important;
+}
+
+html[data-theme="dark"] body #homeBirthdaySection {
+    border: 2px solid #94a3b8 !important;
+    outline: 1px solid #475569 !important;
+    outline-offset: 2px !important;
+    box-shadow: none !important;
+}
+
+html[data-theme="dark"] body #homeBirthdaySection .home-birthday-card {
+    border: 1px solid #94a3b8 !important;
+}
+
+/* RESTORE ORIGINAL BIRTHDAY TITLE FONT */
+html body #homeBirthdayTitle {
+    font-family: "BrittanySignature", cursive !important;
+    font-size: 22px !important;
+    font-weight: 750 !important;
+}
+
+/* REMOVE DARK BOX BEHIND BIRTHDAY DATE */
+html[data-theme="dark"] body #homeBirthdaySection .home-birthday-date {
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    border: 0 !important;
+    outline: 0 !important;
+    box-shadow: none !important;
+    color: #fbbf24 !important;
+    padding: 0 !important;
+}
+
+/* REMOVE BLACK DATE BACKGROUND - COMPLETE BIRTHDAY INFO AREA */
+html[data-theme="dark"] body #homeBirthdaySection .home-birthday-info,
+html[data-theme="dark"] body #homeBirthdaySection .home-birthday-info * {
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    box-shadow: none !important;
+}
+
+html[data-theme="dark"] body #homeBirthdaySection .home-birthday-date::before,
+html[data-theme="dark"] body #homeBirthdaySection .home-birthday-date::after {
+    content: none !important;
+    display: none !important;
+}
+
+html[data-theme="dark"] body #homeBirthdaySection .home-birthday-date {
+    display: block !important;
+    border: none !important;
+    outline: none !important;
+    color: #fbbf24 !important;
+}
+
+/* REMOVE BLACK BOX BELOW UPCOMING NEXT 7 DAYS */
+html[data-theme="dark"] body #homeBirthdaySection .home-birthday-subtitle {
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    padding: 0 !important;
+    display: block !important;
+}
+
+/* REMOVE BORDER AND OUTLINE FROM WELCOME AND BIRTHDAY SECTIONS */
+html[data-theme="dark"] body #appTitle,
+html[data-theme="dark"] body #homeBirthdaySection {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+
+/* REMOVE BLACK BACKGROUND BEHIND WELCOME AND BIRTHDAY HEADINGS */
+html[data-theme="dark"] body #appTitle .welcome-title,
+html[data-theme="dark"] body #appTitle .welcome-subtitle,
+html[data-theme="dark"] body #homeBirthdayTitle,
+html[data-theme="dark"] body #homeBirthdaySection .home-birthday-subtitle {
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* FINAL: Birthday Section and Cards Pure Black in Dark Mode */
+html[data-theme="dark"] body #homeBirthdaySection {
+    background: #000000 !important;
+    background-color: #000000 !important;
+}
+
+html[data-theme="dark"] body #homeBirthdaySection .home-birthday-card {
+    background: #000000 !important;
+    background-color: #000000 !important;
+}
+
+/* FINAL: Slightly Smaller Welcome Heading and Description */
+html body #appTitle .welcome-title {
+    font-size: clamp(20px, 3.2vw, 30px) !important;
+}
+
+html body #appTitle .welcome-subtitle {
+    font-size: clamp(13px, 1.8vw, 16px) !important;
+}
+
+/* FINAL: Responsive Dashboard Watermark Size */
+
+html body #listPage::before {
+    background-size: clamp(520px, 70vw, 900px) auto !important;
+    background-position: center 48% !important;
+}
+
+@media (max-width: 600px) {
+    html body #listPage::before {
+        background-size: clamp(300px, 88vw, 560px) auto !important;
+        background-position: center 48% !important;
+    }
+}
+
+/* FINAL: Dashboard Watermark 5 Percent Visibility */
+
+html body #listPage::before {
+    background-size: 95% auto !important;
+    background-position: center 48% !important;
+    opacity: 0.05 !important;
+}
+
+@media (max-width: 600px) {
+    html body #listPage::before {
+        background-size: clamp(300px, 88vw, 560px) auto !important;
+        background-position: center 48% !important;
+        opacity: 0.05 !important;
+    }
+}
+
+
+/* FINAL PAYSLIP BUTTON ALIGNMENT AND PRINT TOP POSITION */
+html body #paySlipPage .payslip-page-actions {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: min(100%, 780px) !important;
+    max-width: 780px !important;
+    margin: 0 auto 14px !important;
+    padding: 0 !important;
+    gap: 12px !important;
+    box-sizing: border-box !important;
+}
+
+html body #paySlipPage .payslip-page-actions button {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    max-height: 40px !important;
+    margin: 0 !important;
+    align-self: center !important;
+    flex: 0 0 auto !important;
+    box-sizing: border-box !important;
+}
+
+html body #paySlipPage #paySlipPagePrintButton {
+    margin-left: auto !important;
+}
+
+@media print {
+    @page {
+        margin-top: 0mm;
+    }
+
+    html body #paySlipPage {
+        padding-top: 0 !important;
+        margin-top: 0 !important;
+    }
+}

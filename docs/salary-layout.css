@@ -397,6 +397,42 @@
     }
 }
 
+#paySlipPage .payslip-page-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    width: min(100%, 780px);
+    margin: 0 auto 14px;
+    box-sizing: border-box;
+}
+
+#paySlipPage .payslip-page-actions button {
+    min-height: 40px;
+    padding: 9px 16px;
+    border: 0;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+#paySlipPageBackButton {
+    background: #64748b;
+}
+
+#paySlipPagePrintButton {
+    background: #2563eb;
+}
+
+@media (max-width: 600px) {
+    #paySlipPage .payslip-page-actions button {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+}
+
 @media print {
     @page { size: A4; margin: 12mm; }
 
@@ -429,14 +465,7 @@
         display: none !important;
     }
 
-    .professional-payslip {
-        max-width: none !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        border: 0 !important;
-        border-radius: 0 !important;
-        box-shadow: none !important;
-    }
+    /* Keep the original screen Payslip styling when printing. */
 
     .professional-payslip .payslip-words,
     .professional-payslip .payslip-words p,
@@ -1245,5 +1274,393 @@
         white-space: normal;
         overflow-wrap: anywhere;
         line-height: 1.5;
+    }
+}
+
+
+/* A4 Pay Slip printing: preserve the screen design */
+@media print {
+    @page {
+        size: A4 portrait;
+        margin: 2mm 6mm 4mm;
+    }
+
+    html, body {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #fff !important;
+    }
+
+    #paySlipPage {
+        display: block !important;
+        position: static !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #fff !important;
+    }
+
+    #paySlipPageContent {
+        width: 100% !important;
+    }
+}
+
+
+/* Pay Slip action controls must never appear in print output */
+@media print {
+    #paySlipPage .payslip-page-actions,
+    #paySlipPage .payslip-page-actions * {
+        display: none !important;
+        visibility: hidden !important;
+    }
+}
+
+
+/* PRINT SPACING FIX: KEEP COMPLETE PAYSLIP ON ONE A4 PAGE */
+@media print {
+    .professional-payslip {
+        margin: 0 auto !important;
+        padding-top: 0 !important;
+    }
+
+    .professional-payslip .payslip-company {
+        padding-bottom: 14px !important;
+    }
+
+    .professional-payslip .payslip-heading {
+        padding-top: 12px !important;
+        padding-bottom: 8px !important;
+    }
+
+    .professional-payslip .payslip-section {
+        margin-top: 12px !important;
+    }
+
+    .professional-payslip .payslip-words {
+        margin-top: 8px !important;
+    }
+
+    .professional-payslip .payslip-words p {
+        margin-top: 4px !important;
+        margin-bottom: 4px !important;
+    }
+
+    .professional-payslip .payslip-footer {
+        margin-top: 10px !important;
+        padding-top: 6px !important;
+    }
+
+    .professional-payslip .payslip-signature {
+        margin-top: 14px !important;
+    }
+
+    .professional-payslip .payslip-footer > p {
+        margin-top: 6px !important;
+    }
+}
+
+
+/* FINAL PRINT FIX: START PAYSLIP AT PAGE TOP */
+@media print {
+    #paySlipPage {
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    #paySlipPage .payslip-page-actions {
+        display: none !important;
+    }
+}
+
+
+/* PAYSLIP HEADER REDESIGN - NOV 2026 */
+
+.professional-payslip .payslip-company {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 112px;
+    padding: 4px 0 7px;
+    border-bottom: 1px solid #174a7e;
+    box-sizing: border-box;
+}
+
+.professional-payslip .payslip-company-logo {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 104px;
+    height: 104px;
+    object-fit: contain;
+}
+
+.professional-payslip .payslip-company-text {
+    width: 100%;
+    min-width: 0;
+    padding: 0 4px;
+    text-align: center;
+    line-height: 1.15;
+}
+
+.professional-payslip .payslip-company-text h2 {
+    margin: 0 0 3px;
+    text-align: center;
+    font-size: 21px;
+    line-height: 1.15;
+}
+
+.professional-payslip .payslip-company-text p {
+    margin: 2px 0;
+    text-align: center;
+    font-size: 10.5px;
+    line-height: 1.15;
+    white-space: nowrap;
+}
+
+.professional-payslip .payslip-company-text .payslip-disclaimer {
+    color: #536174;
+    font-size: 10px;
+}
+
+.professional-payslip .payslip-company-text .payslip-contact span {
+    padding: 0 8px;
+    color: #9aa6b5;
+}
+
+.professional-payslip .payslip-heading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 0 3px;
+}
+
+.professional-payslip .payslip-heading h3 {
+    display: inline-block;
+    margin: 0;
+    padding: 3px 22px;
+    border: 1px solid #174a7e;
+    border-radius: 2px;
+    color: #174a7e;
+    font-size: 17px;
+    letter-spacing: 1.5px;
+    line-height: 1.2;
+}
+
+.professional-payslip .payslip-period-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    gap: 12px;
+}
+
+.professional-payslip .payslip-period-row p {
+    margin: 0;
+    text-align: left;
+    font-size: 12px;
+}
+
+.professional-payslip .payslip-period-row .payslip-status {
+    margin: 0;
+    padding: 3px 11px;
+    border-radius: 3px;
+    white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+    .professional-payslip .payslip-company {
+        min-height: 94px;
+    }
+
+    .professional-payslip .payslip-company-logo {
+        width: 68px;
+        height: 68px;
+    }
+
+    .professional-payslip .payslip-company-text h2 {
+        font-size: 16px;
+    }
+
+    .professional-payslip .payslip-company-text p {
+        font-size: 8px;
+        white-space: normal;
+    }
+
+    .professional-payslip .payslip-company-text .payslip-disclaimer {
+        font-size: 8px;
+    }
+}
+
+@media print {
+    .professional-payslip .payslip-company {
+        min-height: 108px;
+        padding-bottom: 5px !important;
+    }
+
+    .professional-payslip .payslip-company-logo {
+        width: 100px;
+        height: 100px;
+    }
+
+    .professional-payslip .payslip-heading {
+        padding-top: 5px !important;
+        padding-bottom: 3px !important;
+    }
+}
+
+
+
+/* PAYSLIP HEADER / PERIOD / DISCLAIMER REFINEMENT - NOV 2026 */
+.professional-payslip .payslip-company {
+    min-height: 104px;
+    padding: 2px 0 3px;
+}
+
+.professional-payslip .payslip-heading {
+    gap: 2px;
+    padding: 1px 0 2px;
+}
+
+.professional-payslip .payslip-heading h3 {
+    margin: 0;
+}
+
+.professional-payslip .payslip-period-row {
+    margin-top: 1px;
+    gap: 10px;
+}
+
+.professional-payslip .payslip-period-row p,
+.professional-payslip .payslip-period-row .payslip-status {
+    display: inline-block;
+    box-sizing: border-box;
+    padding: 5px 10px;
+    border: 1px solid #174a7e;
+    border-radius: 2px;
+    background: #fff;
+    color: #174a7e;
+    line-height: 1.2;
+}
+
+.professional-payslip .payslip-period-row .payslip-status {
+    font-weight: 700;
+    text-align: center;
+    min-width: 76px;
+}
+
+.professional-payslip .payslip-footer .payslip-disclaimer {
+    margin: 0 0 12px;
+    color: #536174;
+    font-size: 9px;
+    line-height: 1.2;
+    text-align: center;
+}
+
+@media print {
+    .professional-payslip .payslip-company {
+        min-height: 100px;
+        padding-top: 1px !important;
+        padding-bottom: 2px !important;
+    }
+
+    .professional-payslip .payslip-heading {
+        gap: 1px;
+        padding-top: 0 !important;
+        padding-bottom: 2px !important;
+    }
+}
+
+@media (max-width: 600px) {
+    .professional-payslip .payslip-period-row p,
+    .professional-payslip .payslip-period-row .payslip-status {
+        padding: 4px 6px;
+        font-size: 10px;
+    }
+
+    .professional-payslip .payslip-footer .payslip-disclaimer {
+        font-size: 8px;
+    }
+}
+
+
+
+/* PAYSLIP DIVIDER POSITION AND PAGE HEIGHT - NOV 2026 */
+.professional-payslip {
+    padding-top: 34px;
+    padding-bottom: 34px;
+}
+
+.professional-payslip .payslip-company {
+    min-height: 99px;
+    padding-bottom: 0;
+}
+
+.professional-payslip .payslip-company-logo {
+    width: 100px;
+    height: 100px;
+}
+
+.professional-payslip .payslip-heading {
+    padding-top: 5px;
+    padding-bottom: 3px;
+}
+
+.professional-payslip .payslip-heading h3 {
+    margin-top: 0;
+}
+
+@media print {
+    .professional-payslip {
+        padding-top: 34px !important;
+        padding-bottom: 34px !important;
+    }
+
+    .professional-payslip .payslip-company {
+        min-height: 99px !important;
+        padding-bottom: 0 !important;
+    }
+
+    .professional-payslip .payslip-company-logo {
+        width: 100px !important;
+        height: 100px !important;
+    }
+
+    .professional-payslip .payslip-heading {
+        padding-top: 5px !important;
+        padding-bottom: 3px !important;
+    }
+}
+
+
+
+/* MOVE PAYSLIP HEADER DIVIDER FURTHER UP */
+.professional-payslip .payslip-company {
+    min-height: 90px !important;
+}
+
+@media print {
+    .professional-payslip .payslip-company {
+        min-height: 90px !important;
+    }
+}
+
+
+/* MOVE PAYSLIP DIVIDER UP - 80PX */
+.professional-payslip .payslip-company {
+    min-height: 80px !important;
+}
+
+@media print {
+    .professional-payslip .payslip-company {
+        min-height: 80px !important;
     }
 }

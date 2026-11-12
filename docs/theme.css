@@ -586,9 +586,14 @@ html body #holidayCalendarPage .holiday-calendar-header {
 
 html body #paySlipPage .payslip-page-actions {
     display: flex !important;
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 0 !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: min(100%, 780px) !important;
+    max-width: 780px !important;
+    margin: 0 auto 14px !important;
+    padding: 0 !important;
+    gap: 12px !important;
 }
 
 /* FINAL: Compact and Uniform Back Buttons */
@@ -925,5 +930,48 @@ html body #listPage::before {
         background-size: clamp(300px, 88vw, 560px) auto !important;
         background-position: center 48% !important;
         opacity: 0.05 !important;
+    }
+}
+
+
+/* FINAL PAYSLIP BUTTON ALIGNMENT AND PRINT TOP POSITION */
+html body #paySlipPage .payslip-page-actions {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: min(100%, 780px) !important;
+    max-width: 780px !important;
+    margin: 0 auto 14px !important;
+    padding: 0 !important;
+    gap: 12px !important;
+    box-sizing: border-box !important;
+}
+
+html body #paySlipPage .payslip-page-actions button {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    max-height: 40px !important;
+    margin: 0 !important;
+    align-self: center !important;
+    flex: 0 0 auto !important;
+    box-sizing: border-box !important;
+}
+
+html body #paySlipPage #paySlipPagePrintButton {
+    margin-left: auto !important;
+}
+
+@media print {
+    @page {
+        margin-top: 0mm;
+    }
+
+    html body #paySlipPage {
+        padding-top: 0 !important;
+        margin-top: 0 !important;
     }
 }

@@ -38,6 +38,12 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Android-only: white status bar with dark system icons
+        window.statusBarColor = android.graphics.Color.WHITE
+        window.decorView.systemUiVisibility =
+            window.decorView.systemUiVisibility or
+            android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+
         val webView = WebView(this)
 
         webView.settings.apply {
@@ -53,7 +59,42 @@ class MainActivity : AppCompatActivity() {
             mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
         }
 
-        webView.webViewClient = WebViewClient()
+        webView.webViewClient = object : WebViewClient() {
+            override fun onPageFinished(view: WebView?, url: String?) {
+                super.onPageFinished(view, url)
+
+                view?.evaluateJavascript(
+                    """
+                    (function() {
+                        var style = document.getElementById('dekkoAndroidDepartmentSpacing');
+                        if (!style) {
+                            style = document.createElement('style');
+                            style.id = 'dekkoAndroidDepartmentSpacing';
+                            document.head.appendChild(style);
+                        }
+                        style.textContent = `
+                            html body #organogramPage,
+                            html body #holidayCalendarPage,
+                            html body #allEmployeesPage,
+                            html body #departmentPage,
+                            html body #favoritePage,
+                            html body #birthdayPage,
+                            html body #detailsPage,
+                            html body #loginPage,
+                            html body #resetPasswordPage,
+                            html body #adminPage,
+                            html body #salaryPage,
+                            html body #paySlipPage {
+                                padding-top: 0 !important;
+                                margin-top: 0 !important;
+                            }
+                        `;
+                    })();
+                    """.trimIndent(),
+                    null
+                )
+            }
+        }
         webView.webChromeClient = WebChromeClient()
         webView.addJavascriptInterface(PaySlipPdfBridge(this, webView), "AndroidPaySlipPdf")
         WebView.setWebContentsDebuggingEnabled(true)
@@ -66,6 +107,37 @@ class MainActivity : AppCompatActivity() {
                 webView.evaluateJavascript(
                     """
                     (function() {
+                        const createEmployeeMenuPage = document.getElementById('createEmployeeMenuPage');
+                        if (createEmployeeMenuPage && createEmployeeMenuPage.style.display !== 'none') {
+                            const back = document.getElementById('createEmployeeMenuBackButton');
+                            if (back) {
+                                back.click();
+                                return true;
+                            }
+                        }
+
+                        const employeeFeaturePageIds = [
+                            'addHeadOfficeEmployeePage',
+                            'addFactoryEmployeePage',
+                            'employeePhotoUploadPage',
+                            'editExistingEmployeePage',
+                            'employeePabxListPage'
+                        ];
+
+                        for (const pageId of employeeFeaturePageIds) {
+                            const page = document.getElementById(pageId);
+                            if (page && page.style.display !== 'none') {
+                                const back = page.querySelector('[data-create-employee-back]') ||
+                                    (pageId === 'employeePabxListPage'
+                                        ? document.getElementById('employeePabxListBackButton')
+                                        : null);
+                                if (back) {
+                                    back.click();
+                                    return true;
+                                }
+                            }
+                        }
+
                         if (typeof window.handleAndroidBack === 'function') {
                             return window.handleAndroidBack();
                         }

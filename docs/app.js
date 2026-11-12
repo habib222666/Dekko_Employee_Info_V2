@@ -4468,25 +4468,21 @@ if (slipEmployee) {
                     slipResult.innerHTML = `
                         <article class="professional-payslip">
                             <header class="payslip-company">
-                                <img src="assets/logo/Dekko%20logo.jpg" alt="Dekko Logo" class="payslip-company-logo">
-                                <div class="payslip-company-text">
-                                    <h2>Dekko Accessories Ltd.</h2>
-
-
-                                    <p>Head Office: Shimanto Shambhar (8th Floor),</p>
-                                    <p>Road No. 2, Dhanmondi, Dhaka-1205</p>
-                                    <p>Phone: +880 9666774400</p>
-                                    <p>www.dekkolegacy.com</p>
-                                </div>
-                            </header>
-
-                            <div class="payslip-heading">
-                                <h3>Pay Slip</h3>
-                                <p>For the Month of ${safe(monthName)}</p>
-                                <span class="payslip-status">${safe(record.payment_method || "BANK")}</span>
-                            </div>
-
-                            <section class="payslip-section payslip-employee-section">
+    <img src="assets/logo/Dekko%20logo.jpg" alt="Dekko Logo" class="payslip-company-logo">
+    <div class="payslip-company-text">
+        <h2>Dekko Accessories Ltd.</h2>
+        <p class="payslip-address">Head Office: Shimanto Shambhar (8th Floor), Road No. 2, Dhanmondi, Dhaka-1205</p>
+        <p class="payslip-contact">Phone: +880 9666774400 <span>|</span> www.dekkolegacy.com</p>
+    </div>
+</header>
+<div class="payslip-heading">
+    <h3>PAY SLIP</h3>
+    <div class="payslip-period-row">
+        <p>For the Month of ${safe(monthName)}</p>
+        <span class="payslip-status">${safe(record.payment_method || "BANK")}</span>
+    </div>
+</div>
+<section class="payslip-section payslip-employee-section">
                                 <h4><span aria-hidden="true">👤</span> Employee Information</h4>
                                 <div class="payslip-info-tables-grid">
                                     ${infoTable([
@@ -4561,13 +4557,13 @@ if (slipEmployee) {
                             </section>
 
                             <footer class="payslip-footer">
-                                <p>This is a system-generated payslip. For any query, please contact the HR Department.</p>
-                                <div class="payslip-signature">
-                                    <div class="payslip-signature-line"></div>
-                                    <strong>Authorized Signature</strong>
-                                    <span>HR Department</span>
-                                </div>
-                            </footer>
+    <p class="payslip-disclaimer">This is a system-generated payslip. For any query, please contact the HR Department.</p>
+    <div class="payslip-signature">
+        <div class="payslip-signature-line"></div>
+        <strong>Authorized Signature</strong>
+        <span>HR Department</span>
+    </div>
+</footer>
                         </article>
                     `;
 
@@ -4606,20 +4602,26 @@ if (slipEmployee) {
                 const salaryPage = $("salaryPage");
                 if (page) page.style.display = "none";
                 if (salaryPage) salaryPage.style.display = "block";
+                window.scrollTo({ top: 0, behavior: "smooth" });
             });
         }
 
         const paySlipPagePrintButton = $("paySlipPagePrintButton");
         if (paySlipPagePrintButton) {
             paySlipPagePrintButton.addEventListener("click", function () {
-                if (window.AndroidPaySlipPdf &&
-                    typeof window.AndroidPaySlipPdf.downloadPaySlipPdf === "function") {
-                    window.AndroidPaySlipPdf.downloadPaySlipPdf();
-                } else {
-                    window.print();
-                }
+
+                const actions = $("paySlipPage")?.querySelector(".payslip-page-actions");
+                const previousDisplay = actions ? actions.style.display : "";
+                if (actions) actions.style.display = "none";
+
+                const restoreActions = function () {
+                    if (actions) actions.style.display = previousDisplay;
+                };
+                window.addEventListener("afterprint", restoreActions, { once: true });
+                window.print();
             });
         }
+
     });
 })();
 
