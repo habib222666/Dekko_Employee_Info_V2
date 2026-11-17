@@ -2147,20 +2147,20 @@ async function restoreSavedAdminSession() {
         window.scrollTo(0, 0);
     });
 
-    function openEmailSignatureDivision(division) {
+    function openEmailSignatureDivision(file) {
         signatureChooser.style.display = "none";
         signatureFrameWrap.style.display = "block";
         signatureBackButton.textContent = "← Back to Divisions";
-        signatureFrame.src = "email-signature.html?division=" + encodeURIComponent(division);
+        signatureFrame.src = file;
         window.scrollTo(0, 0);
     }
 
     document.getElementById("emailSignatureHeadOfficeButton")?.addEventListener("click", () => {
-        openEmailSignatureDivision("headoffice");
+        openEmailSignatureDivision("email-signature-headoffice.html");
     });
 
     document.getElementById("emailSignatureFactoryButton")?.addEventListener("click", () => {
-        openEmailSignatureDivision("factory");
+        openEmailSignatureDivision("email-signature-factory.html");
     });
 
     signatureBackButton?.addEventListener("click", () => {

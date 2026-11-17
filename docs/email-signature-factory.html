@@ -239,12 +239,8 @@ loadDefaults();
 // This is the same publishable browser key used by the existing project.
 const DEKKO_SUPABASE_URL = 'https://' + 'jnkpswbieqoprvvkhxvu' + '.supabase.co';
 const DEKKO_SUPABASE_KEY = 'sb_publishable_q0cxNXSQ7iFRmCOqonhWOw_Xnt0FEnP';
-const SIGNATURE_DIVISION = new URLSearchParams(window.location.search).get('division') === 'factory'
-  ? 'factory'
-  : 'headoffice';
-const SIGNATURE_EMPLOYEE_VIEW = SIGNATURE_DIVISION === 'factory'
-  ? 'employee_directory_factory_public'
-  : 'employee_directory_public';
+const SIGNATURE_DIVISION = 'factory';
+const SIGNATURE_EMPLOYEE_VIEW = 'employee_directory_factory_public';
 const SIGNATURE_ADMIN_UID = 'f0fcbd2e-003e-4fc2-bc2e-51b13c5f0814';
 
 async function verifyDekkoSignatureAdmin() {
