@@ -5592,7 +5592,7 @@ if (bloodGroupFilter) {
             image.className = "organogram-photo";
             image.alt = "Chairman photo";
             image.loading = "lazy";
-            image.src = String.fromCharCode(104,116,116,112,115,58,47,47)+"res.cloudinary.com/lnhd3otv/image/upload/v1793243174/Photo-Chairman_Sir2.jpg";
+            image.src = "assets/chairman.jpg";
             image.onerror = function () {
                 const placeholder = document.createElement("div");
                 placeholder.className = "organogram-photo-placeholder";

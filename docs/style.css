@@ -7604,3 +7604,14 @@ html body button#adminButton {
 #editExistingEmployeeContent {
     margin-top: 0 !important;
 }
+
+
+/* ORGANOGRAM FINAL CENTER ALIGNMENT */
+#organogramPage #organogramTree.organogram-tree {
+    align-items: center !important;
+}
+
+#organogramPage #organogramTree > .organogram-branch {
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
