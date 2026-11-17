@@ -2218,9 +2218,11 @@ async function restoreSavedAdminSession() {
             });
 
             const pastelColors = [
-                "#DCEBFA", "#FCE4EC", "#E2F0D9", "#FFF0D5",
-                "#EDE3FA", "#D9F2F0", "#F9E2D2", "#E5EAFB",
-                "#F5E8C8", "#E1F0E8", "#F4DDEB", "#E4E7F2"
+                "#F3F8FF", "#FFF3F5", "#F2F9F1", "#FFF9EF", "#F6F1FF",
+                "#EFFAF8", "#FFF4EC", "#F1F4FF", "#FFFCED", "#EFF8F2",
+                "#FFF0F7", "#F3F5F9", "#EAF6FF", "#FCEFF0", "#ECF8F0",
+                "#FFF6E5", "#F1EDFF", "#E8F7F5", "#FCEFE5", "#EDF2FF",
+                "#F8EEFA", "#EAF6EF", "#FFF0E6", "#EEF5EA", "#F4F0FF"
             ];
 
             const departmentNames = [...new Set(employees.map(departmentKey))]
@@ -2229,7 +2231,8 @@ async function restoreSavedAdminSession() {
             const departmentColorMap = new Map(
                 departmentNames.map((name, index) => [
                     name,
-                    pastelColors[index % pastelColors.length]
+                    pastelColors[index] ||
+                        `hsl(${(index * 137.508) % 360} 65% 96%)`
                 ])
             );
 
@@ -2255,6 +2258,9 @@ async function restoreSavedAdminSession() {
                 const row = document.createElement("tr");
 
                 const currentDepartment = departmentKey(employee);
+                const departmentColor = departmentColorMap.get(currentDepartment);
+                row.style.backgroundColor = departmentColor;
+
                 const previousDepartment = index > 0
                     ? departmentKey(employees[index - 1])
                     : null;
@@ -2264,6 +2270,7 @@ async function restoreSavedAdminSession() {
 
                 const slCell = document.createElement("td");
                 slCell.textContent = String(departmentSerial);
+                slCell.style.backgroundColor = departmentColor;
                 row.appendChild(slCell);
 
                 if (isNewDepartment) {
@@ -2278,8 +2285,7 @@ async function restoreSavedAdminSession() {
                         : departmentCount;
 
                     departmentCell.className = "pabx-department-cell";
-                    departmentCell.style.backgroundColor =
-                        departmentColorMap.get(currentDepartment);
+                    departmentCell.style.backgroundColor = departmentColor;
                     departmentCell.style.color = "#263445";
                     departmentCell.style.fontWeight = "700";
 
@@ -2293,6 +2299,7 @@ async function restoreSavedAdminSession() {
                 ].forEach(value => {
                     const td = document.createElement("td");
                     td.textContent = String(value);
+                    td.style.backgroundColor = departmentColor;
                     row.appendChild(td);
                 });
 
