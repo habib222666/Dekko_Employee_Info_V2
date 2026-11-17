@@ -655,6 +655,16 @@ $('download').onclick=async()=>{
    octx.imageSmoothingQuality='high';
    octx.drawImage(sig,0,0,outW,outH);
    const png=addPngDpi(out.toDataURL('image/png'),32000);
+
+   // Use native Android storage when running inside the Dekko Android app.
+   if (window.AndroidSignaturePng &&
+       typeof window.AndroidSignaturePng.saveSignaturePng === 'function') {
+     const saved = window.AndroidSignaturePng.saveSignaturePng(png.split(',')[1]);
+     if (!saved) alert('PNG could not be saved. Please try again.');
+     return;
+   }
+
+   // Keep normal browser download for desktop and mobile browsers.
    const a=document.createElement('a');
    a.download='Email_Signature.png';
    a.href=png;
