@@ -7641,7 +7641,7 @@ html body button#adminButton {
 
 /* EMPLOYEE PABX PAGE: OUTER SPACING */
 #employeePabxListPage {
-    margin: 12px;
+    margin: 20px auto;
 }
 
 /* EMPLOYEE PABX TABLE: BLUE BORDERS */
