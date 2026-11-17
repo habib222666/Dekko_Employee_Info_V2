@@ -2120,6 +2120,20 @@ async function restoreSavedAdminSession() {
     const signatureFrameWrap = document.getElementById("emailSignatureFrameWrap");
     const signatureFrame = document.getElementById("emailSignatureFrame");
 
+    // Recheck Admin access after the Signature Editor iframe finishes loading.
+    signatureFrame.addEventListener("load", () => {
+        try {
+            const frameWindow = signatureFrame.contentWindow;
+            if (frameWindow &&
+                typeof frameWindow.refreshSignatureAdminAccess === "function") {
+                frameWindow.refreshSignatureAdminAccess();
+            }
+        } catch (error) {
+            console.warn("Signature Editor access refresh failed:", error);
+        }
+    });
+
+
     document.getElementById("emailSignatureDashboardButton")?.addEventListener("click", () => {
         hideFeaturePages();
         adminPage.style.display = "none";
