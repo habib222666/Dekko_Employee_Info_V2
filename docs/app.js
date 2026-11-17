@@ -5680,7 +5680,7 @@ function renderTree() {
                         const department = String(child.department || "").trim();
                         const headNo = String(child.employee_no || "").trim();
                         const staff = directory.filter(employee =>
-                            String(employee.department || "").trim().toLowerCase() === department.toLowerCase() &&
+                            String(employee.group_department || employee.department || "").trim().toLowerCase() === department.toLowerCase() &&
                             employeeNumber(employee) !== headNo
                         );
 
