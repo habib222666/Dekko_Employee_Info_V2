@@ -7624,3 +7624,36 @@ html body button#adminButton {
     font-weight: 700;
     border-right: 2px solid #cbd5e1;
 }
+
+/* DEPARTMENT CARDS: NARROWER WIDTH + MORE GAP */
+#departmentCards {
+    width: 94%;
+    margin-left: auto;
+    margin-right: auto;
+    column-gap: 16px;
+    row-gap: 16px;
+}
+
+#departmentCards .department-card {
+    width: 100%;
+    min-width: 0;
+}
+
+/* EMPLOYEE PABX PAGE: OUTER SPACING */
+#employeePabxListPage {
+    margin: 12px;
+}
+
+/* EMPLOYEE PABX TABLE: BLUE BORDERS */
+.employee-pabx-table {
+    border: 1px solid #2563EB;
+}
+
+.employee-pabx-table th,
+.employee-pabx-table td {
+    border: 1px solid #2563EB;
+}
+
+.employee-pabx-table .pabx-department-cell {
+    border-right: 2px solid #2563EB;
+}
