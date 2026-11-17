@@ -503,7 +503,7 @@ function showDepartmentCards() {
     employees.forEach((employee) => {
 
         const department =
-            (employee.department || "Other").trim();
+            String(employee.group_department || employee.department || "Other").trim();
 
         if (!departments[department]) {
             departments[department] = [];
@@ -5428,7 +5428,7 @@ if (bloodGroupFilter) {
 
     async function loadDirectory() {
         const response = await fetch(
-            employeeEndpoint + "?select=employee_no,employee_name,designation,department&order=employee_name.asc",
+            employeeEndpoint + "?select=employee_no,employee_name,designation,department,group_department&order=employee_name.asc",
             { headers: apiHeaders(false) }
         );
         if (!response.ok) {
@@ -5495,7 +5495,7 @@ if (bloodGroupFilter) {
     function fillDepartmentOptions(selected = "") {
         if (!departmentInput) return;
         const departments = [...new Set(
-            directory.map(employee => String(employee.department || "").trim())
+            directory.map(employee => String(employee.group_department || employee.department || "").trim())
                 .filter(Boolean)
         )].sort((a, b) => a.localeCompare(b));
 
@@ -5840,7 +5840,7 @@ function renderTree() {
         nameInput.value = displayName(employee);
         designationInput.value = employee.designation || "";
         if (typeInput.value === "department_head") {
-            departmentInput.value = String(employee.department || "").trim();
+            departmentInput.value = String(employee.group_department || employee.department || "").trim();
         }
     });
 
