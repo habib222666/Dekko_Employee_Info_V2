@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LIVE TEST - Employee App</title>
-<link rel="stylesheet" href="style.css?v=20261117emailsignature2">
+<link rel="stylesheet" href="style.css?v=20261117emailsignature3">
 <link rel="stylesheet" href="salary-layout.css?v=20261112payslipscreenmatch1">
 <link rel="stylesheet" href="theme.css?v=20261108darkcalendar3">
 </head>
@@ -375,15 +375,25 @@
     <button id="emailSignatureBackButton" type="button">← Back to Home</button>
     <h1>✉️ E-mail Signature</h1>
     <div id="emailSignatureDivisionChooser" class="email-signature-division-grid">
+        <button id="emailSignatureOldHeadOfficeButton" class="email-signature-division-card" type="button">
+            <span class="email-signature-division-icon">🏢</span>
+            <strong>Old Logo – Head Office</strong>
+            <small>Previous Head Office Signature Editor</small>
+        </button>
+        <button id="emailSignatureOldFactoryButton" class="email-signature-division-card" type="button">
+            <span class="email-signature-division-icon">🏭</span>
+            <strong>Old Logo – Factory</strong>
+            <small>Previous Factory Signature Editor</small>
+        </button>
         <button id="emailSignatureHeadOfficeButton" class="email-signature-division-card" type="button">
             <span class="email-signature-division-icon">🏢</span>
-            <strong>Head Office</strong>
-            <small>Corporate Office Employees</small>
+            <strong>New Logo – Head Office</strong>
+            <small>Updated Head Office Signature Editor</small>
         </button>
         <button id="emailSignatureFactoryButton" class="email-signature-division-card" type="button">
             <span class="email-signature-division-icon">🏭</span>
-            <strong>Factory</strong>
-            <small>Factory &amp; Production Employees</small>
+            <strong>New Logo – Factory</strong>
+            <small>Updated Factory Signature Editor</small>
         </button>
     </div>
     <div id="emailSignatureFrameWrap" style="display:none;">
@@ -828,7 +838,7 @@ View Employee Details &amp; Edit
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script defer src="theme.js?v=20261101theme1"></script>
-<script defer src="app.js?v=20261117emailsignature1"></script>
+<script defer src="app.js?v=20261117emailsignature2"></script>
 
 
 <div id="salaryPage" style="display:none;">

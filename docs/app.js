@@ -2155,6 +2155,14 @@ async function restoreSavedAdminSession() {
         window.scrollTo(0, 0);
     }
 
+    document.getElementById("emailSignatureOldHeadOfficeButton")?.addEventListener("click", () => {
+        openEmailSignatureDivision("email-signature-headoffice-old-logo.html");
+    });
+
+    document.getElementById("emailSignatureOldFactoryButton")?.addEventListener("click", () => {
+        openEmailSignatureDivision("email-signature-factory-old-logo.html");
+    });
+
     document.getElementById("emailSignatureHeadOfficeButton")?.addEventListener("click", () => {
         openEmailSignatureDivision("email-signature-headoffice.html");
     });
