@@ -92,7 +92,7 @@ departmentBackButton.addEventListener("click", function() {
 
         departmentCards.style.display = "grid";
         departmentPage.style.display = "block";
-        departmentPageTitle.textContent = "🏢 All Departments";
+        departmentPageTitle.textContent = "🏢 All Departments (Head Office)";
 
     } else {
 
@@ -2732,7 +2732,7 @@ allDepartmentsButton.addEventListener(
 
         departmentPage.style.display = "block";
 
-        departmentPageTitle.textContent = "🏢 All Departments";
+        departmentPageTitle.textContent = "🏢 All Departments (Head Office)";
         departmentEmployeeList.innerHTML = "";
 
         showDepartmentCards();
