@@ -2119,6 +2119,7 @@ async function restoreSavedAdminSession() {
     const signatureChooser = document.getElementById("emailSignatureDivisionChooser");
     const signatureFrameWrap = document.getElementById("emailSignatureFrameWrap");
     const signatureFrame = document.getElementById("emailSignatureFrame");
+    const signatureBackButton = document.getElementById("emailSignatureBackButton");
 
     // Recheck Admin access after the Signature Editor iframe finishes loading.
     signatureFrame.addEventListener("load", () => {
@@ -2133,7 +2134,6 @@ async function restoreSavedAdminSession() {
         }
     });
 
-
     document.getElementById("emailSignatureDashboardButton")?.addEventListener("click", () => {
         hideFeaturePages();
         adminPage.style.display = "none";
@@ -2142,6 +2142,7 @@ async function restoreSavedAdminSession() {
         signatureChooser.style.display = "grid";
         signatureFrameWrap.style.display = "none";
         signatureFrame.src = "about:blank";
+        signatureBackButton.textContent = "← Back to Home";
         signaturePage.style.display = "block";
         window.scrollTo(0, 0);
     });
@@ -2149,6 +2150,7 @@ async function restoreSavedAdminSession() {
     function openEmailSignatureDivision(division) {
         signatureChooser.style.display = "none";
         signatureFrameWrap.style.display = "block";
+        signatureBackButton.textContent = "← Back to Divisions";
         signatureFrame.src = "email-signature.html?division=" + encodeURIComponent(division);
         window.scrollTo(0, 0);
     }
@@ -2161,17 +2163,18 @@ async function restoreSavedAdminSession() {
         openEmailSignatureDivision("factory");
     });
 
-    document.getElementById("emailSignatureDivisionBackButton")?.addEventListener("click", () => {
+    signatureBackButton?.addEventListener("click", () => {
         signatureFrame.src = "about:blank";
-        signatureFrameWrap.style.display = "none";
-        signatureChooser.style.display = "grid";
-        window.scrollTo(0, 0);
-    });
 
-    document.getElementById("emailSignatureBackButton")?.addEventListener("click", () => {
-        signatureFrame.src = "about:blank";
-        signaturePage.style.display = "none";
-        listPage.style.display = "block";
+        if (signatureFrameWrap.style.display !== "none") {
+            signatureFrameWrap.style.display = "none";
+            signatureChooser.style.display = "grid";
+            signatureBackButton.textContent = "← Back to Home";
+        } else {
+            signaturePage.style.display = "none";
+            listPage.style.display = "block";
+        }
+
         window.scrollTo(0, 0);
     });
 
