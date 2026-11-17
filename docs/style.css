@@ -7615,3 +7615,12 @@ html body button#adminButton {
     margin-left: auto !important;
     margin-right: auto !important;
 }
+
+
+/* EMPLOYEE PABX: DEPARTMENT GROUP COLORS */
+.employee-pabx-table .pabx-department-cell {
+    text-align: center;
+    vertical-align: middle;
+    font-weight: 700;
+    border-right: 2px solid #cbd5e1;
+}

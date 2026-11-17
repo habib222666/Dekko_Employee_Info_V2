@@ -2152,6 +2152,7 @@ async function restoreSavedAdminSession() {
     const factoryPabxButton = document.getElementById("factoryPabxButton");
 
     async function loadEmployeePabxList(source) {
+
         if (!pabxContent || !pabxStatus) return;
 
         const isFactory = source === "factory";
@@ -2159,14 +2160,22 @@ async function restoreSavedAdminSession() {
             ? "employee_directory_factory_public"
             : "employee_directory_public";
 
+        const departmentKey = employee =>
+            String(employee.group_department || employee.department || "Other").trim();
+
         headOfficePabxButton?.classList.toggle("active", !isFactory);
         factoryPabxButton?.classList.toggle("active", isFactory);
+
         pabxStatus.textContent = "Loading employees...";
         pabxContent.replaceChildren();
 
         try {
+            const fields = isFactory
+                ? "department,employee_name,designation,pabx_number"
+                : "department,group_department,employee_name,designation,pabx_number";
+
             const response = await fetch(
-                `${SUPABASE_URL}/rest/v1/${viewName}?select=department,employee_name,designation,pabx_number&order=department.asc,employee_name.asc`,
+                `${SUPABASE_URL}/rest/v1/${viewName}?select=${fields}&order=department.asc,employee_name.asc`,
                 {
                     headers: {
                         apikey: SUPABASE_KEY,
@@ -2181,13 +2190,9 @@ async function restoreSavedAdminSession() {
 
             const employees = await response.json();
 
-            // Same designation ranking as All Employees List.
             employees.sort((a, b) => {
-                const departmentA = String(a.department || "-").trim();
-                const departmentB = String(b.department || "-").trim();
-
-                const departmentCompare = departmentA.localeCompare(
-                    departmentB,
+                const departmentCompare = departmentKey(a).localeCompare(
+                    departmentKey(b),
                     undefined,
                     { sensitivity: "base" }
                 );
@@ -2212,6 +2217,22 @@ async function restoreSavedAdminSession() {
                 );
             });
 
+            const pastelColors = [
+                "#DCEBFA", "#FCE4EC", "#E2F0D9", "#FFF0D5",
+                "#EDE3FA", "#D9F2F0", "#F9E2D2", "#E5EAFB",
+                "#F5E8C8", "#E1F0E8", "#F4DDEB", "#E4E7F2"
+            ];
+
+            const departmentNames = [...new Set(employees.map(departmentKey))]
+                .sort((a, b) => a.localeCompare(b));
+
+            const departmentColorMap = new Map(
+                departmentNames.map((name, index) => [
+                    name,
+                    pastelColors[index % pastelColors.length]
+                ])
+            );
+
             const table = document.createElement("table");
             table.className = "employee-pabx-table";
 
@@ -2233,44 +2254,43 @@ async function restoreSavedAdminSession() {
             employees.forEach((employee, index) => {
                 const row = document.createElement("tr");
 
+                const currentDepartment = departmentKey(employee);
                 const previousDepartment = index > 0
-                    ? String(employees[index - 1].department || "-").trim()
+                    ? departmentKey(employees[index - 1])
                     : null;
 
-                const currentDepartment = String(employee.department || "-").trim();
-
                 const isNewDepartment = currentDepartment !== previousDepartment;
-
                 departmentSerial = isNewDepartment ? 1 : departmentSerial + 1;
 
-                const cells = [
-                    departmentSerial,
-                    employee.employee_name || "-",
-                    employee.designation || "-",
-                    employee.pabx_number || "-"
-                ];
-
                 const slCell = document.createElement("td");
-                slCell.textContent = String(cells[0]);
+                slCell.textContent = String(departmentSerial);
                 row.appendChild(slCell);
 
                 if (isNewDepartment) {
                     const departmentCount = employees
                         .slice(index)
-                        .findIndex(item =>
-                            String(item.department || "-").trim() !== currentDepartment
-                        );
+                        .findIndex(item => departmentKey(item) !== currentDepartment);
 
                     const departmentCell = document.createElement("td");
                     departmentCell.textContent = currentDepartment;
                     departmentCell.rowSpan = departmentCount === -1
                         ? employees.length - index
                         : departmentCount;
+
                     departmentCell.className = "pabx-department-cell";
+                    departmentCell.style.backgroundColor =
+                        departmentColorMap.get(currentDepartment);
+                    departmentCell.style.color = "#263445";
+                    departmentCell.style.fontWeight = "700";
+
                     row.appendChild(departmentCell);
                 }
 
-                cells.slice(1).forEach(value => {
+                [
+                    employee.employee_name || "-",
+                    employee.designation || "-",
+                    employee.pabx_number || "-"
+                ].forEach(value => {
                     const td = document.createElement("td");
                     td.textContent = String(value);
                     row.appendChild(td);
@@ -2285,11 +2305,11 @@ async function restoreSavedAdminSession() {
             pabxStatus.textContent = employees.length
                 ? `${isFactory ? "Factory" : "Head Office"}: ${employees.length} employees`
                 : "No employees found.";
+
         } catch (error) {
             pabxStatus.textContent = error.message;
         }
     }
-
 
     headOfficePabxButton?.addEventListener("click", () => loadEmployeePabxList("headoffice"));
     factoryPabxButton?.addEventListener("click", () => loadEmployeePabxList("factory"));
