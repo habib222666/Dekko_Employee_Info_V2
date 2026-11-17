@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LIVE TEST - Employee App</title>
-<link rel="stylesheet" href="style.css?v=20261117pabxcenter-headoffice1">
+<link rel="stylesheet" href="style.css?v=20261117emailsignature1">
 <link rel="stylesheet" href="salary-layout.css?v=20261112payslipscreenmatch1">
 <link rel="stylesheet" href="theme.css?v=20261108darkcalendar3">
 </head>
@@ -55,6 +55,14 @@
                 <span class="dashboard-kicker">DIRECTORY</span>
                 <span class="dashboard-title">Employee PABX List</span>
                 <span class="dashboard-subtitle">Head Office &amp; Factory Contacts</span>
+            </span>
+        </button>
+        <button id="emailSignatureDashboardButton" type="button">
+            <span class="dashboard-icon">✉️</span>
+            <span class="dashboard-label">
+                <span class="dashboard-kicker">COMMUNICATION</span>
+                <span class="dashboard-title">E-mail Signature</span>
+                <span class="dashboard-subtitle">Head Office &amp; Factory</span>
             </span>
         </button>
         <button id="createNewEmployeeButton" type="button"><span class="dashboard-icon">➕</span><span class="dashboard-label"><span class="dashboard-kicker">ADMIN ONLY</span><span class="dashboard-title">Create New Employee</span><span class="dashboard-subtitle">Add or Update Employee Records</span></span></button>
@@ -361,6 +369,27 @@
     <h1 id="departmentPageTitle">🏢 All Departments</h1>
     <div id="departmentCards"></div>
     <div id="departmentEmployeeList"></div>
+</div>
+
+<div id="emailSignaturePage" style="display:none;">
+    <button id="emailSignatureBackButton" type="button">← Back to Home</button>
+    <h1>✉️ E-mail Signature</h1>
+    <div id="emailSignatureDivisionChooser" class="email-signature-division-grid">
+        <button id="emailSignatureHeadOfficeButton" class="email-signature-division-card" type="button">
+            <span class="email-signature-division-icon">🏢</span>
+            <strong>Head Office</strong>
+            <small>Corporate Office Employees</small>
+        </button>
+        <button id="emailSignatureFactoryButton" class="email-signature-division-card" type="button">
+            <span class="email-signature-division-icon">🏭</span>
+            <strong>Factory</strong>
+            <small>Factory &amp; Production Employees</small>
+        </button>
+    </div>
+    <div id="emailSignatureFrameWrap" style="display:none;">
+        <button id="emailSignatureDivisionBackButton" type="button">← Back to Divisions</button>
+        <iframe id="emailSignatureFrame" title="Dekko E-mail Signature Editor"></iframe>
+    </div>
 </div>
 
 <div id="favoritePage" style="display:none;">
@@ -799,7 +828,7 @@ View Employee Details &amp; Edit
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script defer src="theme.js?v=20261101theme1"></script>
-<script defer src="app.js?v=20261117departmenttitle1"></script>
+<script defer src="app.js?v=20261117emailsignature1"></script>
 
 
 <div id="salaryPage" style="display:none;">

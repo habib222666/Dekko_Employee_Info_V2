@@ -179,6 +179,7 @@ let employees = [];
 ========================= */
 
 let accessToken = null;
+window.getDekkoSignatureAdminToken = () => accessToken;
 
 const hashParams = new URLSearchParams(
     window.location.hash.substring(1)
@@ -2093,7 +2094,8 @@ async function restoreSavedAdminSession() {
         "addFactoryEmployeePage",
         "employeePhotoUploadPage",
         "editExistingEmployeePage",
-        "employeePabxListPage"
+        "employeePabxListPage",
+        "emailSignaturePage"
     ];
 
     function hideFeaturePages() {
@@ -2111,6 +2113,53 @@ async function restoreSavedAdminSession() {
         listPage.style.display = "none";
         document.getElementById(id).style.display = "block";
     }
+
+    // Public E-mail Signature page; editing is separately verified in its iframe.
+    const signaturePage = document.getElementById("emailSignaturePage");
+    const signatureChooser = document.getElementById("emailSignatureDivisionChooser");
+    const signatureFrameWrap = document.getElementById("emailSignatureFrameWrap");
+    const signatureFrame = document.getElementById("emailSignatureFrame");
+
+    document.getElementById("emailSignatureDashboardButton")?.addEventListener("click", () => {
+        hideFeaturePages();
+        adminPage.style.display = "none";
+        document.getElementById("createEmployeeMenuPage").style.display = "none";
+        listPage.style.display = "none";
+        signatureChooser.style.display = "grid";
+        signatureFrameWrap.style.display = "none";
+        signatureFrame.src = "about:blank";
+        signaturePage.style.display = "block";
+        window.scrollTo(0, 0);
+    });
+
+    function openEmailSignatureDivision(division) {
+        signatureChooser.style.display = "none";
+        signatureFrameWrap.style.display = "block";
+        signatureFrame.src = "email-signature.html?division=" + encodeURIComponent(division);
+        window.scrollTo(0, 0);
+    }
+
+    document.getElementById("emailSignatureHeadOfficeButton")?.addEventListener("click", () => {
+        openEmailSignatureDivision("headoffice");
+    });
+
+    document.getElementById("emailSignatureFactoryButton")?.addEventListener("click", () => {
+        openEmailSignatureDivision("factory");
+    });
+
+    document.getElementById("emailSignatureDivisionBackButton")?.addEventListener("click", () => {
+        signatureFrame.src = "about:blank";
+        signatureFrameWrap.style.display = "none";
+        signatureChooser.style.display = "grid";
+        window.scrollTo(0, 0);
+    });
+
+    document.getElementById("emailSignatureBackButton")?.addEventListener("click", () => {
+        signatureFrame.src = "about:blank";
+        signaturePage.style.display = "none";
+        listPage.style.display = "block";
+        window.scrollTo(0, 0);
+    });
 
     const photoCard = document.querySelector("#adminPage > .admin-card");
     const editCard = document.getElementById("editExistingEmployeeCard");
