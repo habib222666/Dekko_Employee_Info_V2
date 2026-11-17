@@ -494,6 +494,25 @@ function getPhoto(employee) {
         >
     `;
 }
+const PABX_DEPARTMENT_PASTEL_COLORS = [
+    "#F3F8FF", "#FFF3F5", "#F2F9F1", "#FFF9EF", "#F6F1FF",
+    "#EFFAF8", "#FFF4EC", "#F1F4FF", "#FFFCED", "#EFF8F2",
+    "#FFF0F7", "#F3F5F9", "#EAF6FF", "#FCEFF0", "#ECF8F0",
+    "#FFF6E5", "#F1EDFF", "#E8F7F5", "#FCEFE5", "#EDF2FF",
+    "#F8EEFA", "#EAF6EF", "#FFF0E6", "#EEF5EA", "#F4F0FF"
+];
+
+function getDepartmentPastelColorMap(names) {
+    const sortedNames = [...new Set(names)].sort((a, b) =>
+        a.localeCompare(b)
+    );
+    return new Map(sortedNames.map((name, index) => [
+        name,
+        PABX_DEPARTMENT_PASTEL_COLORS[index] ||
+            `hsl(${(index * 137.508) % 360} 65% 96%)`
+    ]));
+}
+
 function showDepartmentCards() {
 
     departmentCards.innerHTML = "";
@@ -517,6 +536,9 @@ function showDepartmentCards() {
             a.localeCompare(b)
         );
 
+    const departmentColorMap =
+        getDepartmentPastelColorMap(departmentNames);
+
     const departmentKicker = document.querySelector(
         "#allDepartmentsButton .dashboard-kicker"
     );
@@ -531,9 +553,9 @@ function showDepartmentCards() {
             document.createElement("button");
 
         card.type = "button";
-        card.className =
-            "department-card department-color-" +
-            ((index % 30) + 1);
+        card.className = "department-card";
+        card.style.backgroundColor = departmentColorMap.get(department);
+        card.style.color = "#263445";
 
         card.innerHTML = `
             <span class="department-name">
@@ -2217,25 +2239,8 @@ async function restoreSavedAdminSession() {
                 );
             });
 
-            const pastelColors = [
-                "#F3F8FF", "#FFF3F5", "#F2F9F1", "#FFF9EF", "#F6F1FF",
-                "#EFFAF8", "#FFF4EC", "#F1F4FF", "#FFFCED", "#EFF8F2",
-                "#FFF0F7", "#F3F5F9", "#EAF6FF", "#FCEFF0", "#ECF8F0",
-                "#FFF6E5", "#F1EDFF", "#E8F7F5", "#FCEFE5", "#EDF2FF",
-                "#F8EEFA", "#EAF6EF", "#FFF0E6", "#EEF5EA", "#F4F0FF"
-            ];
-
-            const departmentNames = [...new Set(employees.map(departmentKey))]
-                .sort((a, b) => a.localeCompare(b));
-
-            const departmentColorMap = new Map(
-                departmentNames.map((name, index) => [
-                    name,
-                    pastelColors[index] ||
-                        `hsl(${(index * 137.508) % 360} 65% 96%)`
-                ])
-            );
-
+            const departmentColorMap =
+                getDepartmentPastelColorMap(employees.map(departmentKey));
             const table = document.createElement("table");
             table.className = "employee-pabx-table";
 
