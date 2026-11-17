@@ -509,7 +509,9 @@ sctx.drawImage(base,0,0);
 
  // Editable information.
  write(value('name'),518,195,530,35,'#292779','700');
- const role=[value('designation'),value('department')].filter(Boolean).join(', ');
+ const dept=value('department').trim();
+ const isManagement=/^manag(?:e)?ment$/i.test(dept);
+ const role=[value('designation'),isManagement?'':dept].filter(Boolean).join(', ');
  write(role,518,242,530,30,'#302d83');
 
  // Colored circular contact icons: Email / Mobile / Phone / Location.
