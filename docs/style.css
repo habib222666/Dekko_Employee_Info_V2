@@ -7712,3 +7712,43 @@ html body button#adminButton {
         min-height: 1450px;
     }
 }
+
+
+/* E-mail Signature page: align with the main 600px app layout */
+#emailSignaturePage {
+    display: block;
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 0 0 30px;
+    box-sizing: border-box;
+}
+
+#emailSignaturePage > h1 {
+    text-align: center;
+    margin: 8px 0 20px;
+}
+
+#emailSignatureBackButton,
+#emailSignatureDivisionBackButton {
+    display: block;
+    width: fit-content;
+    max-width: 100%;
+    margin: 0 0 16px;
+    box-sizing: border-box;
+}
+
+#emailSignatureDivisionChooser,
+#emailSignatureFrameWrap {
+    width: 100%;
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    box-sizing: border-box;
+}
+
+#emailSignatureFrame {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
