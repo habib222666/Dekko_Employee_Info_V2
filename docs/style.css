@@ -7818,3 +7818,36 @@ html body button#adminButton {
         gap: 5px !important;
     }
 }
+
+/* ORGANOGRAM: THREE EMPLOYEES PER ROW */
+#organogramPage #organogramTree .organogram-staff-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    column-gap: 8px !important;
+    row-gap: 8px !important;
+}
+
+#organogramPage #organogramTree .organogram-staff-grid > .organogram-person {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+}
+
+/* ORGANOGRAM: INCREASE STAFF CARD WIDTH */
+#organogramPage #organogramTree .organogram-staff {
+    width: 480px !important;
+    min-width: 480px !important;
+    max-width: 480px !important;
+    box-sizing: border-box !important;
+}
+
+/* ORGANOGRAM: RESTORE WIDER STAFF CONTAINER */
+#organogramPage #organogramTree .organogram-staff {
+    width: 620px !important;
+    min-width: 620px !important;
+    max-width: 620px !important;
+    box-sizing: border-box !important;
+}
