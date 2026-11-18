@@ -5610,15 +5610,17 @@ if (bloodGroupFilter) {
     }
 
     function fillDepartmentOptions(selected = "") {
-        if (!departmentInput) return;
+        const options = $("organogramDepartmentOptions");
+        if (!departmentInput || !options) return;
+
         const departments = [...new Set(
             directory.map(employee => String(employee.group_department || employee.department || "").trim())
                 .filter(Boolean)
         )].sort((a, b) => a.localeCompare(b));
 
-        departmentInput.replaceChildren(new Option("Choose department", ""));
+        options.replaceChildren();
         departments.forEach(department => {
-            departmentInput.add(new Option(department, department));
+            options.appendChild(new Option(department, department));
         });
         departmentInput.value = selected;
     }
@@ -5637,7 +5639,7 @@ if (bloodGroupFilter) {
         } else if (type === "chief_marketing_officer") {
             allowed = nodes.filter(node => node.node_type === "executive_director");
         } else if (type === "department_head") {
-            allowed = nodes.filter(node => node.node_type === "chief_marketing_officer");
+            allowed = nodes.filter(node => ["chairman", "executive_director", "chief_marketing_officer"].includes(node.node_type));
         }
 
         parentInput.replaceChildren(new Option(placeholder, ""));
@@ -5660,7 +5662,7 @@ if (bloodGroupFilter) {
                     : type === "chief_marketing_officer"
                         ? "Add an Executive Director position first"
                         : type === "department_head"
-                            ? "Add a Chief Marketing Officer position first"
+                            ? "Add a Chairman, Executive Director, or CMO position first"
                             : "No reporting position available";
         }
 

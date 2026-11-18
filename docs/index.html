@@ -199,9 +199,10 @@
 
                     <div id="organogramDepartmentField">
                         <label for="organogramDepartment">Department</label>
-                        <select id="organogramDepartment">
-                            <option value="">Choose department</option>
-                        </select>
+                        <input id="organogramDepartment" type="text"
+                            list="organogramDepartmentOptions" maxlength="150"
+                            placeholder="Choose or type department" autocomplete="off">
+                        <datalist id="organogramDepartmentOptions"></datalist>
                     </div>
 
                     <label for="organogramParent">Reports to</label>
