@@ -208,6 +208,7 @@ const DESIGNATION_RANK = new Map([
     ["Chief Marketing Officer (CMO)", 2],
     ["Head of Operation", 2],
     ["Head of Planning", 3],
+    ["Head of CS", 3],
     ["Head of Supply Chain Management", 3],
     ["Divisional Head", 3],
     ["Deputy General Manager (DGM)", 4],
@@ -251,6 +252,7 @@ const DESIGNATION_ALIASES = new Map([
     ["cmo", "Chief Marketing Officer (CMO)"],
     ["head of operation", "Head of Operation"],
     ["head of planning", "Head of Planning"],
+    ["head of cs", "Head of CS"],
     ["head of supply chain management", "Head of Supply Chain Management"],
     ["divisional head", "Divisional Head"],
     ["deputy general manager", "Deputy General Manager (DGM)"],
@@ -579,7 +581,16 @@ function showDepartmentCards() {
             departmentEmployeeList.innerHTML = "";
             departmentEmployeeList.style.display = "flex";
 
-            const selectedEmployees = departments[department];
+            const selectedEmployees = [...departments[department]].sort((a, b) => {
+                const rankA = DESIGNATION_RANK.get(normalizeDesignation(a.designation))
+                    ?? DESIGNATION_ORDER.length;
+                const rankB = DESIGNATION_RANK.get(normalizeDesignation(b.designation))
+                    ?? DESIGNATION_ORDER.length;
+                return rankA - rankB ||
+                    String(a.employee_name || "").localeCompare(
+                        String(b.employee_name || "")
+                    );
+            });
 
             selectedEmployees.forEach((employee) => {
                 const div = document.createElement("div");
@@ -589,6 +600,7 @@ function showDepartmentCards() {
                     <div class="employee-card-top">
                         ${getPhoto(employee)}
                         <div class="employee-card-info">
+                            <span>Serial No. ${DESIGNATION_RANK.get(normalizeDesignation(employee.designation)) ?? "-"}</span>
                             <h3>${employee.employee_name || "-"}</h3>
                             <p>${employee.designation || "-"}</p>
                             <span>${employee.employee_no || "-"}</span>
