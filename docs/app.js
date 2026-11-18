@@ -3507,6 +3507,232 @@ setupEmployeeForm({
 
 
 
+
+/* HEAD OFFICE LAYOUT - NAVIGATION AND PUBLIC VIEW */
+
+(function () {
+    "use strict";
+
+    const button = document.getElementById("headOfficeLayoutButton");
+    const page = document.getElementById("headOfficeLayoutPage");
+    const backButton = document.getElementById("headOfficeLayoutBackButton");
+    const floorCards = document.getElementById("headOfficeLayoutFloorCards");
+    const viewer = document.getElementById("headOfficeLayoutViewer");
+    const floorTitle = document.getElementById("headOfficeLayoutFloorTitle");
+    const status = document.getElementById("headOfficeLayoutStatus");
+    const preview = document.getElementById("headOfficeLayoutPreview");
+    const download = document.getElementById("headOfficeLayoutDownload");
+    const backToFloors = document.getElementById("headOfficeLayoutBackToFloors");
+    const adminPanel = document.getElementById("headOfficeLayoutAdminPanel");
+    const fileInput = document.getElementById("headOfficeLayoutFile");
+    const uploadButton = document.getElementById("headOfficeLayoutUploadButton");
+    const uploadStatus = document.getElementById("headOfficeLayoutUploadStatus");
+
+    const dashboard = document.getElementById("departmentSection");
+    const appTitle = document.getElementById("appTitle");
+    const bottomLogo = document.getElementById("homeBottomLogo");
+    const employeeList = document.getElementById("employeeList");
+    const adminButton = document.getElementById("adminButton");
+
+    if (!button || !page || !backButton || !floorCards || !viewer) return;
+
+    const bucket = "head-office-layouts";
+    let selectedFloor = null;
+
+    function showDashboard() {
+        page.style.display = "none";
+        if (dashboard) dashboard.style.display = "";
+        if (appTitle) appTitle.style.removeProperty("display");
+        if (bottomLogo) bottomLogo.style.display = "";
+        if (employeeList) employeeList.style.display = "";
+        if (adminButton) adminButton.style.removeProperty("display");
+        window.scrollTo(0, 0);
+    }
+
+    function showLayoutPage() {
+        if (dashboard) dashboard.style.display = "none";
+        if (appTitle) appTitle.style.setProperty("display", "none", "important");
+        if (bottomLogo) bottomLogo.style.display = "none";
+        if (employeeList) employeeList.style.display = "none";
+        if (adminButton) adminButton.style.setProperty("display", "none", "important");
+
+        page.style.display = "block";
+        floorCards.style.display = "grid";
+        viewer.style.display = "none";
+        selectedFloor = null;
+        window.scrollTo(0, 0);
+    }
+
+    function extensionForType(type) {
+        if (type === "image/png") return ".png";
+        if (type === "image/jpeg") return ".jpg";
+        if (type === "application/pdf") return ".pdf";
+        return "";
+    }
+
+    async function openFloor(floor) {
+        if (!["8th-floor", "6th-floor"].includes(floor)) return;
+
+        selectedFloor = floor;
+        floorCards.style.display = "none";
+        viewer.style.display = "block";
+        floorTitle.textContent = floor === "8th-floor" ? "8th Floor Layout" : "6th Floor Layout";
+        status.textContent = "Loading layout...";
+        preview.replaceChildren();
+        download.style.display = "none";
+        download.removeAttribute("href");
+
+        const isAdmin = await verifyEmployeeAdminAccess();
+        if (adminPanel) adminPanel.style.display = isAdmin ? "block" : "none";
+        if (uploadStatus) uploadStatus.textContent = "";
+
+        const objectPath = floor + "-layout";
+        const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${objectPath}`;
+
+        try {
+            const response = await fetch(publicUrl, { method: "HEAD" });
+
+            if (!response.ok) {
+                if (response.status === 404) {
+                    status.textContent = "এই Floor-এর Layout এখনো Upload করা হয়নি।";
+                } else {
+                    status.textContent = "Layout পাওয়া যায়নি। পরে আবার চেষ্টা করুন।";
+                }
+                return;
+            }
+
+            const contentType = (response.headers.get("content-type") || "")
+                .split(";")[0].trim().toLowerCase();
+
+            const previewUrl = publicUrl + "?v=" + Date.now();
+            const extension = extensionForType(contentType);
+            const fileName = floor + "-layout" + extension;
+
+            if (contentType === "image/png" || contentType === "image/jpeg") {
+                const img = document.createElement("img");
+                img.src = previewUrl;
+                img.alt = floorTitle.textContent;
+                preview.appendChild(img);
+            } else if (contentType === "application/pdf") {
+                const frame = document.createElement("iframe");
+                frame.src = previewUrl;
+                frame.title = floorTitle.textContent;
+                frame.loading = "lazy";
+                preview.appendChild(frame);
+            } else {
+                status.textContent = "এই ফাইলের Format সমর্থিত নয়। PNG, JPG অথবা PDF প্রয়োজন।";
+                return;
+            }
+
+            status.textContent = "Layout প্রস্তুত।";
+            download.href = publicUrl + "?download=" + encodeURIComponent(fileName);
+            download.download = fileName;
+            download.style.display = "inline-block";
+
+        } catch (error) {
+            console.error("Head Office Layout loading failed:", error);
+            status.textContent = "Layout লোড করা যায়নি। Internet Connection পরীক্ষা করুন।";
+        }
+
+        window.scrollTo(0, 0);
+    }
+
+    async function uploadSelectedLayout() {
+        if (!selectedFloor || !fileInput || !uploadButton || !uploadStatus) return;
+
+        const file = fileInput.files && fileInput.files[0];
+
+        if (!file) {
+            uploadStatus.textContent = "প্রথমে একটি PNG, JPG অথবা PDF ফাইল নির্বাচন করুন।";
+            return;
+        }
+
+        const allowedTypes = ["image/png", "image/jpeg", "application/pdf"];
+
+        if (!allowedTypes.includes(file.type)) {
+            uploadStatus.textContent = "শুধু PNG, JPG অথবা PDF ফাইল Upload করা যাবে।";
+            return;
+        }
+
+        if (file.size > 15 * 1024 * 1024) {
+            uploadStatus.textContent = "ফাইলের সাইজ সর্বোচ্চ 15 MB হতে পারবে।";
+            return;
+        }
+
+        uploadButton.disabled = true;
+        uploadStatus.textContent = "Admin পরিচয় যাচাই হচ্ছে...";
+
+        try {
+            const isAdmin = await verifyEmployeeAdminAccess();
+
+            if (!isAdmin || !accessToken) {
+                uploadStatus.textContent = "Upload অনুমোদিত নয়। Admin Login করুন।";
+                return;
+            }
+
+            uploadStatus.textContent = "Layout Upload হচ্ছে...";
+
+            const objectPath = selectedFloor + "-layout";
+            const uploadUrl = `${SUPABASE_URL}/storage/v1/object/${bucket}/${objectPath}`;
+
+            const response = await fetch(uploadUrl, {
+                method: "POST",
+                headers: {
+                    apikey: SUPABASE_KEY,
+                    Authorization: "Bearer " + accessToken,
+                    "Content-Type": file.type,
+                    "x-upsert": "true"
+                },
+                body: file
+            });
+
+            if (!response.ok) {
+                const error = await response.json().catch(() => ({}));
+                console.error("Head Office Layout upload failed:", error);
+                uploadStatus.textContent =
+                    "Upload ব্যর্থ: " + (error.message || error.error || response.status);
+                return;
+            }
+
+            fileInput.value = "";
+            uploadStatus.textContent = "Upload সফল। Layout আপডেট হচ্ছে...";
+
+            await openFloor(selectedFloor);
+
+            if (uploadStatus) {
+                uploadStatus.textContent = "Layout সফলভাবে Upload / Replace হয়েছে।";
+            }
+
+        } catch (error) {
+            console.error("Head Office Layout upload error:", error);
+            uploadStatus.textContent = "Upload করা যায়নি। Internet Connection পরীক্ষা করুন।";
+        } finally {
+            uploadButton.disabled = false;
+        }
+    }
+
+    button.addEventListener("click", showLayoutPage);
+    backButton.addEventListener("click", showDashboard);
+    if (uploadButton) {
+        uploadButton.addEventListener("click", uploadSelectedLayout);
+    }
+
+
+    floorCards.addEventListener("click", function (event) {
+        const card = event.target.closest("[data-floor]");
+        if (card) openFloor(card.dataset.floor);
+    });
+
+    if (backToFloors) {
+        backToFloors.addEventListener("click", function () {
+            viewer.style.display = "none";
+            floorCards.style.display = "grid";
+            selectedFloor = null;
+            window.scrollTo(0, 0);
+        });
+    }
+})();
+
 /* ORGANOGRAM PAGE - BLANK WHITE PAGE */
 (function () {
     const button = document.getElementById("organogramButton");

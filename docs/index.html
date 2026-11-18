@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LIVE TEST - Employee App</title>
-<link rel="stylesheet" href="style.css?v=20261117emailsignature3">
+<link rel="stylesheet" href="style.css?v=20261118headofficelayout1">
 <link rel="stylesheet" href="salary-layout.css?v=20261112payslipscreenmatch1">
 <link rel="stylesheet" href="theme.css?v=20261108darkcalendar3">
 </head>
@@ -76,6 +76,15 @@
 
         <button id="createNewEmployeeButton" type="button"><span class="dashboard-icon">➕</span><span class="dashboard-label"><span class="dashboard-kicker">ADMIN ONLY</span><span class="dashboard-title">Create New Employee</span><span class="dashboard-subtitle">Add or Update Employee Records</span></span></button>
 
+        <button id="headOfficeLayoutButton" type="button">
+            <span class="dashboard-icon">🏢</span>
+            <span class="dashboard-label">
+                <span class="dashboard-kicker">HEAD OFFICE</span>
+                <span class="dashboard-title">Head Office Layout</span>
+                <span class="dashboard-subtitle">8th Floor &amp; 6th Floor Seating Plans</span>
+            </span>
+        </button>
+
         <button id="allFactoryEmployeesButton" type="button"><span class="dashboard-icon"><svg class="employee-group-icon" viewBox="0 0 48 36" aria-label="5 people" role="img">
 <circle cx="24" cy="7" r="5" fill="currentColor"/>
 <circle cx="15" cy="11" r="3.8" fill="currentColor"/>
@@ -98,6 +107,48 @@
         </div>
     </section>
 
+</div>
+
+<div id="headOfficeLayoutPage" class="head-office-layout-page" style="display:none;">
+    <header class="head-office-layout-header">
+        <button id="headOfficeLayoutBackButton" type="button">← Back</button>
+        <div>
+            <h1>Head Office Layout</h1>
+            <p>Dekko Accessories Ltd. · Head Office</p>
+        </div>
+    </header>
+
+    <main class="head-office-layout-content">
+        <div id="headOfficeLayoutFloorCards" class="head-office-floor-grid">
+            <button type="button" class="head-office-floor-card" data-floor="8th-floor">
+                <span class="head-office-floor-icon">🏢</span>
+                <span class="head-office-floor-title">8th Floor</span>
+                <span class="head-office-floor-subtitle">View Seating Layout</span>
+            </button>
+
+            <button type="button" class="head-office-floor-card" data-floor="6th-floor">
+                <span class="head-office-floor-icon">🏢</span>
+                <span class="head-office-floor-title">6th Floor</span>
+                <span class="head-office-floor-subtitle">View Seating Layout</span>
+            </button>
+        </div>
+
+        <section id="headOfficeLayoutViewer" class="head-office-layout-viewer" style="display:none;">
+            <h2 id="headOfficeLayoutFloorTitle">Floor Layout</h2>
+            <div id="headOfficeLayoutStatus" role="status" aria-live="polite">Loading layout...</div>
+            <div id="headOfficeLayoutPreview"></div>
+            <div class="head-office-layout-actions">
+                <a id="headOfficeLayoutDownload" href="#" download style="display:none;">Download Layout</a>
+                <button id="headOfficeLayoutBackToFloors" type="button">All Floors</button>
+            </div>
+            <div id="headOfficeLayoutAdminPanel" style="display:none;">
+                <h3>Admin: Upload / Replace Layout</h3>
+                <input id="headOfficeLayoutFile" type="file" accept=".png,.jpg,.jpeg,.pdf,image/png,image/jpeg,application/pdf">
+                <button id="headOfficeLayoutUploadButton" type="button">Upload / Replace</button>
+                <p id="headOfficeLayoutUploadStatus" role="status" aria-live="polite"></p>
+            </div>
+        </section>
+    </main>
 </div>
 
 <div id="organogramPage" class="organogram-page" style="display:none;">
@@ -856,7 +907,7 @@ View Employee Details &amp; Edit
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script defer src="theme.js?v=20261101theme1"></script>
-<script defer src="app.js?v=20261117emailsignature2"></script>
+<script defer src="app.js?v=20261118headofficelayout1"></script>
 
 
 <div id="salaryPage" style="display:none;">
