@@ -2,6 +2,12 @@ package com.employee.employee_dekko_v2
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.ContentValues
+import android.os.Build
+import android.os.Environment
+import android.provider.MediaStore
+import android.util.Base64
+import android.widget.Toast
 import android.print.PrintAttributes
 import android.print.PrintManager
 import android.webkit.JavascriptInterface
@@ -33,6 +39,68 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+
+    private class SignaturePngBridge(
+        private val activity: MainActivity
+    ) {
+        @JavascriptInterface
+        fun saveSignaturePng(base64Png: String): Boolean {
+            var savedUri: android.net.Uri? = null
+            return try {
+                val bytes = Base64.decode(base64Png, Base64.DEFAULT)
+                if (bytes.isEmpty()) throw IllegalArgumentException("Empty PNG")
+
+                val values = ContentValues().apply {
+                    put(MediaStore.MediaColumns.DISPLAY_NAME, "Email_Signature.png")
+                    put(MediaStore.MediaColumns.MIME_TYPE, "image/png")
+                    put(
+                        MediaStore.MediaColumns.RELATIVE_PATH,
+                        Environment.DIRECTORY_DOWNLOADS + "/Dekko Signatures"
+                    )
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        put(MediaStore.MediaColumns.IS_PENDING, 1)
+                    }
+                }
+
+                savedUri = activity.contentResolver.insert(
+                    MediaStore.Downloads.EXTERNAL_CONTENT_URI,
+                    values
+                ) ?: throw IllegalStateException("Could not create PNG file")
+
+                activity.contentResolver.openOutputStream(savedUri!!).use { stream ->
+                    if (stream == null) throw IllegalStateException("Could not open PNG file")
+                    stream.write(bytes)
+                    stream.flush()
+                }
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    val completed = ContentValues().apply {
+                        put(MediaStore.MediaColumns.IS_PENDING, 0)
+                    }
+                    activity.contentResolver.update(savedUri!!, completed, null, null)
+                }
+
+                activity.runOnUiThread {
+                    Toast.makeText(
+                        activity,
+                        "PNG saved in Downloads/Dekko Signatures",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+                true
+            } catch (error: Exception) {
+                savedUri?.let { activity.contentResolver.delete(it, null, null) }
+                activity.runOnUiThread {
+                    Toast.makeText(
+                        activity,
+                        "PNG save failed: ${error.message}",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+                false
+            }
+        }
+    }
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -97,6 +165,7 @@ class MainActivity : AppCompatActivity() {
         }
         webView.webChromeClient = WebChromeClient()
         webView.addJavascriptInterface(PaySlipPdfBridge(this, webView), "AndroidPaySlipPdf")
+        webView.addJavascriptInterface(SignaturePngBridge(this), "AndroidSignaturePng")
         WebView.setWebContentsDebuggingEnabled(true)
 
         webView.settings.userAgentString =
@@ -114,6 +183,26 @@ class MainActivity : AppCompatActivity() {
                                 back.click();
                                 return true;
                             }
+                        }
+
+                        // Handle Android Back inside the E-mail Signature section.
+                        const emailSignaturePage = document.getElementById('emailSignaturePage');
+                        if (emailSignaturePage && emailSignaturePage.style.display !== 'none') {
+                            const signatureFrameWrap = document.getElementById('emailSignatureFrameWrap');
+                            if (signatureFrameWrap && signatureFrameWrap.style.display !== 'none') {
+                                const backToDivisions = document.getElementById('emailSignatureDivisionBackButton');
+                                if (backToDivisions) {
+                                    backToDivisions.click();
+                                    return true;
+                                }
+                            } else {
+                                const backToHome = document.getElementById('emailSignatureBackButton');
+                                if (backToHome) {
+                                    backToHome.click();
+                                    return true;
+                                }
+                            }
+                            return true;
                         }
 
                         const employeeFeaturePageIds = [

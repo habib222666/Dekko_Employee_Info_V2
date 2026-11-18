@@ -2903,7 +2903,7 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
     padding: 24px;
     background: linear-gradient(145deg, #f5f8fc, #edf2f7) !important;
     color: #243247;
-    font-family: Arial, sans-serif;
+    font-family: "Trebuchet MS", sans-serif;
 }
 
 .organogram-header {
@@ -3240,7 +3240,7 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
     padding: 24px;
     background: linear-gradient(145deg, #f5f8fc, #edf2f7);
     color: #243247;
-    font-family: Arial, sans-serif;
+    font-family: "Trebuchet MS", sans-serif;
 }
 
 .holiday-calendar-header,
@@ -7735,7 +7735,7 @@ html body button#adminButton {
     max-width: 100%;
     margin: 0 0 20px;
     box-sizing: border-box;
-    background: #6b7280;
+    background: #2563eb;
 }
 
 #emailSignatureDivisionChooser,
@@ -7751,4 +7751,70 @@ html body button#adminButton {
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
+}
+
+
+/* FINAL HOMEPAGE WELCOME LAYOUT - 2026-11-18 */
+#dashboardTopActions {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 10px !important;
+    width: 100% !important;
+    margin: 0 0 14px !important;
+    box-sizing: border-box !important;
+}
+#dashboardTopActions > .welcome-badge {
+    display: inline-flex !important;
+    align-items: center !important;
+    margin-right: auto !important;
+    padding: 5px 12px !important;
+    border: 1px solid rgba(255,255,255,.35) !important;
+    border-radius: 20px !important;
+    background: rgba(255,255,255,.14) !important;
+    color: #ffffff !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    letter-spacing: .5px !important;
+    white-space: nowrap !important;
+}
+#dashboardTopActions > #adminButton {
+    margin: 0 !important;
+    flex: 0 0 auto !important;
+}
+#dashboardTopActions > #dekkoThemeToggle {
+    flex: 0 0 auto !important;
+}
+#appTitle {
+    min-height: 100px !important;
+    height: auto !important;
+    margin: 0 0 18px !important;
+    padding: 12px 24px !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    box-sizing: border-box !important;
+    gap: 6px !important;
+}
+#appTitle .welcome-title,
+#appTitle .welcome-subtitle {
+    width: 100% !important;
+    text-align: center !important;
+}
+@media (max-width: 600px) {
+    #dashboardTopActions {
+        gap: 7px !important;
+        margin-bottom: 10px !important;
+    }
+    #dashboardTopActions > .welcome-badge {
+        padding: 5px 9px !important;
+        font-size: 10px !important;
+    }
+    #appTitle {
+        min-height: 88px !important;
+        height: auto !important;
+        margin-bottom: 14px !important;
+        padding: 10px 12px !important;
+        gap: 5px !important;
+    }
 }

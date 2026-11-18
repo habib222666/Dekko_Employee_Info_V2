@@ -975,3 +975,10 @@ html body #paySlipPage #paySlipPagePrintButton {
         margin-top: 0 !important;
     }
 }
+
+/* FIX: Corporate HR Portal badge visibility in Light Mode */
+html:not([data-theme="dark"]) body #dashboardTopActions > .welcome-badge {
+    background: #17609a !important;
+    color: #ffffff !important;
+    border: 1px solid #17609a !important;
+}

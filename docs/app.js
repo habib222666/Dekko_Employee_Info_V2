@@ -600,7 +600,6 @@ function showDepartmentCards() {
                     <div class="employee-card-top">
                         ${getPhoto(employee)}
                         <div class="employee-card-info">
-                            <span>Serial No. ${DESIGNATION_RANK.get(normalizeDesignation(employee.designation)) ?? "-"}</span>
                             <h3>${employee.employee_name || "-"}</h3>
                             <p>${employee.designation || "-"}</p>
                             <span>${employee.employee_no || "-"}</span>
