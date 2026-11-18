@@ -3554,6 +3554,8 @@ setupEmployeeForm({
 
     function showDashboard() {
         navigationRequest++;
+        const corporateBadge = document.querySelector("#dashboardTopActions .welcome-badge");
+        if (corporateBadge) corporateBadge.style.removeProperty("display");
         page.style.display = "none";
         if (dashboard) dashboard.style.display = "";
         if (appTitle) appTitle.style.removeProperty("display");
@@ -3565,6 +3567,8 @@ setupEmployeeForm({
 
     function showLayoutPage() {
         navigationRequest++;
+        const corporateBadge = document.querySelector("#dashboardTopActions .welcome-badge");
+        if (corporateBadge) corporateBadge.style.setProperty("display", "none", "important");
         if (dashboard) dashboard.style.display = "none";
         if (appTitle) appTitle.style.setProperty("display", "none", "important");
         if (bottomLogo) bottomLogo.style.display = "none";
