@@ -6074,6 +6074,7 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
             "toolbar toolbar"
             "selector selector"
             "status status"
+            "zoom zoom"
             "tree admin" !important;
         align-items: start;
         text-align: left;
@@ -6092,6 +6093,10 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
 
     #organogramPage #organogramStatus {
         grid-area: status !important;
+    }
+
+    #organogramPage #organogramZoomControls {
+        grid-area: zoom !important;
     }
 
     #organogramPage #organogramTree {
@@ -7850,4 +7855,46 @@ html body button#adminButton {
     min-width: 620px !important;
     max-width: 620px !important;
     box-sizing: border-box !important;
+}
+
+/* ORGANOGRAM: PHONE STAFF CONTAINER WIDTH */
+@media (max-width: 600px) {
+    #organogramPage #organogramTree .organogram-staff {
+        width: 450px !important;
+        min-width: 450px !important;
+        max-width: 450px !important;
+        box-sizing: border-box !important;
+    }
+}
+
+/* ORGANOGRAM: MOBILE PINCH ZOOM AND TWO-DIRECTION SCROLL */
+#organogramPage #organogramTree {
+    touch-action: pan-x pan-y;
+    overflow: auto !important;
+    max-height: 75vh;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+}
+
+
+/* ORGANOGRAM: ZOOM CONTROLS */
+#organogramPage .organogram-zoom-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 0 0 12px;
+}
+
+#organogramPage .organogram-zoom-controls button {
+    min-width: 42px;
+    min-height: 36px;
+    padding: 6px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #fff;
+    color: #203b32;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
 }

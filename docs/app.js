@@ -6275,6 +6275,65 @@ function renderTree() {
         }
     });
 
+    // ORGANOGRAM: PINCH TO ZOOM
+    let organogramPinchStartDistance = 0;
+    let organogramPinchStartZoom = 1;
+    function setOrganogramZoom(value) {
+        const zoom = Math.max(0.5, Math.min(2.5, value));
+        tree.style.zoom = String(zoom);
+        $("organogramZoomReset").textContent =
+            Math.round(zoom * 100) + "%";
+    }
+
+    $("organogramZoomIn").addEventListener("click", function () {
+        setOrganogramZoom((parseFloat(tree.style.zoom) || 1) + 0.1);
+    });
+
+    $("organogramZoomOut").addEventListener("click", function () {
+        setOrganogramZoom((parseFloat(tree.style.zoom) || 1) - 0.1);
+    });
+
+    $("organogramZoomReset").addEventListener("click", function () {
+        setOrganogramZoom(1);
+        tree.scrollTo({ left: 0, top: 0, behavior: "smooth" });
+    });
+
+
+    function organogramTouchDistance(touches) {
+        const dx = touches[0].clientX - touches[1].clientX;
+        const dy = touches[0].clientY - touches[1].clientY;
+        return Math.hypot(dx, dy);
+    }
+
+    tree.addEventListener("touchstart", function (event) {
+        if (event.touches.length === 2) {
+            event.preventDefault();
+            organogramPinchStartDistance =
+                organogramTouchDistance(event.touches);
+            organogramPinchStartZoom =
+                parseFloat(tree.style.zoom) || 1;
+        }
+    }, { passive: false });
+
+    tree.addEventListener("touchmove", function (event) {
+        if (event.touches.length !== 2 ||
+            !organogramPinchStartDistance) return;
+
+        event.preventDefault();
+
+        const currentDistance = organogramTouchDistance(event.touches);
+        const nextZoom = organogramPinchStartZoom *
+            (currentDistance / organogramPinchStartDistance);
+
+        setOrganogramZoom(nextZoom);
+    }, { passive: false });
+
+    tree.addEventListener("touchend", function (event) {
+        if (event.touches.length < 2) {
+            organogramPinchStartDistance = 0;
+        }
+    }, { passive: false });
+
     $("organogramButton").addEventListener("click", openOrganogram);
 
     $("organogramBackButton").addEventListener("click", function () {
