@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LIVE TEST - Employee App</title>
-<link rel="stylesheet" href="style.css?v=20261118headofficelayout1">
+<link rel="stylesheet" href="style.css?v=20261118headofficemultilayout1">
 <link rel="stylesheet" href="salary-layout.css?v=20261112payslipscreenmatch1">
 <link rel="stylesheet" href="theme.css?v=20261108darkcalendar3">
 </head>
@@ -123,15 +123,36 @@
             <button type="button" class="head-office-floor-card" data-floor="8th-floor">
                 <span class="head-office-floor-icon">🏢</span>
                 <span class="head-office-floor-title">8th Floor</span>
-                <span class="head-office-floor-subtitle">View Seating Layout</span>
+                <span class="head-office-floor-subtitle">View Seating Layouts</span>
             </button>
-
             <button type="button" class="head-office-floor-card" data-floor="6th-floor">
                 <span class="head-office-floor-icon">🏢</span>
                 <span class="head-office-floor-title">6th Floor</span>
-                <span class="head-office-floor-subtitle">View Seating Layout</span>
+                <span class="head-office-floor-subtitle">View Seating Layouts</span>
             </button>
         </div>
+
+        <section id="headOfficeLayoutSlots" class="head-office-layout-slots" style="display:none;">
+            <h2 id="headOfficeLayoutSlotsTitle">Select a Layout</h2>
+            <div class="head-office-layout-slot-grid">
+                <button type="button" class="head-office-layout-slot-card" data-layout="1">
+                    <span class="head-office-layout-slot-icon">📐</span>
+                    <span class="head-office-layout-slot-title">Layout 1</span>
+                    <span class="head-office-layout-slot-subtitle">View Seating Plan</span>
+                </button>
+                <button type="button" class="head-office-layout-slot-card" data-layout="2">
+                    <span class="head-office-layout-slot-icon">📐</span>
+                    <span class="head-office-layout-slot-title">Layout 2</span>
+                    <span class="head-office-layout-slot-subtitle">View Seating Plan</span>
+                </button>
+                <button type="button" class="head-office-layout-slot-card" data-layout="3">
+                    <span class="head-office-layout-slot-icon">📐</span>
+                    <span class="head-office-layout-slot-title">Layout 3</span>
+                    <span class="head-office-layout-slot-subtitle">View Seating Plan</span>
+                </button>
+            </div>
+            <button id="headOfficeLayoutBackToFloors" type="button">All Floors</button>
+        </section>
 
         <section id="headOfficeLayoutViewer" class="head-office-layout-viewer" style="display:none;">
             <h2 id="headOfficeLayoutFloorTitle">Floor Layout</h2>
@@ -139,7 +160,7 @@
             <div id="headOfficeLayoutPreview"></div>
             <div class="head-office-layout-actions">
                 <a id="headOfficeLayoutDownload" href="#" download style="display:none;">Download Layout</a>
-                <button id="headOfficeLayoutBackToFloors" type="button">All Floors</button>
+                <button id="headOfficeLayoutBackToSlots" type="button">All Layouts</button>
             </div>
             <div id="headOfficeLayoutAdminPanel" style="display:none;">
                 <h3>Admin: Upload / Replace Layout</h3>
@@ -907,7 +928,7 @@ View Employee Details &amp; Edit
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script defer src="theme.js?v=20261101theme1"></script>
-<script defer src="app.js?v=20261118headofficelayout1"></script>
+<script defer src="app.js?v=20261118headofficemultilayout1"></script>
 
 
 <div id="salaryPage" style="display:none;">

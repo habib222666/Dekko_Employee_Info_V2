@@ -8107,3 +8107,183 @@ html body button#adminButton {
         height: 65vh;
     }
 }
+
+/* HEAD OFFICE LAYOUT - MULTI LAYOUT AND IMAGE ZOOM */
+
+.head-office-layout-slots {
+    margin-top: 24px;
+}
+
+.head-office-layout-slots h2 {
+    margin: 0 0 18px;
+    font-size: 22px;
+}
+
+.head-office-layout-slot-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+.head-office-layout-slot-card {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 155px;
+    padding: 20px;
+    border: 1px solid #e5eaf0;
+    border-radius: 18px;
+    background: #fff;
+    color: #243247;
+    text-align: center;
+    box-shadow: 0 6px 20px rgba(30, 50, 75, 0.07);
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.head-office-layout-slot-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(30, 50, 75, 0.12);
+}
+
+.head-office-layout-slot-card.is-available {
+    border-color: #86b7fe;
+}
+
+.head-office-layout-slot-icon {
+    margin-bottom: 10px;
+    font-size: 30px;
+}
+
+.head-office-layout-slot-title {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.head-office-layout-slot-subtitle {
+    margin-top: 7px;
+    color: #718096;
+    font-size: 12px;
+}
+
+#headOfficeLayoutBackToSlots {
+    padding: 10px 17px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    background: #fff;
+    color: #243247;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.head-office-zoom-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin: 12px 0;
+}
+
+.head-office-zoom-controls button {
+    min-width: 42px;
+    min-height: 38px;
+    padding: 7px 13px;
+    border: 1px solid #cbd5e1;
+    border-radius: 9px;
+    background: #f1f5f9;
+    color: #243247;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.head-office-zoom-viewport {
+    position: relative;
+    width: 100%;
+    height: min(78vh, 900px);
+    min-height: 300px;
+    overflow: hidden;
+    border: 1px solid #e5eaf0;
+    border-radius: 10px;
+    background: #f8fafc;
+    touch-action: none;
+    cursor: grab;
+}
+
+.head-office-zoom-viewport.is-zoomed {
+    cursor: grabbing;
+}
+
+.head-office-zoom-image {
+    display: block;
+    width: 100%;
+    max-width: none;
+    height: auto;
+    max-height: none;
+    margin: 0;
+    transform-origin: 0 0;
+    user-select: none;
+    -webkit-user-drag: none;
+    pointer-events: none;
+}
+
+#headOfficeLayoutPreview iframe {
+    background: #fff;
+}
+
+html[data-theme="dark"] #headOfficeLayoutPage {
+    background: #000;
+    color: #fff;
+}
+
+html[data-theme="dark"] .head-office-layout-viewer,
+html[data-theme="dark"] .head-office-layout-slot-card,
+html[data-theme="dark"] #headOfficeLayoutBackToFloors,
+html[data-theme="dark"] #headOfficeLayoutBackToSlots,
+html[data-theme="dark"] #headOfficeLayoutBackButton {
+    background: #171717;
+    color: #fff;
+    border-color: #444;
+}
+
+html[data-theme="dark"] .head-office-layout-slot-subtitle,
+html[data-theme="dark"] .head-office-layout-header p {
+    color: #bdbdbd;
+}
+
+html[data-theme="dark"] .head-office-zoom-viewport {
+    background: #111;
+    border-color: #444;
+}
+
+html[data-theme="dark"] .head-office-zoom-controls button {
+    background: #292929;
+    color: #fff;
+    border-color: #555;
+}
+
+@media (max-width: 700px) {
+    .head-office-layout-slot-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .head-office-layout-slot-card {
+        min-height: 135px;
+        padding: 14px;
+    }
+
+    .head-office-zoom-viewport {
+        height: 65vh;
+        min-height: 260px;
+    }
+}
+
+@media (max-width: 380px) {
+    .head-office-layout-slot-grid {
+        grid-template-columns: 1fr;
+    }
+}

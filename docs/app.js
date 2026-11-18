@@ -3508,8 +3508,7 @@ setupEmployeeForm({
 
 
 
-/* HEAD OFFICE LAYOUT - NAVIGATION AND PUBLIC VIEW */
-
+/* HEAD OFFICE LAYOUT - MULTI LAYOUT, ADMIN UPLOAD AND IMAGE ZOOM */
 (function () {
     "use strict";
 
@@ -3517,12 +3516,15 @@ setupEmployeeForm({
     const page = document.getElementById("headOfficeLayoutPage");
     const backButton = document.getElementById("headOfficeLayoutBackButton");
     const floorCards = document.getElementById("headOfficeLayoutFloorCards");
+    const slots = document.getElementById("headOfficeLayoutSlots");
+    const slotsTitle = document.getElementById("headOfficeLayoutSlotsTitle");
     const viewer = document.getElementById("headOfficeLayoutViewer");
     const floorTitle = document.getElementById("headOfficeLayoutFloorTitle");
     const status = document.getElementById("headOfficeLayoutStatus");
     const preview = document.getElementById("headOfficeLayoutPreview");
     const download = document.getElementById("headOfficeLayoutDownload");
     const backToFloors = document.getElementById("headOfficeLayoutBackToFloors");
+    const backToSlots = document.getElementById("headOfficeLayoutBackToSlots");
     const adminPanel = document.getElementById("headOfficeLayoutAdminPanel");
     const fileInput = document.getElementById("headOfficeLayoutFile");
     const uploadButton = document.getElementById("headOfficeLayoutUploadButton");
@@ -3534,12 +3536,24 @@ setupEmployeeForm({
     const employeeList = document.getElementById("employeeList");
     const adminButton = document.getElementById("adminButton");
 
-    if (!button || !page || !backButton || !floorCards || !viewer) return;
+    if (!button || !page || !backButton || !floorCards || !slots || !viewer) return;
 
     const bucket = "head-office-layouts";
+    const layoutNames = { 1: "Layout 1", 2: "Layout 2", 3: "Layout 3" };
     let selectedFloor = null;
+    let selectedLayout = null;
+    let navigationRequest = 0;
+
+    function objectPathFor(floor, layout) {
+        return layout === 1 ? floor + "-layout" : floor + "-layout-" + layout;
+    }
+
+    function publicUrlFor(floor, layout) {
+        return `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${objectPathFor(floor, layout)}`;
+    }
 
     function showDashboard() {
+        navigationRequest++;
         page.style.display = "none";
         if (dashboard) dashboard.style.display = "";
         if (appTitle) appTitle.style.removeProperty("display");
@@ -3550,6 +3564,7 @@ setupEmployeeForm({
     }
 
     function showLayoutPage() {
+        navigationRequest++;
         if (dashboard) dashboard.style.display = "none";
         if (appTitle) appTitle.style.setProperty("display", "none", "important");
         if (bottomLogo) bottomLogo.style.display = "none";
@@ -3558,8 +3573,10 @@ setupEmployeeForm({
 
         page.style.display = "block";
         floorCards.style.display = "grid";
+        slots.style.display = "none";
         viewer.style.display = "none";
         selectedFloor = null;
+        selectedLayout = null;
         window.scrollTo(0, 0);
     }
 
@@ -3570,49 +3587,255 @@ setupEmployeeForm({
         return "";
     }
 
+    async function checkLayout(floor, layout) {
+        const url = publicUrlFor(floor, layout);
+        try {
+            const response = await fetch(url, { method: "HEAD" });
+            if (!response.ok) return { available: false, type: "" };
+            return {
+                available: true,
+                type: (response.headers.get("content-type") || "")
+                    .split(";")[0].trim().toLowerCase()
+            };
+        } catch (error) {
+            console.error("Layout availability check failed:", error);
+            return { available: false, type: "" };
+        }
+    }
+
     async function openFloor(floor) {
         if (!["8th-floor", "6th-floor"].includes(floor)) return;
 
+        const requestId = ++navigationRequest;
         selectedFloor = floor;
+        selectedLayout = null;
         floorCards.style.display = "none";
+        viewer.style.display = "none";
+        slots.style.display = "block";
+        slotsTitle.textContent = floor === "8th-floor" ? "8th Floor — Select a Layout" : "6th Floor — Select a Layout";
+
+        const cards = slots.querySelectorAll("[data-layout]");
+        cards.forEach(card => {
+            const subtitle = card.querySelector(".head-office-layout-slot-subtitle");
+            if (subtitle) subtitle.textContent = "Checking availability...";
+        });
+
+        const results = await Promise.all([1, 2, 3].map(n => checkLayout(floor, n)));
+
+        if (requestId !== navigationRequest || selectedFloor !== floor) return;
+
+        cards.forEach(card => {
+            const n = Number(card.dataset.layout);
+            const subtitle = card.querySelector(".head-office-layout-slot-subtitle");
+            if (!subtitle) return;
+            subtitle.textContent = results[n - 1].available
+                ? "Available · View Seating Plan"
+                : "Not uploaded yet · Admin can upload";
+            card.classList.toggle("is-available", results[n - 1].available);
+        });
+
+        window.scrollTo(0, 0);
+    }
+
+    function attachImageZoom(img) {
+        const viewport = document.createElement("div");
+        viewport.className = "head-office-zoom-viewport";
+        viewport.setAttribute("aria-label", "Layout image. Pinch to zoom and drag to move.");
+
+        const controls = document.createElement("div");
+        controls.className = "head-office-zoom-controls";
+
+        const zoomOut = document.createElement("button");
+        zoomOut.type = "button";
+        zoomOut.textContent = "−";
+        zoomOut.setAttribute("aria-label", "Zoom out");
+
+        const zoomIn = document.createElement("button");
+        zoomIn.type = "button";
+        zoomIn.textContent = "+";
+        zoomIn.setAttribute("aria-label", "Zoom in");
+
+        const reset = document.createElement("button");
+        reset.type = "button";
+        reset.textContent = "Reset";
+        reset.setAttribute("aria-label", "Reset zoom");
+
+        controls.append(zoomOut, zoomIn, reset);
+        img.className = "head-office-zoom-image";
+        viewport.appendChild(img);
+        preview.append(controls, viewport);
+
+        let scale = 1;
+        let x = 0;
+        let y = 0;
+        const pointers = new Map();
+        const tapCandidates = new Map();
+        let pinchStart = null;
+        let lastTap = null;
+
+        function render() {
+            img.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
+            viewport.classList.toggle("is-zoomed", scale > 1);
+        }
+
+        function changeScale(next) {
+            scale = Math.max(1, Math.min(6, next));
+            if (scale === 1) {
+                x = 0;
+                y = 0;
+            }
+            render();
+        }
+
+        zoomIn.addEventListener("click", () => changeScale(scale + 0.5));
+        zoomOut.addEventListener("click", () => changeScale(scale - 0.5));
+        reset.addEventListener("click", () => changeScale(1));
+
+        viewport.addEventListener("pointerdown", event => {
+            event.preventDefault();
+            viewport.setPointerCapture(event.pointerId);
+            pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+
+            if (pointers.size === 1) {
+                tapCandidates.set(event.pointerId, {
+                    x: event.clientX,
+                    y: event.clientY,
+                    time: Date.now()
+                });
+                pinchStart = {
+                    x: event.clientX,
+                    y: event.clientY,
+                    offsetX: x,
+                    offsetY: y
+                };
+            } else {
+                tapCandidates.clear();
+                if (pointers.size === 2) {
+                    const points = Array.from(pointers.values());
+                    pinchStart = {
+                        distance: Math.hypot(
+                            points[0].x - points[1].x,
+                            points[0].y - points[1].y
+                        ),
+                        scale
+                    };
+                }
+            }
+        });
+
+        viewport.addEventListener("pointermove", event => {
+            if (!pointers.has(event.pointerId)) return;
+
+            pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+
+            const tap = tapCandidates.get(event.pointerId);
+            if (tap && Math.hypot(event.clientX - tap.x, event.clientY - tap.y) > 10) {
+                tapCandidates.delete(event.pointerId);
+            }
+
+            if (pointers.size === 2 && pinchStart) {
+                const points = Array.from(pointers.values());
+                const distance = Math.hypot(
+                    points[0].x - points[1].x,
+                    points[0].y - points[1].y
+                );
+                changeScale(pinchStart.scale * distance / Math.max(1, pinchStart.distance));
+            } else if (pointers.size === 1 && pinchStart && scale > 1) {
+                x = pinchStart.offsetX + event.clientX - pinchStart.x;
+                y = pinchStart.offsetY + event.clientY - pinchStart.y;
+                render();
+            }
+        });
+
+        function releasePointer(event) {
+            const tap = tapCandidates.get(event.pointerId);
+            tapCandidates.delete(event.pointerId);
+
+            if (
+                event.type === "pointerup" &&
+                tap &&
+                pointers.size === 1 &&
+                Date.now() - tap.time < 300
+            ) {
+                const now = Date.now();
+                const distance = lastTap
+                    ? Math.hypot(event.clientX - lastTap.x, event.clientY - lastTap.y)
+                    : Infinity;
+
+                if (lastTap && now - lastTap.time < 320 && distance < 30) {
+                    changeScale(scale > 1 ? 1 : 2);
+                    lastTap = null;
+                } else {
+                    lastTap = {
+                        time: now,
+                        x: event.clientX,
+                        y: event.clientY
+                    };
+                }
+            }
+
+            pointers.delete(event.pointerId);
+            pinchStart = null;
+
+            if (pointers.size === 1) {
+                const point = Array.from(pointers.values())[0];
+                pinchStart = {
+                    x: point.x,
+                    y: point.y,
+                    offsetX: x,
+                    offsetY: y
+                };
+            }
+        }
+
+        viewport.addEventListener("pointerup", releasePointer);
+        viewport.addEventListener("pointercancel", releasePointer);
+
+        render();
+    }
+
+    async function openSelectedLayout(layout) {
+        if (!selectedFloor || ![1, 2, 3].includes(layout)) return;
+
+        const floor = selectedFloor;
+        const requestId = ++navigationRequest;
+        selectedLayout = layout;
+        slots.style.display = "none";
         viewer.style.display = "block";
-        floorTitle.textContent = floor === "8th-floor" ? "8th Floor Layout" : "6th Floor Layout";
+        floorTitle.textContent = (floor === "8th-floor" ? "8th Floor" : "6th Floor") + " — " + layoutNames[layout];
         status.textContent = "Loading layout...";
         preview.replaceChildren();
         download.style.display = "none";
         download.removeAttribute("href");
-
-        const isAdmin = await verifyEmployeeAdminAccess();
-        if (adminPanel) adminPanel.style.display = isAdmin ? "block" : "none";
         if (uploadStatus) uploadStatus.textContent = "";
 
-        const objectPath = floor + "-layout";
-        const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${objectPath}`;
-
         try {
-            const response = await fetch(publicUrl, { method: "HEAD" });
+            const isAdmin = await verifyEmployeeAdminAccess();
 
-            if (!response.ok) {
-                if (response.status === 404) {
-                    status.textContent = "এই Floor-এর Layout এখনো Upload করা হয়নি।";
-                } else {
-                    status.textContent = "Layout পাওয়া যায়নি। পরে আবার চেষ্টা করুন।";
-                }
+            if (requestId !== navigationRequest || selectedFloor !== floor || selectedLayout !== layout) return;
+
+            if (adminPanel) adminPanel.style.display = isAdmin ? "block" : "none";
+
+            const result = await checkLayout(floor, layout);
+
+            if (requestId !== navigationRequest || selectedFloor !== floor || selectedLayout !== layout) return;
+
+            if (!result.available) {
+                status.textContent = "এই Layout এখনো Upload করা হয়নি।";
                 return;
             }
 
-            const contentType = (response.headers.get("content-type") || "")
-                .split(";")[0].trim().toLowerCase();
-
+            const contentType = result.type;
+            const publicUrl = publicUrlFor(floor, layout);
             const previewUrl = publicUrl + "?v=" + Date.now();
             const extension = extensionForType(contentType);
-            const fileName = floor + "-layout" + extension;
+            const fileName = objectPathFor(floor, layout) + extension;
 
             if (contentType === "image/png" || contentType === "image/jpeg") {
                 const img = document.createElement("img");
                 img.src = previewUrl;
                 img.alt = floorTitle.textContent;
-                preview.appendChild(img);
+                attachImageZoom(img);
             } else if (contentType === "application/pdf") {
                 const frame = document.createElement("iframe");
                 frame.src = previewUrl;
@@ -3624,23 +3847,32 @@ setupEmployeeForm({
                 return;
             }
 
-            status.textContent = "Layout প্রস্তুত।";
+            status.textContent = "Layout প্রস্তুত। Image হলে pinch, drag ও double-tap ব্যবহার করুন।";
             download.href = publicUrl + "?download=" + encodeURIComponent(fileName);
             download.download = fileName;
             download.style.display = "inline-block";
-
         } catch (error) {
+            if (requestId !== navigationRequest || selectedFloor !== floor || selectedLayout !== layout) return;
             console.error("Head Office Layout loading failed:", error);
             status.textContent = "Layout লোড করা যায়নি। Internet Connection পরীক্ষা করুন।";
         }
 
-        window.scrollTo(0, 0);
+        if (requestId === navigationRequest && selectedFloor === floor && selectedLayout === layout) {
+            window.scrollTo(0, 0);
+        }
     }
 
     async function uploadSelectedLayout() {
-        if (!selectedFloor || !fileInput || !uploadButton || !uploadStatus) return;
+        if (!selectedFloor || !selectedLayout || !fileInput || !uploadButton || !uploadStatus) return;
 
+        const floor = selectedFloor;
+        const layout = selectedLayout;
         const file = fileInput.files && fileInput.files[0];
+
+        const isCurrentUpload = () =>
+            selectedFloor === floor &&
+            selectedLayout === layout &&
+            viewer.style.display !== "none";
 
         if (!file) {
             uploadStatus.textContent = "প্রথমে একটি PNG, JPG অথবা PDF ফাইল নির্বাচন করুন।";
@@ -3666,13 +3898,15 @@ setupEmployeeForm({
             const isAdmin = await verifyEmployeeAdminAccess();
 
             if (!isAdmin || !accessToken) {
-                uploadStatus.textContent = "Upload অনুমোদিত নয়। Admin Login করুন।";
+                if (isCurrentUpload()) {
+                    uploadStatus.textContent = "Upload অনুমোদিত নয়। Admin Login করুন।";
+                }
                 return;
             }
 
-            uploadStatus.textContent = "Layout Upload হচ্ছে...";
+            if (isCurrentUpload()) uploadStatus.textContent = "Layout Upload হচ্ছে...";
 
-            const objectPath = selectedFloor + "-layout";
+            const objectPath = objectPathFor(floor, layout);
             const uploadUrl = `${SUPABASE_URL}/storage/v1/object/${bucket}/${objectPath}`;
 
             const response = await fetch(uploadUrl, {
@@ -3689,23 +3923,29 @@ setupEmployeeForm({
             if (!response.ok) {
                 const error = await response.json().catch(() => ({}));
                 console.error("Head Office Layout upload failed:", error);
-                uploadStatus.textContent =
-                    "Upload ব্যর্থ: " + (error.message || error.error || response.status);
+                if (isCurrentUpload()) {
+                    uploadStatus.textContent = "Upload ব্যর্থ: " + (error.message || error.error || response.status);
+                }
                 return;
             }
 
-            fileInput.value = "";
-            uploadStatus.textContent = "Upload সফল। Layout আপডেট হচ্ছে...";
-
-            await openFloor(selectedFloor);
-
-            if (uploadStatus) {
-                uploadStatus.textContent = "Layout সফলভাবে Upload / Replace হয়েছে।";
+            if (fileInput.files && fileInput.files[0] === file) {
+                fileInput.value = "";
             }
 
+            if (isCurrentUpload()) {
+                uploadStatus.textContent = "Upload সফল। Layout আপডেট হচ্ছে...";
+                await openSelectedLayout(layout);
+
+                if (isCurrentUpload()) {
+                    uploadStatus.textContent = "Layout সফলভাবে Upload / Replace হয়েছে।";
+                }
+            }
         } catch (error) {
             console.error("Head Office Layout upload error:", error);
-            uploadStatus.textContent = "Upload করা যায়নি। Internet Connection পরীক্ষা করুন।";
+            if (isCurrentUpload()) {
+                uploadStatus.textContent = "Upload করা যায়নি। Internet Connection পরীক্ষা করুন।";
+            }
         } finally {
             uploadButton.disabled = false;
         }
@@ -3713,21 +3953,36 @@ setupEmployeeForm({
 
     button.addEventListener("click", showLayoutPage);
     backButton.addEventListener("click", showDashboard);
-    if (uploadButton) {
-        uploadButton.addEventListener("click", uploadSelectedLayout);
-    }
 
+    if (uploadButton) uploadButton.addEventListener("click", uploadSelectedLayout);
 
-    floorCards.addEventListener("click", function (event) {
+    floorCards.addEventListener("click", event => {
         const card = event.target.closest("[data-floor]");
         if (card) openFloor(card.dataset.floor);
     });
 
+    slots.addEventListener("click", event => {
+        const card = event.target.closest("[data-layout]");
+        if (card) openSelectedLayout(Number(card.dataset.layout));
+    });
+
     if (backToFloors) {
-        backToFloors.addEventListener("click", function () {
-            viewer.style.display = "none";
+        backToFloors.addEventListener("click", () => {
+            navigationRequest++;
+            slots.style.display = "none";
             floorCards.style.display = "grid";
             selectedFloor = null;
+            selectedLayout = null;
+            window.scrollTo(0, 0);
+        });
+    }
+
+    if (backToSlots) {
+        backToSlots.addEventListener("click", () => {
+            navigationRequest++;
+            viewer.style.display = "none";
+            slots.style.display = "block";
+            selectedLayout = null;
             window.scrollTo(0, 0);
         });
     }
