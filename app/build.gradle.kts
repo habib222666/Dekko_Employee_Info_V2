@@ -12,16 +12,26 @@ android {
         applicationId = "com.employee.employee_dekko_v2"
         minSdk = 31
         targetSdk = 37
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 4
+        versionName = "1.0.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        create("release") {
+            storeFile = file(System.getProperty("user.home") + "/.android/dekko-employee-info-release.jks")
+            storePassword = file(System.getProperty("user.home") + "/.android/dekko-keystore-password.txt").readText().trim()
+            keyAlias = "dekko-release"
+            keyPassword = file(System.getProperty("user.home") + "/.android/dekko-keystore-password.txt").readText().trim()
+        }
+    }
+
     buildTypes {
         release {
+            signingConfig = signingConfigs.getByName("release")
             optimization {
-                enable = false
+                enable = true
             }
         }
     }

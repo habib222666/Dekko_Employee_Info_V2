@@ -190,7 +190,7 @@ class MainActivity : AppCompatActivity() {
                         if (emailSignaturePage && emailSignaturePage.style.display !== 'none') {
                             const signatureFrameWrap = document.getElementById('emailSignatureFrameWrap');
                             if (signatureFrameWrap && signatureFrameWrap.style.display !== 'none') {
-                                const backToDivisions = document.getElementById('emailSignatureDivisionBackButton');
+                                const backToDivisions = document.getElementById('emailSignatureBackButton');
                                 if (backToDivisions) {
                                     backToDivisions.click();
                                     return true;
@@ -202,6 +202,29 @@ class MainActivity : AppCompatActivity() {
                                     return true;
                                 }
                             }
+                            return true;
+                        }
+
+                        // Handle Android Back inside Head Office Layout.
+                        const headOfficeLayoutPage = document.getElementById('headOfficeLayoutPage');
+                        if (headOfficeLayoutPage && headOfficeLayoutPage.style.display !== 'none') {
+                            const viewer = document.getElementById('headOfficeLayoutViewer');
+                            const slots = document.getElementById('headOfficeLayoutSlots');
+
+                            if (viewer && viewer.style.display !== 'none') {
+                                const backToSlots = document.getElementById('headOfficeLayoutBackToSlots');
+                                if (backToSlots) backToSlots.click();
+                                return true;
+                            }
+
+                            if (slots && slots.style.display !== 'none') {
+                                const backToFloors = document.getElementById('headOfficeLayoutBackToFloors');
+                                if (backToFloors) backToFloors.click();
+                                return true;
+                            }
+
+                            const backToHome = document.getElementById('headOfficeLayoutBackButton');
+                            if (backToHome) backToHome.click();
                             return true;
                         }
 

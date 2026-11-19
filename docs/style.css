@@ -8287,3 +8287,30 @@ html[data-theme="dark"] .head-office-zoom-controls button {
         grid-template-columns: 1fr;
     }
 }
+
+/* HOMEPAGE DASHBOARD FONT SIZE INCREASE - 2026-11-19 */
+#departmentHeader > button .dashboard-kicker {
+    font-size: 11px !important;
+}
+
+#departmentHeader > button .dashboard-title {
+    font-size: 16px !important;
+}
+
+#departmentHeader > button .dashboard-subtitle {
+    font-size: 12px !important;
+}
+
+@media (max-width: 520px) {
+    #departmentHeader > button .dashboard-kicker {
+        font-size: 10px !important;
+    }
+
+    #departmentHeader > button .dashboard-title {
+        font-size: 14px !important;
+    }
+
+    #departmentHeader > button .dashboard-subtitle {
+        font-size: 11px !important;
+    }
+}
