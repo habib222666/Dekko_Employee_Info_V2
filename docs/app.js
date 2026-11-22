@@ -3677,8 +3677,10 @@ setupEmployeeForm({
 
 
 
-/* HEAD OFFICE LAYOUT - MULTI LAYOUT, ADMIN UPLOAD AND IMAGE ZOOM */
+/* HEAD OFFICE LAYOUT - DYNAMIC LAYOUTS, ADMIN MANAGEMENT AND IMAGE ZOOM */
+
 (function () {
+
     "use strict";
 
     const button = document.getElementById("headOfficeLayoutButton");
@@ -3687,6 +3689,9 @@ setupEmployeeForm({
     const floorCards = document.getElementById("headOfficeLayoutFloorCards");
     const slots = document.getElementById("headOfficeLayoutSlots");
     const slotsTitle = document.getElementById("headOfficeLayoutSlotsTitle");
+    const slotGrid = document.getElementById("headOfficeLayoutSlotGrid");
+    const addButton = document.getElementById("headOfficeLayoutAddButton");
+    const manageStatus = document.getElementById("headOfficeLayoutManageStatus");
     const viewer = document.getElementById("headOfficeLayoutViewer");
     const floorTitle = document.getElementById("headOfficeLayoutFloorTitle");
     const status = document.getElementById("headOfficeLayoutStatus");
@@ -3698,7 +3703,6 @@ setupEmployeeForm({
     const fileInput = document.getElementById("headOfficeLayoutFile");
     const uploadButton = document.getElementById("headOfficeLayoutUploadButton");
     const uploadStatus = document.getElementById("headOfficeLayoutUploadStatus");
-
     const dashboard = document.getElementById("departmentSection");
     const appTitle = document.getElementById("appTitle");
     const bottomLogo = document.getElementById("homeBottomLogo");
@@ -3708,36 +3712,130 @@ setupEmployeeForm({
     if (!button || !page || !backButton || !floorCards || !slots || !viewer) return;
 
     const bucket = "head-office-layouts";
-    const layoutNames = { 1: "Layout 1", 2: "Layout 2", 3: "Layout 3" };
+    const manifestPath = "_layout-index.json";
+
+    let layoutManifest = null;
     let selectedFloor = null;
     let selectedLayout = null;
     let navigationRequest = 0;
 
-    function objectPathFor(floor, layout) {
-        return layout === 1 ? floor + "-layout" : floor + "-layout-" + layout;
+    function defaultManifest() {
+        return {
+            version: 1,
+            floors: {
+                "8th-floor": [
+                    { id: "layout-1", name: "Layout 1", object: "8th-floor-layout" }
+                ],
+                "6th-floor": [
+                    { id: "layout-1", name: "Layout 1", object: "6th-floor-layout" }
+                ]
+            }
+        };
     }
 
-    function publicUrlFor(floor, layout) {
-        return `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${objectPathFor(floor, layout)}`;
+    function manifestUrl() {
+        return `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${manifestPath}`;
+    }
+
+    async function loadManifest() {
+        const response = await fetch(manifestUrl() + "?v=" + Date.now(), {
+            cache: "no-store"
+        });
+
+        if (!response.ok) {
+            layoutManifest = defaultManifest();
+            return layoutManifest;
+        }
+
+        const data = await response.json();
+
+        if (!data || !data.floors || typeof data.floors !== "object") {
+            throw new Error("Layout index-এর তথ্য সঠিক নয়।");
+        }
+
+        const fallback = defaultManifest();
+
+        for (const floor of ["8th-floor", "6th-floor"]) {
+            if (!Array.isArray(data.floors[floor])) {
+                data.floors[floor] = fallback.floors[floor];
+            }
+
+            data.floors[floor] = data.floors[floor].filter(item =>
+                item &&
+                typeof item.id === "string" &&
+                /^[a-zA-Z0-9_-]+$/.test(item.id) &&
+                typeof item.name === "string" &&
+                typeof item.object === "string" &&
+                /^[a-zA-Z0-9_-]+$/.test(item.object)
+            );
+        }
+
+        layoutManifest = data;
+        return layoutManifest;
+    }
+
+    function layoutsFor(floor) {
+        if (!layoutManifest) layoutManifest = defaultManifest();
+        return layoutManifest.floors[floor] || [];
+    }
+
+    function objectPathFor(layout) {
+        return layout.object;
+    }
+
+    function publicUrlFor(layout) {
+        return `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${encodeURIComponent(objectPathFor(layout))}`;
+    }
+
+    async function saveManifest() {
+        const isAdmin = await verifyEmployeeAdminAccess();
+
+        if (!isAdmin || !accessToken) {
+            throw new Error("Admin Login প্রয়োজন।");
+        }
+
+        const response = await fetch(
+            `${SUPABASE_URL}/storage/v1/object/${bucket}/${manifestPath}`,
+            {
+                method: "POST",
+                headers: {
+                    apikey: SUPABASE_KEY,
+                    Authorization: "Bearer " + accessToken,
+                    "Content-Type": "application/json",
+                    "x-upsert": "true"
+                },
+                body: JSON.stringify(layoutManifest, null, 2)
+            }
+        );
+
+        if (!response.ok) {
+            const error = await response.json().catch(() => ({}));
+            throw new Error(error.message || error.error || response.status);
+        }
     }
 
     function showDashboard() {
         navigationRequest++;
+
         const corporateBadge = document.querySelector("#dashboardTopActions .welcome-badge");
         if (corporateBadge) corporateBadge.style.removeProperty("display");
+
         page.style.display = "none";
         if (dashboard) dashboard.style.display = "";
         if (appTitle) appTitle.style.removeProperty("display");
         if (bottomLogo) bottomLogo.style.display = "";
         if (employeeList) employeeList.style.display = "";
         if (adminButton) adminButton.style.removeProperty("display");
+
         window.scrollTo(0, 0);
     }
 
     function showLayoutPage() {
         navigationRequest++;
+
         const corporateBadge = document.querySelector("#dashboardTopActions .welcome-badge");
         if (corporateBadge) corporateBadge.style.setProperty("display", "none", "important");
+
         if (dashboard) dashboard.style.display = "none";
         if (appTitle) appTitle.style.setProperty("display", "none", "important");
         if (bottomLogo) bottomLogo.style.display = "none";
@@ -3748,6 +3846,10 @@ setupEmployeeForm({
         floorCards.style.display = "grid";
         slots.style.display = "none";
         viewer.style.display = "none";
+
+        if (addButton) addButton.style.display = "none";
+        if (manageStatus) manageStatus.textContent = "";
+
         selectedFloor = null;
         selectedLayout = null;
         window.scrollTo(0, 0);
@@ -3760,11 +3862,17 @@ setupEmployeeForm({
         return "";
     }
 
-    async function checkLayout(floor, layout) {
-        const url = publicUrlFor(floor, layout);
+    async function checkLayout(layout) {
+        const url = publicUrlFor(layout);
+
         try {
-            const response = await fetch(url, { method: "HEAD" });
+            const response = await fetch(url, {
+                method: "HEAD",
+                cache: "no-store"
+            });
+
             if (!response.ok) return { available: false, type: "" };
+
             return {
                 available: true,
                 type: (response.headers.get("content-type") || "")
@@ -3776,36 +3884,101 @@ setupEmployeeForm({
         }
     }
 
+    function renderLayoutCards(floor, availability, isAdmin) {
+        if (!slotGrid) return;
+
+        slotGrid.replaceChildren();
+
+        layoutsFor(floor).forEach(layout => {
+            const item = document.createElement("div");
+            item.className = "head-office-layout-slot-item";
+
+            const card = document.createElement("button");
+            card.type = "button";
+            card.className = "head-office-layout-slot-card";
+            card.dataset.layout = layout.id;
+
+            const icon = document.createElement("span");
+            icon.className = "head-office-layout-slot-icon";
+            icon.textContent = "📐";
+
+            const title = document.createElement("span");
+            title.className = "head-office-layout-slot-title";
+            title.textContent = layout.name;
+
+            const subtitle = document.createElement("span");
+            subtitle.className = "head-office-layout-slot-subtitle";
+            subtitle.textContent = availability[layout.id]
+                ? "Available · View Seating Plan"
+                : "Not uploaded yet · Admin can upload";
+
+            card.classList.toggle("is-available", !!availability[layout.id]);
+            card.append(icon, title, subtitle);
+            item.appendChild(card);
+
+            if (isAdmin) {
+                const rename = document.createElement("button");
+                rename.type = "button";
+                rename.className = "head-office-layout-rename-button";
+                rename.dataset.renameLayout = layout.id;
+                rename.textContent = "Rename";
+                item.appendChild(rename);
+            }
+
+            slotGrid.appendChild(item);
+        });
+    }
+
     async function openFloor(floor) {
         if (!["8th-floor", "6th-floor"].includes(floor)) return;
 
         const requestId = ++navigationRequest;
+
         selectedFloor = floor;
         selectedLayout = null;
+
         floorCards.style.display = "none";
         viewer.style.display = "none";
         slots.style.display = "block";
-        slotsTitle.textContent = floor === "8th-floor" ? "8th Floor — Select a Layout" : "6th Floor — Select a Layout";
 
-        const cards = slots.querySelectorAll("[data-layout]");
-        cards.forEach(card => {
-            const subtitle = card.querySelector(".head-office-layout-slot-subtitle");
-            if (subtitle) subtitle.textContent = "Checking availability...";
-        });
+        slotsTitle.textContent = floor === "8th-floor"
+            ? "8th Floor — Select a Layout"
+            : "6th Floor — Select a Layout";
 
-        const results = await Promise.all([1, 2, 3].map(n => checkLayout(floor, n)));
+        if (manageStatus) manageStatus.textContent = "";
+        if (addButton) addButton.style.display = "none";
+        if (slotGrid) slotGrid.replaceChildren();
 
-        if (requestId !== navigationRequest || selectedFloor !== floor) return;
+        try {
+            const isAdmin = await verifyEmployeeAdminAccess();
 
-        cards.forEach(card => {
-            const n = Number(card.dataset.layout);
-            const subtitle = card.querySelector(".head-office-layout-slot-subtitle");
-            if (!subtitle) return;
-            subtitle.textContent = results[n - 1].available
-                ? "Available · View Seating Plan"
-                : "Not uploaded yet · Admin can upload";
-            card.classList.toggle("is-available", results[n - 1].available);
-        });
+            if (requestId !== navigationRequest || selectedFloor !== floor) return;
+
+            if (addButton) addButton.style.display = isAdmin ? "inline-block" : "none";
+
+            await loadManifest();
+
+            if (requestId !== navigationRequest || selectedFloor !== floor) return;
+
+            const layouts = layoutsFor(floor);
+            const results = await Promise.all(layouts.map(async layout => ({
+                id: layout.id,
+                result: await checkLayout(layout)
+            })));
+
+            if (requestId !== navigationRequest || selectedFloor !== floor) return;
+
+            const availability = {};
+            results.forEach(item => {
+                availability[item.id] = item.result.available;
+            });
+
+            renderLayoutCards(floor, availability, isAdmin);
+        } catch (error) {
+            console.error("Opening floor failed:", error);
+            if (manageStatus) manageStatus.textContent =
+                "Layout তালিকা লোড করা যায়নি। Internet Connection পরীক্ষা করুন।";
+        }
 
         window.scrollTo(0, 0);
     }
@@ -3967,31 +4140,43 @@ setupEmployeeForm({
         render();
     }
 
-    async function openSelectedLayout(layout) {
-        if (!selectedFloor || ![1, 2, 3].includes(layout)) return;
+    async function openSelectedLayout(layoutId) {
+        if (!selectedFloor) return;
 
         const floor = selectedFloor;
+        const layout = layoutsFor(floor).find(item => item.id === layoutId);
+        if (!layout) return;
+
         const requestId = ++navigationRequest;
-        selectedLayout = layout;
+        selectedLayout = layoutId;
+
         slots.style.display = "none";
         viewer.style.display = "block";
-        floorTitle.textContent = (floor === "8th-floor" ? "8th Floor" : "6th Floor") + " — " + layoutNames[layout];
+
+        floorTitle.textContent =
+            (floor === "8th-floor" ? "8th Floor" : "6th Floor") + " — " + layout.name;
+
         status.textContent = "Loading layout...";
         preview.replaceChildren();
         download.style.display = "none";
         download.removeAttribute("href");
+
         if (uploadStatus) uploadStatus.textContent = "";
 
         try {
             const isAdmin = await verifyEmployeeAdminAccess();
 
-            if (requestId !== navigationRequest || selectedFloor !== floor || selectedLayout !== layout) return;
+            if (requestId !== navigationRequest ||
+                selectedFloor !== floor ||
+                selectedLayout !== layoutId) return;
 
             if (adminPanel) adminPanel.style.display = isAdmin ? "block" : "none";
 
-            const result = await checkLayout(floor, layout);
+            const result = await checkLayout(layout);
 
-            if (requestId !== navigationRequest || selectedFloor !== floor || selectedLayout !== layout) return;
+            if (requestId !== navigationRequest ||
+                selectedFloor !== floor ||
+                selectedLayout !== layoutId) return;
 
             if (!result.available) {
                 status.textContent = "এই Layout এখনো Upload করা হয়নি।";
@@ -3999,10 +4184,10 @@ setupEmployeeForm({
             }
 
             const contentType = result.type;
-            const publicUrl = publicUrlFor(floor, layout);
+            const publicUrl = publicUrlFor(layout);
             const previewUrl = publicUrl + "?v=" + Date.now();
             const extension = extensionForType(contentType);
-            const fileName = objectPathFor(floor, layout) + extension;
+            const fileName = objectPathFor(layout) + extension;
 
             if (contentType === "image/png" || contentType === "image/jpeg") {
                 const img = document.createElement("img");
@@ -4016,51 +4201,189 @@ setupEmployeeForm({
                 frame.loading = "lazy";
                 preview.appendChild(frame);
             } else {
-                status.textContent = "এই ফাইলের Format সমর্থিত নয়। PNG, JPG অথবা PDF প্রয়োজন।";
+                status.textContent =
+                    "এই ফাইলের Format সমর্থিত নয়। PNG, JPG অথবা PDF প্রয়োজন।";
                 return;
             }
 
-            status.textContent = "Layout প্রস্তুত। Image হলে pinch, drag ও double-tap ব্যবহার করুন।";
+            status.textContent =
+                "Layout প্রস্তুত। Image হলে pinch, drag ও double-tap ব্যবহার করুন।";
+
             download.href = publicUrl + "?download=" + encodeURIComponent(fileName);
             download.download = fileName;
             download.style.display = "inline-block";
+
         } catch (error) {
-            if (requestId !== navigationRequest || selectedFloor !== floor || selectedLayout !== layout) return;
+            if (requestId !== navigationRequest ||
+                selectedFloor !== floor ||
+                selectedLayout !== layoutId) return;
+
             console.error("Head Office Layout loading failed:", error);
-            status.textContent = "Layout লোড করা যায়নি। Internet Connection পরীক্ষা করুন।";
+            status.textContent =
+                "Layout লোড করা যায়নি। Internet Connection পরীক্ষা করুন।";
         }
 
-        if (requestId === navigationRequest && selectedFloor === floor && selectedLayout === layout) {
+        if (requestId === navigationRequest &&
+            selectedFloor === floor &&
+            selectedLayout === layoutId) {
             window.scrollTo(0, 0);
         }
     }
 
+    async function addNewLayout() {
+        if (!selectedFloor) return;
+
+        const current = layoutsFor(selectedFloor);
+        const proposed = window.prompt(
+            "নতুন Layout-এর নাম লিখুন:",
+            "Layout " + (current.length + 1)
+        );
+
+        if (proposed === null) return;
+
+        const name = proposed.trim().slice(0, 60);
+
+        if (!name) {
+            if (manageStatus) manageStatus.textContent =
+                "Layout-এর নাম খালি রাখা যাবে না।";
+            return;
+        }
+
+        if (current.some(item => item.name.toLowerCase() === name.toLowerCase())) {
+            if (manageStatus) manageStatus.textContent =
+                "এই নামে Layout আগে থেকেই আছে।";
+            return;
+        }
+
+        try {
+            const isAdmin = await verifyEmployeeAdminAccess();
+
+            if (!isAdmin || !accessToken) {
+                throw new Error("Admin Login প্রয়োজন।");
+            }
+
+            const id = "layout-" + Date.now().toString(36);
+
+            const newLayout = {
+                id,
+                name,
+                object: selectedFloor + "-" + id
+            };
+
+            current.push(newLayout);
+
+            if (manageStatus) manageStatus.textContent =
+                "নতুন Layout সংরক্ষণ হচ্ছে...";
+
+            try {
+                await saveManifest();
+            } catch (error) {
+                current.pop();
+                throw error;
+            }
+
+            if (manageStatus) manageStatus.textContent =
+                "নতুন Layout যোগ হয়েছে।";
+
+            await openFloor(selectedFloor);
+        } catch (error) {
+            console.error("Adding layout failed:", error);
+            if (manageStatus) manageStatus.textContent =
+                "Layout যোগ করা যায়নি: " + error.message;
+        }
+    }
+
+    async function renameLayout(layoutId) {
+        if (!selectedFloor) return;
+
+        const current = layoutsFor(selectedFloor);
+        const layout = current.find(item => item.id === layoutId);
+        if (!layout) return;
+
+        const proposed = window.prompt("Layout-এর নতুন নাম লিখুন:", layout.name);
+        if (proposed === null) return;
+
+        const name = proposed.trim().slice(0, 60);
+
+        if (!name) {
+            if (manageStatus) manageStatus.textContent =
+                "Layout-এর নাম খালি রাখা যাবে না।";
+            return;
+        }
+
+        if (current.some(item =>
+            item.id !== layoutId &&
+            item.name.toLowerCase() === name.toLowerCase()
+        )) {
+            if (manageStatus) manageStatus.textContent =
+                "এই নামে অন্য Layout আছে।";
+            return;
+        }
+
+        try {
+            const isAdmin = await verifyEmployeeAdminAccess();
+
+            if (!isAdmin || !accessToken) {
+                throw new Error("Admin Login প্রয়োজন।");
+            }
+
+            const oldName = layout.name;
+            layout.name = name;
+
+            try {
+                if (manageStatus) manageStatus.textContent = "নাম সংরক্ষণ হচ্ছে...";
+                await saveManifest();
+            } catch (error) {
+                layout.name = oldName;
+                throw error;
+            }
+
+            if (manageStatus) manageStatus.textContent =
+                "Layout-এর নাম পরিবর্তন হয়েছে।";
+
+            renderLayoutCards(selectedFloor, {}, true);
+
+        } catch (error) {
+            console.error("Renaming layout failed:", error);
+            if (manageStatus) manageStatus.textContent =
+                "নাম পরিবর্তন করা যায়নি: " + error.message;
+        }
+    }
+
     async function uploadSelectedLayout() {
-        if (!selectedFloor || !selectedLayout || !fileInput || !uploadButton || !uploadStatus) return;
+        if (!selectedFloor || !selectedLayout ||
+            !fileInput || !uploadButton || !uploadStatus) return;
 
         const floor = selectedFloor;
-        const layout = selectedLayout;
+        const layoutId = selectedLayout;
+        const layout = layoutsFor(floor).find(item => item.id === layoutId);
+
+        if (!layout) return;
+
         const file = fileInput.files && fileInput.files[0];
 
         const isCurrentUpload = () =>
             selectedFloor === floor &&
-            selectedLayout === layout &&
+            selectedLayout === layoutId &&
             viewer.style.display !== "none";
 
         if (!file) {
-            uploadStatus.textContent = "প্রথমে একটি PNG, JPG অথবা PDF ফাইল নির্বাচন করুন।";
+            uploadStatus.textContent =
+                "প্রথমে একটি PNG, JPG অথবা PDF ফাইল নির্বাচন করুন।";
             return;
         }
 
         const allowedTypes = ["image/png", "image/jpeg", "application/pdf"];
 
         if (!allowedTypes.includes(file.type)) {
-            uploadStatus.textContent = "শুধু PNG, JPG অথবা PDF ফাইল Upload করা যাবে।";
+            uploadStatus.textContent =
+                "শুধু PNG, JPG অথবা PDF ফাইল Upload করা যাবে।";
             return;
         }
 
         if (file.size > 15 * 1024 * 1024) {
-            uploadStatus.textContent = "ফাইলের সাইজ সর্বোচ্চ 15 MB হতে পারবে।";
+            uploadStatus.textContent =
+                "ফাইলের সাইজ সর্বোচ্চ 15 MB হতে পারবে।";
             return;
         }
 
@@ -4072,15 +4395,19 @@ setupEmployeeForm({
 
             if (!isAdmin || !accessToken) {
                 if (isCurrentUpload()) {
-                    uploadStatus.textContent = "Upload অনুমোদিত নয়। Admin Login করুন।";
+                    uploadStatus.textContent =
+                        "Upload অনুমোদিত নয়। Admin Login করুন।";
                 }
                 return;
             }
 
-            if (isCurrentUpload()) uploadStatus.textContent = "Layout Upload হচ্ছে...";
+            if (isCurrentUpload()) {
+                uploadStatus.textContent = "Layout Upload হচ্ছে...";
+            }
 
-            const objectPath = objectPathFor(floor, layout);
-            const uploadUrl = `${SUPABASE_URL}/storage/v1/object/${bucket}/${objectPath}`;
+            const objectPath = objectPathFor(layout);
+            const uploadUrl =
+                `${SUPABASE_URL}/storage/v1/object/${bucket}/${encodeURIComponent(objectPath)}`;
 
             const response = await fetch(uploadUrl, {
                 method: "POST",
@@ -4096,8 +4423,11 @@ setupEmployeeForm({
             if (!response.ok) {
                 const error = await response.json().catch(() => ({}));
                 console.error("Head Office Layout upload failed:", error);
+
                 if (isCurrentUpload()) {
-                    uploadStatus.textContent = "Upload ব্যর্থ: " + (error.message || error.error || response.status);
+                    uploadStatus.textContent =
+                        "Upload ব্যর্থ: " +
+                        (error.message || error.error || response.status);
                 }
                 return;
             }
@@ -4107,18 +4437,25 @@ setupEmployeeForm({
             }
 
             if (isCurrentUpload()) {
-                uploadStatus.textContent = "Upload সফল। Layout আপডেট হচ্ছে...";
-                await openSelectedLayout(layout);
+                uploadStatus.textContent =
+                    "Upload সফল। Layout আপডেট হচ্ছে...";
+
+                await openSelectedLayout(layoutId);
 
                 if (isCurrentUpload()) {
-                    uploadStatus.textContent = "Layout সফলভাবে Upload / Replace হয়েছে।";
+                    uploadStatus.textContent =
+                        "Layout সফলভাবে Upload / Replace হয়েছে।";
                 }
             }
+
         } catch (error) {
             console.error("Head Office Layout upload error:", error);
+
             if (isCurrentUpload()) {
-                uploadStatus.textContent = "Upload করা যায়নি। Internet Connection পরীক্ষা করুন।";
+                uploadStatus.textContent =
+                    "Upload করা যায়নি: " + error.message;
             }
+
         } finally {
             uploadButton.disabled = false;
         }
@@ -4127,7 +4464,13 @@ setupEmployeeForm({
     button.addEventListener("click", showLayoutPage);
     backButton.addEventListener("click", showDashboard);
 
-    if (uploadButton) uploadButton.addEventListener("click", uploadSelectedLayout);
+    if (uploadButton) {
+        uploadButton.addEventListener("click", uploadSelectedLayout);
+    }
+
+    if (addButton) {
+        addButton.addEventListener("click", addNewLayout);
+    }
 
     floorCards.addEventListener("click", event => {
         const card = event.target.closest("[data-floor]");
@@ -4135,8 +4478,16 @@ setupEmployeeForm({
     });
 
     slots.addEventListener("click", event => {
+        const renameButton = event.target.closest("[data-rename-layout]");
+
+        if (renameButton) {
+            event.stopPropagation();
+            renameLayout(renameButton.dataset.renameLayout);
+            return;
+        }
+
         const card = event.target.closest("[data-layout]");
-        if (card) openSelectedLayout(Number(card.dataset.layout));
+        if (card) openSelectedLayout(card.dataset.layout);
     });
 
     if (backToFloors) {
@@ -4159,7 +4510,9 @@ setupEmployeeForm({
             window.scrollTo(0, 0);
         });
     }
+
 })();
+
 
 /* ORGANOGRAM PAGE - BLANK WHITE PAGE */
 (function () {

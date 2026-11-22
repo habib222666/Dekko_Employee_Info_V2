@@ -92,7 +92,7 @@ departmentBackButton.addEventListener("click", function() {
 
         departmentCards.style.display = "grid";
         departmentPage.style.display = "block";
-        departmentPageTitle.textContent = "🏢 All Departments";
+        departmentPageTitle.textContent = "🏢 All Departments (Head Office)";
 
     } else {
 
@@ -119,6 +119,34 @@ const employeeDetails = document.getElementById("employeeDetails");
 const backButton = document.getElementById("backButton");
 
 const adminButton = document.getElementById("adminButton");
+
+function updateDashboardAdminState() {
+    const adminBtn = document.getElementById("adminButton");
+    const salaryBtn = document.getElementById("salaryButton");
+    const createBtn = document.getElementById("createNewEmployeeButton");
+
+    const unlocked = Boolean(accessToken);
+
+    if (adminBtn) adminBtn.textContent = unlocked ? "Logout" : "Admin Login";
+
+    [salaryBtn, createBtn].forEach(button => {
+        if (!button) return;
+        const label = button.querySelector(".dashboard-label");
+        if (!label) return;
+
+        const title = label.querySelector(".dashboard-title");
+        if (title) {
+            if (button.id === "salaryButton") {
+                title.textContent = unlocked ? "Salary Portal" : "Salary Portal 🔒";
+            } else {
+                title.textContent = unlocked
+                    ? "Create New Employee"
+                    : "Create New Employee 🔒";
+            }
+        }
+    });
+}
+
 
 const loginPage = document.getElementById("loginPage");
 const loginBackButton = document.getElementById("loginBackButton");
@@ -151,6 +179,7 @@ let employees = [];
 ========================= */
 
 let accessToken = null;
+window.getDekkoSignatureAdminToken = () => accessToken;
 
 const hashParams = new URLSearchParams(
     window.location.hash.substring(1)
@@ -179,6 +208,7 @@ const DESIGNATION_RANK = new Map([
     ["Chief Marketing Officer (CMO)", 2],
     ["Head of Operation", 2],
     ["Head of Planning", 3],
+    ["Head of CS", 3],
     ["Head of Supply Chain Management", 3],
     ["Divisional Head", 3],
     ["Deputy General Manager (DGM)", 4],
@@ -222,6 +252,7 @@ const DESIGNATION_ALIASES = new Map([
     ["cmo", "Chief Marketing Officer (CMO)"],
     ["head of operation", "Head of Operation"],
     ["head of planning", "Head of Planning"],
+    ["head of cs", "Head of CS"],
     ["head of supply chain management", "Head of Supply Chain Management"],
     ["divisional head", "Divisional Head"],
     ["deputy general manager", "Deputy General Manager (DGM)"],
@@ -359,6 +390,18 @@ async function loadEmployees(source = "headoffice") {
 
         employees = await response.json();
 
+        const staffKicker = document.querySelector(
+            source === "factory"
+                ? "#allFactoryEmployeesButton .dashboard-kicker"
+                : "#allEmployeesButton .dashboard-kicker"
+        );
+        if (staffKicker) {
+            staffKicker.textContent = source === "factory"
+                ? `${employees.length} FACTORY STAFF`
+                : `${employees.length} STAFF`;
+        }
+
+
         // Restore favorites saved on this device.
         favoriteEmployees = JSON.parse(
             localStorage.getItem(favoriteStorageKey(source)) || "[]"
@@ -454,6 +497,25 @@ function getPhoto(employee) {
         >
     `;
 }
+const PABX_DEPARTMENT_PASTEL_COLORS = [
+    "#F3F8FF", "#FFF3F5", "#F2F9F1", "#FFF9EF", "#F6F1FF",
+    "#EFFAF8", "#FFF4EC", "#F1F4FF", "#FFFCED", "#EFF8F2",
+    "#FFF0F7", "#F3F5F9", "#EAF6FF", "#FCEFF0", "#ECF8F0",
+    "#FFF6E5", "#F1EDFF", "#E8F7F5", "#FCEFE5", "#EDF2FF",
+    "#F8EEFA", "#EAF6EF", "#FFF0E6", "#EEF5EA", "#F4F0FF"
+];
+
+function getDepartmentPastelColorMap(names) {
+    const sortedNames = [...new Set(names)].sort((a, b) =>
+        a.localeCompare(b)
+    );
+    return new Map(sortedNames.map((name, index) => [
+        name,
+        PABX_DEPARTMENT_PASTEL_COLORS[index] ||
+            `hsl(${(index * 137.508) % 360} 65% 96%)`
+    ]));
+}
+
 function showDepartmentCards() {
 
     departmentCards.innerHTML = "";
@@ -463,7 +525,7 @@ function showDepartmentCards() {
     employees.forEach((employee) => {
 
         const department =
-            (employee.department || "Other").trim();
+            String(employee.group_department || employee.department || "Other").trim();
 
         if (!departments[department]) {
             departments[department] = [];
@@ -477,15 +539,26 @@ function showDepartmentCards() {
             a.localeCompare(b)
         );
 
+    const departmentColorMap =
+        getDepartmentPastelColorMap(departmentNames);
+
+    const departmentKicker = document.querySelector(
+        "#allDepartmentsButton .dashboard-kicker"
+    );
+    if (departmentKicker) {
+        departmentKicker.textContent =
+            `${departmentNames.length} DEPTS`;
+    }
+
     departmentNames.forEach((department, index) => {
 
         const card =
             document.createElement("button");
 
         card.type = "button";
-        card.className =
-            "department-card department-color-" +
-            ((index % 30) + 1);
+        card.className = "department-card";
+        card.style.backgroundColor = departmentColorMap.get(department);
+        card.style.color = "#263445";
 
         card.innerHTML = `
             <span class="department-name">
@@ -508,7 +581,16 @@ function showDepartmentCards() {
             departmentEmployeeList.innerHTML = "";
             departmentEmployeeList.style.display = "flex";
 
-            const selectedEmployees = departments[department];
+            const selectedEmployees = [...departments[department]].sort((a, b) => {
+                const rankA = DESIGNATION_RANK.get(normalizeDesignation(a.designation))
+                    ?? DESIGNATION_ORDER.length;
+                const rankB = DESIGNATION_RANK.get(normalizeDesignation(b.designation))
+                    ?? DESIGNATION_ORDER.length;
+                return rankA - rankB ||
+                    String(a.employee_name || "").localeCompare(
+                        String(b.employee_name || "")
+                    );
+            });
 
             selectedEmployees.forEach((employee) => {
                 const div = document.createElement("div");
@@ -572,7 +654,24 @@ function showDepartmentCards() {
         departmentNames.length ? "block" : "none";
 }
 
+async function updateFavoriteDashboardCount() {
+    const headOffice = JSON.parse(
+        localStorage.getItem(favoriteStorageKey("headoffice")) || "[]"
+    );
+    const factory = JSON.parse(
+        localStorage.getItem(favoriteStorageKey("factory")) || "[]"
+    );
+    const kicker = document.querySelector(
+        "#favoriteEmployeesButton .dashboard-kicker"
+    );
+    if (kicker) {
+        kicker.textContent = `${headOffice.length + factory.length} SAVED`;
+    }
+}
+
 async function showFavoriteEmployees() {
+    updateFavoriteDashboardCount();
+
     favoriteEmployeeList.innerHTML = "<p>Loading favorite employees...</p>";
 
     const sources = [
@@ -1454,7 +1553,11 @@ employeeSearchInput?.addEventListener("keydown", event => {
     }
 });
 
+let photoEmployeeSelectRequest = 0;
+
 async function loadEmployeeSelect() {
+    const requestId = ++photoEmployeeSelectRequest;
+
     employeeSelect.replaceChildren(new Option("Select employee", ""));
 
     try {
@@ -1481,12 +1584,21 @@ async function loadEmployeeSelect() {
             return { source, list: await response.json() };
         }));
 
+        if (requestId !== photoEmployeeSelectRequest) return;
+
+        const addedEmployees = new Set();
+
         results.forEach(({ source, list }) => {
             list.forEach(employee => {
                 if (employee.employee_no == null) return;
 
+                const employeeKey = `${source.key}::${employee.employee_no}`;
+                if (addedEmployees.has(employeeKey)) return;
+
+                addedEmployees.add(employeeKey);
+
                 const option = document.createElement("option");
-                option.value = `${source.key}::${employee.employee_no}`;
+                option.value = employeeKey;
                 option.dataset.source = source.key;
                 option.dataset.employeeNo = String(employee.employee_no);
                 option.dataset.employeeName = String(employee.employee_name || "");
@@ -1499,6 +1611,8 @@ async function loadEmployeeSelect() {
 
         renderPhotoEmployeeSuggestions();
     } catch (error) {
+        if (requestId !== photoEmployeeSelectRequest) return;
+
         console.error("Photo employee list error:", error);
         uploadStatus.textContent = "Employee list could not load: " + error.message;
     }
@@ -1677,23 +1791,25 @@ editExistingEmployeeOpen?.addEventListener("click", () => {
     }
 
     currentEmployeeSource = editExistingEmployeeSource.value;
-    adminPage.style.display = "none";
+    const editPage = document.getElementById("editExistingEmployeePage");
+    if (editPage) editPage.style.display = "none";
     showDetails(employee, "adminEdit");
 });
 
 
 if (adminButton) {
-    adminButton.addEventListener(
-        "click",
-        function() {
-
-            listPage.style.display = "none";
-            detailsPage.style.display = "none";
-            loginPage.style.display = "block";
-            loginStatus.textContent = "";
-
+    adminButton.addEventListener("click", function() {
+        if (accessToken) {
+            logoutButton.click();
+            window.scrollTo(0, 0);
+            return;
         }
-    );
+
+        listPage.style.display = "none";
+        detailsPage.style.display = "none";
+        loginPage.style.display = "block";
+        loginStatus.textContent = "";
+    });
 }
 
 
@@ -1877,7 +1993,22 @@ async function verifyEmployeeAdminAccess() {
 
 function setEmployeeAdminPanelVisible(allowed) {
     const panel = document.getElementById("employeeAddAdminOnly");
-    if (panel) panel.style.display = allowed ? "block" : "none";
+
+    // The Add Employee cards are moved into separate feature pages.
+    // Keep the old wrapper hidden; Admin UID verification remains unchanged.
+    if (panel) panel.style.display = "none";
+
+    if (!allowed) {
+        [
+            "addHeadOfficeEmployeePage",
+            "addFactoryEmployeePage",
+            "employeePhotoUploadPage",
+            "editExistingEmployeePage",
+        ].forEach(id => {
+            const page = document.getElementById(id);
+            if (page) page.style.display = "none";
+        });
+    }
 }
 
 /* =========================
@@ -1940,8 +2071,9 @@ async function restoreSavedAdminSession() {
         loginPage.style.display =
             "none";
 
-        adminPage.style.display =
-            "block";
+        adminPage.style.display = "none";
+        listPage.style.display = "block";
+        updateDashboardAdminState();
 
         uploadStatus.textContent = "";
         loadEmployeeSelect();
@@ -1963,6 +2095,401 @@ async function restoreSavedAdminSession() {
     }
 }
 
+
+/* =========================
+   CREATE NEW EMPLOYEE NAVIGATION
+========================= */
+(function setupCreateEmployeeNavigation() {
+    const pageIds = [
+        "addHeadOfficeEmployeePage",
+        "addFactoryEmployeePage",
+        "employeePhotoUploadPage",
+        "editExistingEmployeePage",
+        "employeePabxListPage",
+        "emailSignaturePage"
+    ];
+
+    function hideFeaturePages() {
+        pageIds.forEach(id => {
+            const page = document.getElementById(id);
+            if (page) page.style.display = "none";
+        });
+    }
+
+    function openFeaturePage(id) {
+        if (!accessToken) return;
+        hideFeaturePages();
+        adminPage.style.display = "none";
+        document.getElementById("createEmployeeMenuPage").style.display = "none";
+        listPage.style.display = "none";
+        document.getElementById(id).style.display = "block";
+    }
+
+    // Public E-mail Signature page; editing is separately verified in its iframe.
+    const signaturePage = document.getElementById("emailSignaturePage");
+    const signatureChooser = document.getElementById("emailSignatureDivisionChooser");
+    const signatureFrameWrap = document.getElementById("emailSignatureFrameWrap");
+    const signatureFrame = document.getElementById("emailSignatureFrame");
+    const signatureBackButton = document.getElementById("emailSignatureBackButton");
+
+    // Recheck Admin access after the Signature Editor iframe finishes loading.
+    signatureFrame.addEventListener("load", () => {
+        try {
+            const frameWindow = signatureFrame.contentWindow;
+            if (frameWindow &&
+                typeof frameWindow.refreshSignatureAdminAccess === "function") {
+                frameWindow.refreshSignatureAdminAccess();
+            }
+        } catch (error) {
+            console.warn("Signature Editor access refresh failed:", error);
+        }
+    });
+
+    document.getElementById("emailSignatureDashboardButton")?.addEventListener("click", () => {
+        hideFeaturePages();
+        adminPage.style.display = "none";
+        document.getElementById("createEmployeeMenuPage").style.display = "none";
+        listPage.style.display = "none";
+        signatureChooser.style.display = "grid";
+        signatureFrameWrap.style.display = "none";
+        signatureFrame.src = "about:blank";
+        signatureBackButton.textContent = "← Back to Home";
+        signaturePage.style.display = "block";
+        window.scrollTo(0, 0);
+    });
+
+    function openEmailSignatureDivision(file) {
+        signatureChooser.style.display = "none";
+        signatureFrameWrap.style.display = "block";
+        signatureBackButton.textContent = "← Back to Divisions";
+        signatureFrame.src = file;
+        window.scrollTo(0, 0);
+    }
+
+    document.getElementById("emailSignatureOldHeadOfficeButton")?.addEventListener("click", () => {
+        openEmailSignatureDivision("email-signature-headoffice-old-logo.html");
+    });
+
+    document.getElementById("emailSignatureOldFactoryButton")?.addEventListener("click", () => {
+        openEmailSignatureDivision("email-signature-factory-old-logo.html");
+    });
+
+    document.getElementById("emailSignatureHeadOfficeButton")?.addEventListener("click", () => {
+        openEmailSignatureDivision("email-signature-headoffice.html");
+    });
+
+    document.getElementById("emailSignatureFactoryButton")?.addEventListener("click", () => {
+        openEmailSignatureDivision("email-signature-factory.html");
+    });
+
+    signatureBackButton?.addEventListener("click", () => {
+        signatureFrame.src = "about:blank";
+
+        if (signatureFrameWrap.style.display !== "none") {
+            signatureFrameWrap.style.display = "none";
+            signatureChooser.style.display = "grid";
+            signatureBackButton.textContent = "← Back to Home";
+        } else {
+            signaturePage.style.display = "none";
+            listPage.style.display = "block";
+        }
+
+        window.scrollTo(0, 0);
+    });
+
+    const photoCard = document.querySelector("#adminPage > .admin-card");
+    const editCard = document.getElementById("editExistingEmployeeCard");
+    const addCards = document.querySelectorAll("#employeeAddAdminOnly > .admin-card");
+
+    if (photoCard) document.getElementById("employeePhotoUploadContent").appendChild(photoCard);
+    if (editCard) document.getElementById("editExistingEmployeeContent").appendChild(editCard);
+
+    if (addCards.length >= 2) {
+        document.getElementById("addHeadOfficeEmployeeContent").appendChild(addCards[0]);
+        document.getElementById("addFactoryEmployeeContent").appendChild(addCards[1]);
+    }
+
+    const oldWrapper = document.getElementById("employeeAddAdminOnly");
+    if (oldWrapper) oldWrapper.style.display = "none";
+
+    document.getElementById("createNewEmployeeButton")?.addEventListener("click", () => {
+        if (!accessToken) {
+            updateDashboardAdminState();
+            return;
+        }
+
+        hideFeaturePages();
+        listPage.style.display = "none";
+        adminPage.style.display = "none";
+        document.getElementById("createEmployeeMenuPage").style.display = "block";
+        window.scrollTo(0, 0);
+    });
+
+    document.getElementById("createEmployeeMenuBackButton")?.addEventListener("click", () => {
+        document.getElementById("createEmployeeMenuPage").style.display = "none";
+        listPage.style.display = "block";
+        window.scrollTo(0, 0);
+    });
+
+    document.getElementById("addHeadOfficeEmployeeMenuButton")?.addEventListener("click", () => openFeaturePage("addHeadOfficeEmployeePage"));
+    document.getElementById("addFactoryEmployeeMenuButton")?.addEventListener("click", () => openFeaturePage("addFactoryEmployeePage"));
+    document.getElementById("employeePhotoUploadMenuButton")?.addEventListener("click", () => openFeaturePage("employeePhotoUploadPage"));
+    document.getElementById("editExistingEmployeeMenuButton")?.addEventListener("click", () => openFeaturePage("editExistingEmployeePage"));
+
+    // Public PABX List access from Dashboard; Admin login is not required.
+    document.getElementById("employeePabxDashboardButton")?.addEventListener("click", () => {
+        hideFeaturePages();
+        listPage.style.display = "none";
+        adminPage.style.display = "none";
+        document.getElementById("createEmployeeMenuPage").style.display = "none";
+        document.getElementById("employeePabxListPage").style.display = "block";
+        loadEmployeePabxList("headoffice");
+        window.scrollTo(0, 0);
+    });
+
+    document.getElementById("employeePabxListBackButton")?.addEventListener("click", () => {
+        hideFeaturePages();
+        listPage.style.display = "block";
+        window.scrollTo(0, 0);
+    });
+
+    const pabxStatus = document.getElementById("employeePabxListStatus");
+    const pabxContent = document.getElementById("employeePabxListContent");
+    const headOfficePabxButton = document.getElementById("headOfficePabxButton");
+    const factoryPabxButton = document.getElementById("factoryPabxButton");
+
+
+    const pabxSearchInput = document.getElementById("employeePabxSearch");
+    const pabxSuggestions = document.getElementById("employeePabxSuggestions");
+    const pabxSearchClear = document.getElementById("employeePabxSearchClear");
+    let pabxEmployees = [];
+    let pabxSourceName = "Head Office";
+
+    function pabxDepartment(employee) {
+        return String(employee.group_department || employee.department || "Other").trim();
+    }
+
+    function renderPabxSuggestions(matches) {
+        if (!pabxSuggestions || !pabxSearchInput) return;
+        pabxSuggestions.replaceChildren();
+        const suggestions = matches.slice(0, 8);
+
+        suggestions.forEach(employee => {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "pabx-suggestion";
+            button.setAttribute("role", "option");
+
+            const identity = document.createElement("span");
+            identity.className = "pabx-suggestion-identity";
+            identity.textContent = `${employee.employee_no || "-"} — ${employee.employee_name || "-"}`;
+
+            const department = document.createElement("small");
+            department.textContent = pabxDepartment(employee);
+
+            button.append(identity, department);
+            button.addEventListener("click", () => {
+                pabxSearchInput.value = String(employee.employee_no || employee.employee_name || "");
+                pabxSuggestions.hidden = true;
+                pabxSearchInput.setAttribute("aria-expanded", "false");
+                renderPabxTable([employee]);
+                pabxStatus.textContent = `${pabxSourceName}: ${employee.employee_name || "Employee"} (${employee.employee_no || "No ID"})`;
+            });
+            pabxSuggestions.appendChild(button);
+        });
+
+        pabxSuggestions.hidden = suggestions.length === 0;
+        pabxSearchInput.setAttribute("aria-expanded", suggestions.length ? "true" : "false");
+    }
+
+    function renderPabxTable(employees) {
+        pabxContent.replaceChildren();
+        if (!employees.length) return;
+
+        const departmentColorMap =
+            getDepartmentPastelColorMap(employees.map(pabxDepartment));
+        const table = document.createElement("table");
+        table.className = "employee-pabx-table";
+        const thead = document.createElement("thead");
+        const headerRow = document.createElement("tr");
+
+        ["Sl.", "Department", "Name", "Designation", "PABX No."].forEach(label => {
+            const th = document.createElement("th");
+            th.textContent = label;
+            headerRow.appendChild(th);
+        });
+
+        thead.appendChild(headerRow);
+        table.appendChild(thead);
+        const tbody = document.createElement("tbody");
+        let departmentSerial = 0;
+
+        employees.forEach((employee, index) => {
+            const row = document.createElement("tr");
+            const currentDepartment = pabxDepartment(employee);
+            const departmentColor = departmentColorMap.get(currentDepartment);
+            row.style.backgroundColor = departmentColor;
+
+            const previousDepartment = index > 0
+                ? pabxDepartment(employees[index - 1])
+                : null;
+            const isNewDepartment = currentDepartment !== previousDepartment;
+            departmentSerial = isNewDepartment ? 1 : departmentSerial + 1;
+
+            const slCell = document.createElement("td");
+            slCell.textContent = String(departmentSerial);
+            slCell.style.backgroundColor = departmentColor;
+            row.appendChild(slCell);
+
+            if (isNewDepartment) {
+                const departmentCount = employees.slice(index)
+                    .findIndex(item => pabxDepartment(item) !== currentDepartment);
+                const departmentCell = document.createElement("td");
+                departmentCell.textContent = currentDepartment;
+                departmentCell.rowSpan = departmentCount === -1
+                    ? employees.length - index : departmentCount;
+                departmentCell.className = "pabx-department-cell";
+                departmentCell.style.backgroundColor = departmentColor;
+                departmentCell.style.color = "#263445";
+                departmentCell.style.fontWeight = "700";
+                row.appendChild(departmentCell);
+            }
+
+            [
+                employee.employee_name || "-",
+                employee.designation || "-",
+                employee.pabx_number || "-"
+            ].forEach(value => {
+                const td = document.createElement("td");
+                td.textContent = String(value);
+                td.style.backgroundColor = departmentColor;
+                row.appendChild(td);
+            });
+            tbody.appendChild(row);
+        });
+
+        table.appendChild(tbody);
+        pabxContent.appendChild(table);
+    }
+
+    function updatePabxSearch() {
+        if (!pabxSearchInput) return;
+        const query = pabxSearchInput.value.trim().toLocaleLowerCase();
+
+        if (!query) {
+            if (pabxSuggestions) {
+                pabxSuggestions.replaceChildren();
+                pabxSuggestions.hidden = true;
+            }
+            pabxSearchInput.setAttribute("aria-expanded", "false");
+            renderPabxTable(pabxEmployees);
+            pabxStatus.textContent = pabxEmployees.length
+                ? `${pabxSourceName}: ${pabxEmployees.length} employees`
+                : "No employees found.";
+            return;
+        }
+
+        const matches = pabxEmployees.filter(employee =>
+            String(employee.employee_no || "").toLocaleLowerCase().includes(query) ||
+            String(employee.employee_name || "").toLocaleLowerCase().includes(query)
+        );
+        renderPabxSuggestions(matches);
+        renderPabxTable(matches);
+        pabxStatus.textContent = matches.length
+            ? `Search results: ${matches.length} employees`
+            : "No matching employees found.";
+    }
+
+    pabxSearchInput?.addEventListener("input", updatePabxSearch);
+    pabxSearchInput?.addEventListener("keydown", event => {
+        if (event.key === "Escape" && pabxSuggestions) {
+            pabxSuggestions.hidden = true;
+            pabxSearchInput.setAttribute("aria-expanded", "false");
+        }
+        if (event.key === "Enter" && pabxSuggestions && !pabxSuggestions.hidden) {
+            const first = pabxSuggestions.querySelector(".pabx-suggestion");
+            if (first) first.click();
+        }
+    });
+    pabxSearchClear?.addEventListener("click", () => {
+        if (pabxSearchInput) pabxSearchInput.value = "";
+        updatePabxSearch();
+        pabxSearchInput?.focus();
+    });
+
+    async function loadEmployeePabxList(source) {
+        if (!pabxContent || !pabxStatus) return;
+        const isFactory = source === "factory";
+        const viewName = isFactory
+            ? "employee_directory_factory_public"
+            : "employee_directory_public";
+
+        pabxSourceName = isFactory ? "Factory" : "Head Office";
+        headOfficePabxButton?.classList.toggle("active", !isFactory);
+        factoryPabxButton?.classList.toggle("active", isFactory);
+        if (pabxSearchInput) pabxSearchInput.value = "";
+        if (pabxSuggestions) {
+            pabxSuggestions.replaceChildren();
+            pabxSuggestions.hidden = true;
+        }
+        pabxStatus.textContent = "Loading employees...";
+        pabxContent.replaceChildren();
+
+        try {
+            const fields = isFactory
+                ? "employee_no,department,employee_name,designation,pabx_number"
+                : "employee_no,department,group_department,employee_name,designation,pabx_number";
+
+            const response = await fetch(
+                `${SUPABASE_URL}/rest/v1/${viewName}?select=${fields}&order=department.asc,employee_name.asc`,
+                {
+                    headers: {
+                        apikey: SUPABASE_KEY,
+                        Authorization: `Bearer ${SUPABASE_KEY}`
+                    }
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error("Employee list could not load (" + response.status + ").");
+            }
+
+            pabxEmployees = await response.json();
+            pabxEmployees.sort((a, b) => {
+                const departmentCompare = pabxDepartment(a).localeCompare(
+                    pabxDepartment(b), undefined, { sensitivity: "base" }
+                );
+                if (departmentCompare !== 0) return departmentCompare;
+
+                const designationA = normalizeDesignation(a.designation);
+                const designationB = normalizeDesignation(b.designation);
+                const rankA = DESIGNATION_RANK.has(designationA)
+                    ? DESIGNATION_RANK.get(designationA) : DESIGNATION_ORDER.length;
+                const rankB = DESIGNATION_RANK.has(designationB)
+                    ? DESIGNATION_RANK.get(designationB) : DESIGNATION_ORDER.length;
+
+                if (rankA !== rankB) return rankA - rankB;
+                return String(a.employee_name || "").localeCompare(String(b.employee_name || ""));
+            });
+
+            updatePabxSearch();
+        } catch (error) {
+            pabxStatus.textContent = error.message;
+        }
+    }
+
+    headOfficePabxButton?.addEventListener("click", () => loadEmployeePabxList("headoffice"));
+    factoryPabxButton?.addEventListener("click", () => loadEmployeePabxList("factory"));
+
+    document.querySelectorAll("[data-create-employee-back]").forEach(button => {
+        button.addEventListener("click", () => {
+            hideFeaturePages();
+            document.getElementById("createEmployeeMenuPage").style.display = "block";
+        });
+    });
+})();
+
+updateDashboardAdminState();
 restoreSavedAdminSession();
 
 
@@ -2080,13 +2607,12 @@ loginButton.addEventListener(
             adminPassword.value = "";
 
 
-            loginPage.style.display =
-                "none";
-
-
-            adminPage.style.display =
-                "block";
-
+            loginPage.style.display = "none";
+            adminPage.style.display = "none";
+            document.getElementById("createEmployeeMenuPage").style.display = "none";
+            listPage.style.display = "block";
+            setEmployeeAdminPanelVisible(true);
+            updateDashboardAdminState();
 
             uploadStatus.textContent = "";
         loadEmployeeSelect();
@@ -2120,58 +2646,47 @@ loginButton.addEventListener(
    ADMIN BACK
 ========================= */
 
-adminBackButton.addEventListener(
-    "click",
-    function() {
 
-        adminPage.style.display =
-            "none";
+adminBackButton.addEventListener("click", function() {
+    [
+        "addHeadOfficeEmployeePage",
+        "addFactoryEmployeePage",
+        "employeePhotoUploadPage",
+        "editExistingEmployeePage"
+    ].forEach(id => {
+        const page = document.getElementById(id);
+        if (page) page.style.display = "none";
+    });
 
+    adminPage.style.display = "none";
+    document.getElementById("createEmployeeMenuPage").style.display = "none";
+    listPage.style.display = "block";
+    uploadStatus.textContent = "";
+    updateDashboardAdminState();
+});
 
-        listPage.style.display =
-            "block";
+logoutButton.addEventListener("click", function() {
+    accessToken = null;
+    localStorage.removeItem("dekko_admin_session");
 
+    [
+        "createEmployeeMenuPage",
+        "addHeadOfficeEmployeePage",
+        "addFactoryEmployeePage",
+        "employeePhotoUploadPage",
+        "editExistingEmployeePage"
+    ].forEach(id => {
+        const page = document.getElementById(id);
+        if (page) page.style.display = "none";
+    });
 
-        uploadStatus.textContent =
-            "";
-
-    }
-);
-
-
-/* =========================
-   LOGOUT
-========================= */
-
-logoutButton.addEventListener(
-    "click",
-    function() {
-
-        accessToken = null;
-
-        localStorage.removeItem(
-            "dekko_admin_session"
-        );
-
-
-        adminPage.style.display =
-            "none";
-
-
-        listPage.style.display =
-            "block";
-
-
-        uploadStatus.textContent =
-            "";
-
-    }
-);
-
-
-/* =========================
-   PHOTO UPLOAD
-========================= */
+    adminPage.style.display = "none";
+    loginPage.style.display = "none";
+    listPage.style.display = "block";
+    setEmployeeAdminPanelVisible(false);
+    updateDashboardAdminState();
+    uploadStatus.textContent = "";
+});
 
 uploadPhotoButton.addEventListener("click", async function() {
     if (!accessToken) {
@@ -2277,7 +2792,8 @@ backButton.addEventListener(
             allEmployeesPage.style.display = "none";
             departmentPage.style.display = "none";
             favoritePage.style.display = "none";
-            adminPage.style.display = "block";
+            const editPage = document.getElementById("editExistingEmployeePage");
+            if (editPage) editPage.style.display = "block";
         } else if (detailsPreviousPage === "favorite") {
 
             listPage.style.display =
@@ -2371,7 +2887,7 @@ allDepartmentsButton.addEventListener(
 
         departmentPage.style.display = "block";
 
-        departmentPageTitle.textContent = "🏢 All Departments";
+        departmentPageTitle.textContent = "🏢 All Departments (Head Office)";
         departmentEmployeeList.innerHTML = "";
 
         showDepartmentCards();
@@ -2585,89 +3101,6 @@ loadEmployees();
 
 
 /* =========================
-   CREATE NEW USER
-========================= */
-
-document.addEventListener("DOMContentLoaded", function () {
-
-    const createUserButton = document.getElementById("createUserButton");
-
-    if (!createUserButton) return;
-
-    createUserButton.addEventListener("click", async function () {
-
-        const email = prompt("Enter new user email:");
-
-        if (!email) return;
-
-        const password = prompt("Enter password (minimum 6 characters):");
-
-        if (!password) return;
-
-        if (password.length < 6) {
-            alert("Password must be at least 6 characters.");
-            return;
-        }
-
-        createUserButton.disabled = true;
-        createUserButton.textContent = "Creating...";
-
-        try {
-
-            const response = await fetch(
-                `${SUPABASE_URL}/auth/v1/signup`,
-                {
-                    method: "POST",
-                    headers: {
-                        "apikey": SUPABASE_KEY,
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        email: email,
-                        password: password
-                    })
-                }
-            );
-
-            const data = await response.json();
-
-            console.log("Create User Response:", data);
-
-            if (!response.ok) {
-                throw new Error(
-                    data.msg ||
-                    data.message ||
-                    data.error_description ||
-                    "User creation failed"
-                );
-            }
-
-            alert(
-                "User created successfully!\n\n" +
-                "Email: " + email
-            );
-
-        } catch (error) {
-
-            console.error("Create User Error:", error);
-
-            alert(
-                "User creation failed:\n\n" +
-                error.message
-            );
-
-        } finally {
-
-            createUserButton.disabled = false;
-            createUserButton.textContent = "Create New User";
-
-        }
-
-    });
-
-});
-
-/* =========================
    BIRTHDAY FEATURE
 ========================= */
 
@@ -2727,6 +3160,13 @@ function renderHomeBirthdayCelebrations() {
         })
         .filter(Boolean)
         .sort((a, b) => a.order - b.order);
+
+    const birthdayKicker = document.querySelector(
+        "#birthdayButton .dashboard-kicker"
+    );
+    if (birthdayKicker) {
+        birthdayKicker.textContent = `${upcoming.length} BIRTHDAYS`;
+    }
 
     if (!upcoming.length) {
         list.innerHTML =
@@ -2840,7 +3280,6 @@ function showBirthdayEmployees(month) {
 
 function exportBirthdayExcel() {
     if (!selectedBirthdayEmployees.length || !selectedBirthdayMonth) return;
-
     const monthName = birthdayMonthNames[selectedBirthdayMonth - 1];
     const table = birthdayEmployeeList.querySelector(".birthday-table");
     if (!table) return;
@@ -2854,7 +3293,7 @@ function exportBirthdayExcel() {
                 body { font-family: Arial, sans-serif; }
                 h2 { text-align: center; }
                 table { border-collapse: collapse; width: 100%; }
-                th, td { border: 1px solid #777; padding: 8px; text-align: left; }
+                th, td { border: 1px solid #1976d2; padding: 8px; text-align: left; }
                 th { background: #e8edf5; font-weight: bold; }
             </style>
         </head>
@@ -2864,13 +3303,24 @@ function exportBirthdayExcel() {
         </body>
         </html>`;
 
+    const fileName = `Birthday_List_${monthName}.xls`;
+
+    if (
+        window.AndroidBirthdayExport &&
+        typeof window.AndroidBirthdayExport.saveBirthdayExcel === "function"
+    ) {
+        const base64Html = btoa(unescape(encodeURIComponent("\ufeff" + workbookHtml)));
+        window.AndroidBirthdayExport.saveBirthdayExcel(base64Html, fileName);
+        return;
+    }
+
     const blob = new Blob(["\ufeff", workbookHtml], {
         type: "application/vnd.ms-excel;charset=utf-8;"
     });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `Birthday_List_${monthName}.xls`;
+    link.download = fileName;
     document.body.appendChild(link);
     link.click();
     link.remove();
@@ -2879,6 +3329,15 @@ function exportBirthdayExcel() {
 
 function printBirthdayList() {
     if (!selectedBirthdayEmployees.length) return;
+
+    if (
+        window.AndroidBirthdayExport &&
+        typeof window.AndroidBirthdayExport.printBirthdayList === "function"
+    ) {
+        window.AndroidBirthdayExport.printBirthdayList();
+        return;
+    }
+
     window.print();
 }
 
@@ -3215,6 +3674,844 @@ setupEmployeeForm({
     closeLabel: "− Close Factory Form"
 });
 
+
+
+
+/* HEAD OFFICE LAYOUT - DYNAMIC LAYOUTS, ADMIN MANAGEMENT AND IMAGE ZOOM */
+
+(function () {
+
+    "use strict";
+
+    const button = document.getElementById("headOfficeLayoutButton");
+    const page = document.getElementById("headOfficeLayoutPage");
+    const backButton = document.getElementById("headOfficeLayoutBackButton");
+    const floorCards = document.getElementById("headOfficeLayoutFloorCards");
+    const slots = document.getElementById("headOfficeLayoutSlots");
+    const slotsTitle = document.getElementById("headOfficeLayoutSlotsTitle");
+    const slotGrid = document.getElementById("headOfficeLayoutSlotGrid");
+    const addButton = document.getElementById("headOfficeLayoutAddButton");
+    const manageStatus = document.getElementById("headOfficeLayoutManageStatus");
+    const viewer = document.getElementById("headOfficeLayoutViewer");
+    const floorTitle = document.getElementById("headOfficeLayoutFloorTitle");
+    const status = document.getElementById("headOfficeLayoutStatus");
+    const preview = document.getElementById("headOfficeLayoutPreview");
+    const download = document.getElementById("headOfficeLayoutDownload");
+    const backToFloors = document.getElementById("headOfficeLayoutBackToFloors");
+    const backToSlots = document.getElementById("headOfficeLayoutBackToSlots");
+    const adminPanel = document.getElementById("headOfficeLayoutAdminPanel");
+    const fileInput = document.getElementById("headOfficeLayoutFile");
+    const uploadButton = document.getElementById("headOfficeLayoutUploadButton");
+    const uploadStatus = document.getElementById("headOfficeLayoutUploadStatus");
+    const dashboard = document.getElementById("departmentSection");
+    const appTitle = document.getElementById("appTitle");
+    const bottomLogo = document.getElementById("homeBottomLogo");
+    const employeeList = document.getElementById("employeeList");
+    const adminButton = document.getElementById("adminButton");
+
+    if (!button || !page || !backButton || !floorCards || !slots || !viewer) return;
+
+    const bucket = "head-office-layouts";
+    const manifestPath = "_layout-index.json";
+
+    let layoutManifest = null;
+    let selectedFloor = null;
+    let selectedLayout = null;
+    let navigationRequest = 0;
+
+    function defaultManifest() {
+        return {
+            version: 1,
+            floors: {
+                "8th-floor": [
+                    { id: "layout-1", name: "Layout 1", object: "8th-floor-layout" }
+                ],
+                "6th-floor": [
+                    { id: "layout-1", name: "Layout 1", object: "6th-floor-layout" }
+                ]
+            }
+        };
+    }
+
+    function manifestUrl() {
+        return `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${manifestPath}`;
+    }
+
+    async function loadManifest() {
+        const response = await fetch(manifestUrl() + "?v=" + Date.now(), {
+            cache: "no-store"
+        });
+
+        if (!response.ok) {
+            layoutManifest = defaultManifest();
+            return layoutManifest;
+        }
+
+        const data = await response.json();
+
+        if (!data || !data.floors || typeof data.floors !== "object") {
+            throw new Error("Layout index-এর তথ্য সঠিক নয়।");
+        }
+
+        const fallback = defaultManifest();
+
+        for (const floor of ["8th-floor", "6th-floor"]) {
+            if (!Array.isArray(data.floors[floor])) {
+                data.floors[floor] = fallback.floors[floor];
+            }
+
+            data.floors[floor] = data.floors[floor].filter(item =>
+                item &&
+                typeof item.id === "string" &&
+                /^[a-zA-Z0-9_-]+$/.test(item.id) &&
+                typeof item.name === "string" &&
+                typeof item.object === "string" &&
+                /^[a-zA-Z0-9_-]+$/.test(item.object)
+            );
+        }
+
+        layoutManifest = data;
+        return layoutManifest;
+    }
+
+    function layoutsFor(floor) {
+        if (!layoutManifest) layoutManifest = defaultManifest();
+        return layoutManifest.floors[floor] || [];
+    }
+
+    function objectPathFor(layout) {
+        return layout.object;
+    }
+
+    function publicUrlFor(layout) {
+        return `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${encodeURIComponent(objectPathFor(layout))}`;
+    }
+
+    async function saveManifest() {
+        const isAdmin = await verifyEmployeeAdminAccess();
+
+        if (!isAdmin || !accessToken) {
+            throw new Error("Admin Login প্রয়োজন।");
+        }
+
+        const response = await fetch(
+            `${SUPABASE_URL}/storage/v1/object/${bucket}/${manifestPath}`,
+            {
+                method: "POST",
+                headers: {
+                    apikey: SUPABASE_KEY,
+                    Authorization: "Bearer " + accessToken,
+                    "Content-Type": "application/json",
+                    "x-upsert": "true"
+                },
+                body: JSON.stringify(layoutManifest, null, 2)
+            }
+        );
+
+        if (!response.ok) {
+            const error = await response.json().catch(() => ({}));
+            throw new Error(error.message || error.error || response.status);
+        }
+    }
+
+    function showDashboard() {
+        navigationRequest++;
+
+        const corporateBadge = document.querySelector("#dashboardTopActions .welcome-badge");
+        if (corporateBadge) corporateBadge.style.removeProperty("display");
+
+        page.style.display = "none";
+        if (dashboard) dashboard.style.display = "";
+        if (appTitle) appTitle.style.removeProperty("display");
+        if (bottomLogo) bottomLogo.style.display = "";
+        if (employeeList) employeeList.style.display = "";
+        if (adminButton) adminButton.style.removeProperty("display");
+
+        window.scrollTo(0, 0);
+    }
+
+    function showLayoutPage() {
+        navigationRequest++;
+
+        const corporateBadge = document.querySelector("#dashboardTopActions .welcome-badge");
+        if (corporateBadge) corporateBadge.style.setProperty("display", "none", "important");
+
+        if (dashboard) dashboard.style.display = "none";
+        if (appTitle) appTitle.style.setProperty("display", "none", "important");
+        if (bottomLogo) bottomLogo.style.display = "none";
+        if (employeeList) employeeList.style.display = "none";
+        if (adminButton) adminButton.style.setProperty("display", "none", "important");
+
+        page.style.display = "block";
+        floorCards.style.display = "grid";
+        slots.style.display = "none";
+        viewer.style.display = "none";
+
+        if (addButton) addButton.style.display = "none";
+        if (manageStatus) manageStatus.textContent = "";
+
+        selectedFloor = null;
+        selectedLayout = null;
+        window.scrollTo(0, 0);
+    }
+
+    function extensionForType(type) {
+        if (type === "image/png") return ".png";
+        if (type === "image/jpeg") return ".jpg";
+        if (type === "application/pdf") return ".pdf";
+        return "";
+    }
+
+    async function checkLayout(layout) {
+        const url = publicUrlFor(layout);
+
+        try {
+            const response = await fetch(url, {
+                method: "HEAD",
+                cache: "no-store"
+            });
+
+            if (!response.ok) return { available: false, type: "" };
+
+            return {
+                available: true,
+                type: (response.headers.get("content-type") || "")
+                    .split(";")[0].trim().toLowerCase()
+            };
+        } catch (error) {
+            console.error("Layout availability check failed:", error);
+            return { available: false, type: "" };
+        }
+    }
+
+    function renderLayoutCards(floor, availability, isAdmin) {
+        if (!slotGrid) return;
+
+        slotGrid.replaceChildren();
+
+        layoutsFor(floor).forEach(layout => {
+            const item = document.createElement("div");
+            item.className = "head-office-layout-slot-item";
+
+            const card = document.createElement("button");
+            card.type = "button";
+            card.className = "head-office-layout-slot-card";
+            card.dataset.layout = layout.id;
+
+            const icon = document.createElement("span");
+            icon.className = "head-office-layout-slot-icon";
+            icon.textContent = "📐";
+
+            const title = document.createElement("span");
+            title.className = "head-office-layout-slot-title";
+            title.textContent = layout.name;
+
+            const subtitle = document.createElement("span");
+            subtitle.className = "head-office-layout-slot-subtitle";
+            subtitle.textContent = availability[layout.id]
+                ? "Available · View Seating Plan"
+                : "Not uploaded yet · Admin can upload";
+
+            card.classList.toggle("is-available", !!availability[layout.id]);
+            card.append(icon, title, subtitle);
+            item.appendChild(card);
+
+            if (isAdmin) {
+                const rename = document.createElement("button");
+                rename.type = "button";
+                rename.className = "head-office-layout-rename-button";
+                rename.dataset.renameLayout = layout.id;
+                rename.textContent = "Rename";
+                item.appendChild(rename);
+            }
+
+            slotGrid.appendChild(item);
+        });
+    }
+
+    async function openFloor(floor) {
+        if (!["8th-floor", "6th-floor"].includes(floor)) return;
+
+        const requestId = ++navigationRequest;
+
+        selectedFloor = floor;
+        selectedLayout = null;
+
+        floorCards.style.display = "none";
+        viewer.style.display = "none";
+        slots.style.display = "block";
+
+        slotsTitle.textContent = floor === "8th-floor"
+            ? "8th Floor — Select a Layout"
+            : "6th Floor — Select a Layout";
+
+        if (manageStatus) manageStatus.textContent = "";
+        if (addButton) addButton.style.display = "none";
+        if (slotGrid) slotGrid.replaceChildren();
+
+        try {
+            const isAdmin = await verifyEmployeeAdminAccess();
+
+            if (requestId !== navigationRequest || selectedFloor !== floor) return;
+
+            if (addButton) addButton.style.display = isAdmin ? "inline-block" : "none";
+
+            await loadManifest();
+
+            if (requestId !== navigationRequest || selectedFloor !== floor) return;
+
+            const layouts = layoutsFor(floor);
+            const results = await Promise.all(layouts.map(async layout => ({
+                id: layout.id,
+                result: await checkLayout(layout)
+            })));
+
+            if (requestId !== navigationRequest || selectedFloor !== floor) return;
+
+            const availability = {};
+            results.forEach(item => {
+                availability[item.id] = item.result.available;
+            });
+
+            renderLayoutCards(floor, availability, isAdmin);
+        } catch (error) {
+            console.error("Opening floor failed:", error);
+            if (manageStatus) manageStatus.textContent =
+                "Layout তালিকা লোড করা যায়নি। Internet Connection পরীক্ষা করুন।";
+        }
+
+        window.scrollTo(0, 0);
+    }
+
+    function attachImageZoom(img) {
+        const viewport = document.createElement("div");
+        viewport.className = "head-office-zoom-viewport";
+        viewport.setAttribute("aria-label", "Layout image. Pinch to zoom and drag to move.");
+
+        const controls = document.createElement("div");
+        controls.className = "head-office-zoom-controls";
+
+        const zoomOut = document.createElement("button");
+        zoomOut.type = "button";
+        zoomOut.textContent = "−";
+        zoomOut.setAttribute("aria-label", "Zoom out");
+
+        const zoomIn = document.createElement("button");
+        zoomIn.type = "button";
+        zoomIn.textContent = "+";
+        zoomIn.setAttribute("aria-label", "Zoom in");
+
+        const reset = document.createElement("button");
+        reset.type = "button";
+        reset.textContent = "Reset";
+        reset.setAttribute("aria-label", "Reset zoom");
+
+        controls.append(zoomOut, zoomIn, reset);
+        img.className = "head-office-zoom-image";
+        viewport.appendChild(img);
+        preview.append(controls, viewport);
+
+        let scale = 1;
+        let x = 0;
+        let y = 0;
+        const pointers = new Map();
+        const tapCandidates = new Map();
+        let pinchStart = null;
+        let lastTap = null;
+
+        function render() {
+            img.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
+            viewport.classList.toggle("is-zoomed", scale > 1);
+        }
+
+        function changeScale(next) {
+            scale = Math.max(1, Math.min(6, next));
+            if (scale === 1) {
+                x = 0;
+                y = 0;
+            }
+            render();
+        }
+
+        zoomIn.addEventListener("click", () => changeScale(scale + 0.5));
+        zoomOut.addEventListener("click", () => changeScale(scale - 0.5));
+        reset.addEventListener("click", () => changeScale(1));
+
+        viewport.addEventListener("pointerdown", event => {
+            event.preventDefault();
+            viewport.setPointerCapture(event.pointerId);
+            pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+
+            if (pointers.size === 1) {
+                tapCandidates.set(event.pointerId, {
+                    x: event.clientX,
+                    y: event.clientY,
+                    time: Date.now()
+                });
+                pinchStart = {
+                    x: event.clientX,
+                    y: event.clientY,
+                    offsetX: x,
+                    offsetY: y
+                };
+            } else {
+                tapCandidates.clear();
+                if (pointers.size === 2) {
+                    const points = Array.from(pointers.values());
+                    pinchStart = {
+                        distance: Math.hypot(
+                            points[0].x - points[1].x,
+                            points[0].y - points[1].y
+                        ),
+                        scale
+                    };
+                }
+            }
+        });
+
+        viewport.addEventListener("pointermove", event => {
+            if (!pointers.has(event.pointerId)) return;
+
+            pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+
+            const tap = tapCandidates.get(event.pointerId);
+            if (tap && Math.hypot(event.clientX - tap.x, event.clientY - tap.y) > 10) {
+                tapCandidates.delete(event.pointerId);
+            }
+
+            if (pointers.size === 2 && pinchStart) {
+                const points = Array.from(pointers.values());
+                const distance = Math.hypot(
+                    points[0].x - points[1].x,
+                    points[0].y - points[1].y
+                );
+                changeScale(pinchStart.scale * distance / Math.max(1, pinchStart.distance));
+            } else if (pointers.size === 1 && pinchStart && scale > 1) {
+                x = pinchStart.offsetX + event.clientX - pinchStart.x;
+                y = pinchStart.offsetY + event.clientY - pinchStart.y;
+                render();
+            }
+        });
+
+        function releasePointer(event) {
+            const tap = tapCandidates.get(event.pointerId);
+            tapCandidates.delete(event.pointerId);
+
+            if (
+                event.type === "pointerup" &&
+                tap &&
+                pointers.size === 1 &&
+                Date.now() - tap.time < 300
+            ) {
+                const now = Date.now();
+                const distance = lastTap
+                    ? Math.hypot(event.clientX - lastTap.x, event.clientY - lastTap.y)
+                    : Infinity;
+
+                if (lastTap && now - lastTap.time < 320 && distance < 30) {
+                    changeScale(scale > 1 ? 1 : 2);
+                    lastTap = null;
+                } else {
+                    lastTap = {
+                        time: now,
+                        x: event.clientX,
+                        y: event.clientY
+                    };
+                }
+            }
+
+            pointers.delete(event.pointerId);
+            pinchStart = null;
+
+            if (pointers.size === 1) {
+                const point = Array.from(pointers.values())[0];
+                pinchStart = {
+                    x: point.x,
+                    y: point.y,
+                    offsetX: x,
+                    offsetY: y
+                };
+            }
+        }
+
+        viewport.addEventListener("pointerup", releasePointer);
+        viewport.addEventListener("pointercancel", releasePointer);
+
+        render();
+    }
+
+    async function openSelectedLayout(layoutId) {
+        if (!selectedFloor) return;
+
+        const floor = selectedFloor;
+        const layout = layoutsFor(floor).find(item => item.id === layoutId);
+        if (!layout) return;
+
+        const requestId = ++navigationRequest;
+        selectedLayout = layoutId;
+
+        slots.style.display = "none";
+        viewer.style.display = "block";
+
+        floorTitle.textContent =
+            (floor === "8th-floor" ? "8th Floor" : "6th Floor") + " — " + layout.name;
+
+        status.textContent = "Loading layout...";
+        preview.replaceChildren();
+        download.style.display = "none";
+        download.removeAttribute("href");
+
+        if (uploadStatus) uploadStatus.textContent = "";
+
+        try {
+            const isAdmin = await verifyEmployeeAdminAccess();
+
+            if (requestId !== navigationRequest ||
+                selectedFloor !== floor ||
+                selectedLayout !== layoutId) return;
+
+            if (adminPanel) adminPanel.style.display = isAdmin ? "block" : "none";
+
+            const result = await checkLayout(layout);
+
+            if (requestId !== navigationRequest ||
+                selectedFloor !== floor ||
+                selectedLayout !== layoutId) return;
+
+            if (!result.available) {
+                status.textContent = "এই Layout এখনো Upload করা হয়নি।";
+                return;
+            }
+
+            const contentType = result.type;
+            const publicUrl = publicUrlFor(layout);
+            const previewUrl = publicUrl + "?v=" + Date.now();
+            const extension = extensionForType(contentType);
+            const fileName = objectPathFor(layout) + extension;
+
+            if (contentType === "image/png" || contentType === "image/jpeg") {
+                const img = document.createElement("img");
+                img.src = previewUrl;
+                img.alt = floorTitle.textContent;
+                attachImageZoom(img);
+            } else if (contentType === "application/pdf") {
+                const frame = document.createElement("iframe");
+                frame.src = previewUrl;
+                frame.title = floorTitle.textContent;
+                frame.loading = "lazy";
+                preview.appendChild(frame);
+            } else {
+                status.textContent =
+                    "এই ফাইলের Format সমর্থিত নয়। PNG, JPG অথবা PDF প্রয়োজন।";
+                return;
+            }
+
+            status.textContent =
+                "Layout প্রস্তুত। Image হলে pinch, drag ও double-tap ব্যবহার করুন।";
+
+            download.href = publicUrl + "?download=" + encodeURIComponent(fileName);
+            download.download = fileName;
+            download.style.display = "inline-block";
+
+        } catch (error) {
+            if (requestId !== navigationRequest ||
+                selectedFloor !== floor ||
+                selectedLayout !== layoutId) return;
+
+            console.error("Head Office Layout loading failed:", error);
+            status.textContent =
+                "Layout লোড করা যায়নি। Internet Connection পরীক্ষা করুন।";
+        }
+
+        if (requestId === navigationRequest &&
+            selectedFloor === floor &&
+            selectedLayout === layoutId) {
+            window.scrollTo(0, 0);
+        }
+    }
+
+    async function addNewLayout() {
+        if (!selectedFloor) return;
+
+        const current = layoutsFor(selectedFloor);
+        const proposed = window.prompt(
+            "নতুন Layout-এর নাম লিখুন:",
+            "Layout " + (current.length + 1)
+        );
+
+        if (proposed === null) return;
+
+        const name = proposed.trim().slice(0, 60);
+
+        if (!name) {
+            if (manageStatus) manageStatus.textContent =
+                "Layout-এর নাম খালি রাখা যাবে না।";
+            return;
+        }
+
+        if (current.some(item => item.name.toLowerCase() === name.toLowerCase())) {
+            if (manageStatus) manageStatus.textContent =
+                "এই নামে Layout আগে থেকেই আছে।";
+            return;
+        }
+
+        try {
+            const isAdmin = await verifyEmployeeAdminAccess();
+
+            if (!isAdmin || !accessToken) {
+                throw new Error("Admin Login প্রয়োজন।");
+            }
+
+            const id = "layout-" + Date.now().toString(36);
+
+            const newLayout = {
+                id,
+                name,
+                object: selectedFloor + "-" + id
+            };
+
+            current.push(newLayout);
+
+            if (manageStatus) manageStatus.textContent =
+                "নতুন Layout সংরক্ষণ হচ্ছে...";
+
+            try {
+                await saveManifest();
+            } catch (error) {
+                current.pop();
+                throw error;
+            }
+
+            if (manageStatus) manageStatus.textContent =
+                "নতুন Layout যোগ হয়েছে।";
+
+            await openFloor(selectedFloor);
+        } catch (error) {
+            console.error("Adding layout failed:", error);
+            if (manageStatus) manageStatus.textContent =
+                "Layout যোগ করা যায়নি: " + error.message;
+        }
+    }
+
+    async function renameLayout(layoutId) {
+        if (!selectedFloor) return;
+
+        const current = layoutsFor(selectedFloor);
+        const layout = current.find(item => item.id === layoutId);
+        if (!layout) return;
+
+        const proposed = window.prompt("Layout-এর নতুন নাম লিখুন:", layout.name);
+        if (proposed === null) return;
+
+        const name = proposed.trim().slice(0, 60);
+
+        if (!name) {
+            if (manageStatus) manageStatus.textContent =
+                "Layout-এর নাম খালি রাখা যাবে না।";
+            return;
+        }
+
+        if (current.some(item =>
+            item.id !== layoutId &&
+            item.name.toLowerCase() === name.toLowerCase()
+        )) {
+            if (manageStatus) manageStatus.textContent =
+                "এই নামে অন্য Layout আছে।";
+            return;
+        }
+
+        try {
+            const isAdmin = await verifyEmployeeAdminAccess();
+
+            if (!isAdmin || !accessToken) {
+                throw new Error("Admin Login প্রয়োজন।");
+            }
+
+            const oldName = layout.name;
+            layout.name = name;
+
+            try {
+                if (manageStatus) manageStatus.textContent = "নাম সংরক্ষণ হচ্ছে...";
+                await saveManifest();
+            } catch (error) {
+                layout.name = oldName;
+                throw error;
+            }
+
+            if (manageStatus) manageStatus.textContent =
+                "Layout-এর নাম পরিবর্তন হয়েছে।";
+
+            renderLayoutCards(selectedFloor, {}, true);
+
+        } catch (error) {
+            console.error("Renaming layout failed:", error);
+            if (manageStatus) manageStatus.textContent =
+                "নাম পরিবর্তন করা যায়নি: " + error.message;
+        }
+    }
+
+    async function uploadSelectedLayout() {
+        if (!selectedFloor || !selectedLayout ||
+            !fileInput || !uploadButton || !uploadStatus) return;
+
+        const floor = selectedFloor;
+        const layoutId = selectedLayout;
+        const layout = layoutsFor(floor).find(item => item.id === layoutId);
+
+        if (!layout) return;
+
+        const file = fileInput.files && fileInput.files[0];
+
+        const isCurrentUpload = () =>
+            selectedFloor === floor &&
+            selectedLayout === layoutId &&
+            viewer.style.display !== "none";
+
+        if (!file) {
+            uploadStatus.textContent =
+                "প্রথমে একটি PNG, JPG অথবা PDF ফাইল নির্বাচন করুন।";
+            return;
+        }
+
+        const allowedTypes = ["image/png", "image/jpeg", "application/pdf"];
+
+        if (!allowedTypes.includes(file.type)) {
+            uploadStatus.textContent =
+                "শুধু PNG, JPG অথবা PDF ফাইল Upload করা যাবে।";
+            return;
+        }
+
+        if (file.size > 15 * 1024 * 1024) {
+            uploadStatus.textContent =
+                "ফাইলের সাইজ সর্বোচ্চ 15 MB হতে পারবে।";
+            return;
+        }
+
+        uploadButton.disabled = true;
+        uploadStatus.textContent = "Admin পরিচয় যাচাই হচ্ছে...";
+
+        try {
+            const isAdmin = await verifyEmployeeAdminAccess();
+
+            if (!isAdmin || !accessToken) {
+                if (isCurrentUpload()) {
+                    uploadStatus.textContent =
+                        "Upload অনুমোদিত নয়। Admin Login করুন।";
+                }
+                return;
+            }
+
+            if (isCurrentUpload()) {
+                uploadStatus.textContent = "Layout Upload হচ্ছে...";
+            }
+
+            const objectPath = objectPathFor(layout);
+            const uploadUrl =
+                `${SUPABASE_URL}/storage/v1/object/${bucket}/${encodeURIComponent(objectPath)}`;
+
+            const response = await fetch(uploadUrl, {
+                method: "POST",
+                headers: {
+                    apikey: SUPABASE_KEY,
+                    Authorization: "Bearer " + accessToken,
+                    "Content-Type": file.type,
+                    "x-upsert": "true"
+                },
+                body: file
+            });
+
+            if (!response.ok) {
+                const error = await response.json().catch(() => ({}));
+                console.error("Head Office Layout upload failed:", error);
+
+                if (isCurrentUpload()) {
+                    uploadStatus.textContent =
+                        "Upload ব্যর্থ: " +
+                        (error.message || error.error || response.status);
+                }
+                return;
+            }
+
+            if (fileInput.files && fileInput.files[0] === file) {
+                fileInput.value = "";
+            }
+
+            if (isCurrentUpload()) {
+                uploadStatus.textContent =
+                    "Upload সফল। Layout আপডেট হচ্ছে...";
+
+                await openSelectedLayout(layoutId);
+
+                if (isCurrentUpload()) {
+                    uploadStatus.textContent =
+                        "Layout সফলভাবে Upload / Replace হয়েছে।";
+                }
+            }
+
+        } catch (error) {
+            console.error("Head Office Layout upload error:", error);
+
+            if (isCurrentUpload()) {
+                uploadStatus.textContent =
+                    "Upload করা যায়নি: " + error.message;
+            }
+
+        } finally {
+            uploadButton.disabled = false;
+        }
+    }
+
+    button.addEventListener("click", showLayoutPage);
+    backButton.addEventListener("click", showDashboard);
+
+    if (uploadButton) {
+        uploadButton.addEventListener("click", uploadSelectedLayout);
+    }
+
+    if (addButton) {
+        addButton.addEventListener("click", addNewLayout);
+    }
+
+    floorCards.addEventListener("click", event => {
+        const card = event.target.closest("[data-floor]");
+        if (card) openFloor(card.dataset.floor);
+    });
+
+    slots.addEventListener("click", event => {
+        const renameButton = event.target.closest("[data-rename-layout]");
+
+        if (renameButton) {
+            event.stopPropagation();
+            renameLayout(renameButton.dataset.renameLayout);
+            return;
+        }
+
+        const card = event.target.closest("[data-layout]");
+        if (card) openSelectedLayout(card.dataset.layout);
+    });
+
+    if (backToFloors) {
+        backToFloors.addEventListener("click", () => {
+            navigationRequest++;
+            slots.style.display = "none";
+            floorCards.style.display = "grid";
+            selectedFloor = null;
+            selectedLayout = null;
+            window.scrollTo(0, 0);
+        });
+    }
+
+    if (backToSlots) {
+        backToSlots.addEventListener("click", () => {
+            navigationRequest++;
+            viewer.style.display = "none";
+            slots.style.display = "block";
+            selectedLayout = null;
+            window.scrollTo(0, 0);
+        });
+    }
+
+})();
 
 
 /* ORGANOGRAM PAGE - BLANK WHITE PAGE */
@@ -3623,16 +4920,8 @@ if (slipEmployee) {
                 await checkAdmin();
             } catch (error) {
                 if (!accessToken) {
-                    window.__openSalaryAfterLogin = true;
-
-                    if (listPage) listPage.style.display = "none";
-                    if (detailsPage) detailsPage.style.display = "none";
-                    if (loginPage) loginPage.style.display = "block";
-
-                    if (loginStatus) {
-                        loginStatus.textContent =
-                            "Please log in to access Salary Management.";
-                    }
+                    window.__openSalaryAfterLogin = false;
+                    updateDashboardAdminState();
                     return;
                 }
 
@@ -4426,12 +5715,7 @@ if (slipEmployee) {
         const printButton = $("printPaySlipButton");
         if (printButton) {
             printButton.addEventListener("click", function () {
-                if (window.AndroidPaySlipPdf &&
-                    typeof window.AndroidPaySlipPdf.downloadPaySlipPdf === "function") {
-                    window.AndroidPaySlipPdf.downloadPaySlipPdf();
-                } else {
-                    window.print();
-                }
+                window.print();
             });
         }
 
@@ -4457,14 +5741,8 @@ if (slipEmployee) {
                 const restoreActions = function () {
                     if (actions) actions.style.display = previousDisplay;
                 };
-                if (window.AndroidPaySlipPdf &&
-                    typeof window.AndroidPaySlipPdf.downloadPaySlipPdf === "function") {
-                    window.AndroidPaySlipPdf.downloadPaySlipPdf();
-                    restoreActions();
-                } else {
-                    window.addEventListener("afterprint", restoreActions, { once: true });
-                    window.print();
-                }
+                window.addEventListener("afterprint", restoreActions, { once: true });
+                window.print();
             });
         }
 
@@ -4738,6 +6016,18 @@ if (bloodGroupFilter) {
                 ? readableDate + " (" + date.toLocaleDateString("en-US", { weekday: "long" }) + ")"
                 : readableDate + " — " + title;
 
+            const governmentNames = category === "Government Holiday"
+                ? info.records
+                    .filter(record => record.event_type === "Government")
+                    .map(record => record.title)
+                    .filter(Boolean)
+                    .map(name =>
+                        '<p class="holiday-calendar-event-title">' +
+                        escapeHTML(name) + '</p>'
+                    )
+                    .join("")
+                : "";
+
             const descriptions = info.records
                 .map(record => record.description)
                 .filter(Boolean)
@@ -4757,6 +6047,7 @@ if (bloodGroupFilter) {
 
             return '<article class="holiday-calendar-event">' +
                 '<strong>' + escapeHTML(displayHeading) + '</strong>' +
+                governmentNames +
                 (isSpecialWorkingDay
                     ? '<p>' + escapeHTML(category + (titles.length ? ' — ' + titles.join(" · ") : '')) + '</p>'
                     : (!isCategoryHoliday && category ? '<p>' + escapeHTML(category) + '</p>' : '')) +
@@ -5261,7 +6552,7 @@ if (bloodGroupFilter) {
 
     async function loadDirectory() {
         const response = await fetch(
-            employeeEndpoint + "?select=employee_no,employee_name,designation,department&order=employee_name.asc",
+            employeeEndpoint + "?select=employee_no,employee_name,designation,department,group_department&order=employee_name.asc",
             { headers: apiHeaders(false) }
         );
         if (!response.ok) {
@@ -5326,15 +6617,17 @@ if (bloodGroupFilter) {
     }
 
     function fillDepartmentOptions(selected = "") {
-        if (!departmentInput) return;
+        const options = $("organogramDepartmentOptions");
+        if (!departmentInput || !options) return;
+
         const departments = [...new Set(
-            directory.map(employee => String(employee.department || "").trim())
+            directory.map(employee => String(employee.group_department || employee.department || "").trim())
                 .filter(Boolean)
         )].sort((a, b) => a.localeCompare(b));
 
-        departmentInput.replaceChildren(new Option("Choose department", ""));
+        options.replaceChildren();
         departments.forEach(department => {
-            departmentInput.add(new Option(department, department));
+            options.appendChild(new Option(department, department));
         });
         departmentInput.value = selected;
     }
@@ -5353,7 +6646,7 @@ if (bloodGroupFilter) {
         } else if (type === "chief_marketing_officer") {
             allowed = nodes.filter(node => node.node_type === "executive_director");
         } else if (type === "department_head") {
-            allowed = nodes.filter(node => node.node_type === "chief_marketing_officer");
+            allowed = nodes.filter(node => ["chairman", "executive_director", "chief_marketing_officer"].includes(node.node_type));
         }
 
         parentInput.replaceChildren(new Option(placeholder, ""));
@@ -5376,7 +6669,7 @@ if (bloodGroupFilter) {
                     : type === "chief_marketing_officer"
                         ? "Add an Executive Director position first"
                         : type === "department_head"
-                            ? "Add a Chief Marketing Officer position first"
+                            ? "Add a Chairman, Executive Director, or CMO position first"
                             : "No reporting position available";
         }
 
@@ -5425,7 +6718,7 @@ if (bloodGroupFilter) {
             image.className = "organogram-photo";
             image.alt = "Chairman photo";
             image.loading = "lazy";
-            image.src = String.fromCharCode(104,116,116,112,115,58,47,47)+"res.cloudinary.com/lnhd3otv/image/upload/v1793243174/Photo-Chairman_Sir2.jpg";
+            image.src = "assets/chairman.jpg";
             image.onerror = function () {
                 const placeholder = document.createElement("div");
                 placeholder.className = "organogram-photo-placeholder";
@@ -5513,7 +6806,7 @@ function renderTree() {
                         const department = String(child.department || "").trim();
                         const headNo = String(child.employee_no || "").trim();
                         const staff = directory.filter(employee =>
-                            String(employee.department || "").trim().toLowerCase() === department.toLowerCase() &&
+                            String(employee.group_department || employee.department || "").trim().toLowerCase() === department.toLowerCase() &&
                             employeeNumber(employee) !== headNo
                         );
 
@@ -5673,7 +6966,7 @@ function renderTree() {
         nameInput.value = displayName(employee);
         designationInput.value = employee.designation || "";
         if (typeInput.value === "department_head") {
-            departmentInput.value = String(employee.department || "").trim();
+            departmentInput.value = String(employee.group_department || employee.department || "").trim();
         }
     });
 
@@ -5991,6 +7284,65 @@ function renderTree() {
         }
     });
 
+    // ORGANOGRAM: PINCH TO ZOOM
+    let organogramPinchStartDistance = 0;
+    let organogramPinchStartZoom = 1;
+    function setOrganogramZoom(value) {
+        const zoom = Math.max(0.5, Math.min(2.5, value));
+        tree.style.zoom = String(zoom);
+        $("organogramZoomReset").textContent =
+            Math.round(zoom * 100) + "%";
+    }
+
+    $("organogramZoomIn").addEventListener("click", function () {
+        setOrganogramZoom((parseFloat(tree.style.zoom) || 1) + 0.1);
+    });
+
+    $("organogramZoomOut").addEventListener("click", function () {
+        setOrganogramZoom((parseFloat(tree.style.zoom) || 1) - 0.1);
+    });
+
+    $("organogramZoomReset").addEventListener("click", function () {
+        setOrganogramZoom(1);
+        tree.scrollTo({ left: 0, top: 0, behavior: "smooth" });
+    });
+
+
+    function organogramTouchDistance(touches) {
+        const dx = touches[0].clientX - touches[1].clientX;
+        const dy = touches[0].clientY - touches[1].clientY;
+        return Math.hypot(dx, dy);
+    }
+
+    tree.addEventListener("touchstart", function (event) {
+        if (event.touches.length === 2) {
+            event.preventDefault();
+            organogramPinchStartDistance =
+                organogramTouchDistance(event.touches);
+            organogramPinchStartZoom =
+                parseFloat(tree.style.zoom) || 1;
+        }
+    }, { passive: false });
+
+    tree.addEventListener("touchmove", function (event) {
+        if (event.touches.length !== 2 ||
+            !organogramPinchStartDistance) return;
+
+        event.preventDefault();
+
+        const currentDistance = organogramTouchDistance(event.touches);
+        const nextZoom = organogramPinchStartZoom *
+            (currentDistance / organogramPinchStartDistance);
+
+        setOrganogramZoom(nextZoom);
+    }, { passive: false });
+
+    tree.addEventListener("touchend", function (event) {
+        if (event.touches.length < 2) {
+            organogramPinchStartDistance = 0;
+        }
+    }, { passive: false });
+
     $("organogramButton").addEventListener("click", openOrganogram);
 
     $("organogramBackButton").addEventListener("click", function () {
@@ -5998,322 +7350,4 @@ function renderTree() {
     });
 
     updateFormForType();
-})();
-
-
-/* ==========================================
-   ANDROID DASHBOARD: PABX AND CREATE EMPLOYEE
-========================================== */
-(function () {
-    "use strict";
-
-    const pabxPage = document.getElementById("employeePabxListPage");
-    const pabxStatus = document.getElementById("employeePabxListStatus");
-    const pabxContent = document.getElementById("employeePabxListContent");
-    const headOfficeButton = document.getElementById("headOfficePabxButton");
-    const factoryButton = document.getElementById("factoryPabxButton");
-    const createButton = document.getElementById("createNewEmployeeButton");
-    const pabxDashboardButton = document.getElementById("employeePabxDashboardButton");
-
-    function hideDashboardPages() {
-        [
-            "listPage", "loginPage", "adminPage", "salaryPage",
-            "allEmployeesPage", "favoritePage", "birthdayPage",
-            "departmentPage", "detailsPage", "organogramPage",
-            "holidayCalendarPage"
-        ].forEach(function (id) {
-            const page = document.getElementById(id);
-            if (page) page.style.display = "none";
-        });
-    }
-
-
-    const pabxSearchInput = document.getElementById("employeePabxSearch");
-    const pabxSuggestions = document.getElementById("employeePabxSuggestions");
-    const pabxSearchClear = document.getElementById("employeePabxSearchClear");
-    let pabxEmployees = [];
-    let pabxSourceName = "Head Office";
-
-    function pabxDepartment(employee) {
-        return String(employee.department || "-").trim();
-    }
-
-    function renderPabxSuggestions(matches) {
-        if (!pabxSuggestions || !pabxSearchInput) return;
-        pabxSuggestions.replaceChildren();
-
-        matches.slice(0, 8).forEach(employee => {
-            const button = document.createElement("button");
-            button.type = "button";
-            button.className = "pabx-suggestion";
-            button.setAttribute("role", "option");
-
-            const identity = document.createElement("span");
-            identity.className = "pabx-suggestion-identity";
-            identity.textContent = `${employee.employee_no || "-"} — ${employee.employee_name || "-"}`;
-
-            const department = document.createElement("small");
-            department.textContent = pabxDepartment(employee);
-
-            button.append(identity, department);
-            button.addEventListener("click", () => {
-                pabxSearchInput.value = String(employee.employee_no || employee.employee_name || "");
-                pabxSuggestions.hidden = true;
-                pabxSearchInput.setAttribute("aria-expanded", "false");
-                renderPabxTable([employee]);
-                pabxStatus.textContent = `${pabxSourceName}: ${employee.employee_name || "Employee"} (${employee.employee_no || "No ID"})`;
-            });
-            pabxSuggestions.appendChild(button);
-        });
-
-        pabxSuggestions.hidden = matches.length === 0;
-        pabxSearchInput.setAttribute("aria-expanded", matches.length ? "true" : "false");
-    }
-
-    function renderPabxTable(employees) {
-        pabxContent.replaceChildren();
-        if (!employees.length) return;
-
-        const wrapper = document.createElement("div");
-        wrapper.className = "pabx-table-wrapper";
-        const table = document.createElement("table");
-        table.className = "employee-pabx-table";
-        const thead = document.createElement("thead");
-        const headerRow = document.createElement("tr");
-
-        ["Sl.", "Department", "Name", "Designation", "PABX No."].forEach(label => {
-            const th = document.createElement("th");
-            th.textContent = label;
-            headerRow.appendChild(th);
-        });
-
-        thead.appendChild(headerRow);
-        table.appendChild(thead);
-        const tbody = document.createElement("tbody");
-        let departmentSerial = 0;
-
-        employees.forEach((employee, index) => {
-            const row = document.createElement("tr");
-            const department = pabxDepartment(employee);
-            const previousDepartment = index > 0
-                ? pabxDepartment(employees[index - 1]) : null;
-            const isNewDepartment = department !== previousDepartment;
-            departmentSerial = isNewDepartment ? 1 : departmentSerial + 1;
-
-            const serialCell = document.createElement("td");
-            serialCell.textContent = String(departmentSerial);
-            row.appendChild(serialCell);
-
-            if (isNewDepartment) {
-                const nextDifferent = employees.slice(index).findIndex(
-                    item => pabxDepartment(item) !== department
-                );
-                const departmentCell = document.createElement("td");
-                departmentCell.textContent = department;
-                departmentCell.rowSpan = nextDifferent === -1
-                    ? employees.length - index : nextDifferent;
-                departmentCell.className = "pabx-department-cell";
-                row.appendChild(departmentCell);
-            }
-
-            [
-                employee.employee_name || "-",
-                employee.designation || "-",
-                employee.pabx_number || "-"
-            ].forEach(value => {
-                const cell = document.createElement("td");
-                cell.textContent = String(value);
-                row.appendChild(cell);
-            });
-            tbody.appendChild(row);
-        });
-
-        table.appendChild(tbody);
-        wrapper.appendChild(table);
-        pabxContent.appendChild(wrapper);
-    }
-
-    function updatePabxSearch() {
-        if (!pabxSearchInput) return;
-        const query = pabxSearchInput.value.trim().toLocaleLowerCase();
-
-        if (!query) {
-            if (pabxSuggestions) {
-                pabxSuggestions.replaceChildren();
-                pabxSuggestions.hidden = true;
-            }
-            pabxSearchInput.setAttribute("aria-expanded", "false");
-            renderPabxTable(pabxEmployees);
-            pabxStatus.textContent = pabxEmployees.length
-                ? `${pabxSourceName}: ${pabxEmployees.length} employees`
-                : "No employees found.";
-            return;
-        }
-
-        const matches = pabxEmployees.filter(employee =>
-            String(employee.employee_no || "").toLocaleLowerCase().includes(query) ||
-            String(employee.employee_name || "").toLocaleLowerCase().includes(query)
-        );
-        renderPabxSuggestions(matches);
-        renderPabxTable(matches);
-        pabxStatus.textContent = matches.length
-            ? `Search results: ${matches.length} employees`
-            : "No matching employees found.";
-    }
-
-    pabxSearchInput?.addEventListener("input", updatePabxSearch);
-    pabxSearchInput?.addEventListener("keydown", function (event) {
-        if (event.key === "Escape" && pabxSuggestions) {
-            pabxSuggestions.hidden = true;
-            pabxSearchInput.setAttribute("aria-expanded", "false");
-        }
-        if (event.key === "Enter" && pabxSuggestions && !pabxSuggestions.hidden) {
-            const first = pabxSuggestions.querySelector(".pabx-suggestion");
-            if (first) first.click();
-        }
-    });
-    pabxSearchClear?.addEventListener("click", function () {
-        if (pabxSearchInput) pabxSearchInput.value = "";
-        updatePabxSearch();
-        pabxSearchInput?.focus();
-    });
-
-    async function loadPabxList(source) {
-        if (!pabxContent || !pabxStatus) return;
-        const isFactory = source === "factory";
-        const viewName = isFactory
-            ? "employee_directory_factory_public"
-            : "employee_directory_public";
-
-        pabxSourceName = isFactory ? "Factory" : "Head Office";
-        headOfficeButton?.classList.toggle("active", !isFactory);
-        factoryButton?.classList.toggle("active", isFactory);
-        if (pabxSearchInput) pabxSearchInput.value = "";
-        if (pabxSuggestions) {
-            pabxSuggestions.replaceChildren();
-            pabxSuggestions.hidden = true;
-        }
-        pabxStatus.textContent = "Loading employees...";
-        pabxContent.replaceChildren();
-
-        try {
-            const fields = isFactory
-                ? "employee_no,department,employee_name,designation,pabx_number"
-                : "employee_no,department,employee_name,designation,pabx_number";
-
-            const response = await fetch(
-                `${SUPABASE_URL}/rest/v1/${viewName}?select=${fields}&order=department.asc,employee_name.asc`,
-                {
-                    headers: {
-                        apikey: SUPABASE_KEY,
-                        Authorization: `Bearer ${SUPABASE_KEY}`
-                    }
-                }
-            );
-
-            if (!response.ok) {
-                throw new Error("Employee list could not load (" + response.status + ").");
-            }
-
-            pabxEmployees = await response.json();
-            pabxEmployees.sort(function (a, b) {
-                const deptCompare = pabxDepartment(a).localeCompare(
-                    pabxDepartment(b), undefined, { sensitivity: "base" }
-                );
-                if (deptCompare !== 0) return deptCompare;
-
-                const designationA = normalizeDesignation(a.designation);
-                const designationB = normalizeDesignation(b.designation);
-                const rankA = DESIGNATION_RANK.has(designationA)
-                    ? DESIGNATION_RANK.get(designationA) : DESIGNATION_ORDER.length;
-                const rankB = DESIGNATION_RANK.has(designationB)
-                    ? DESIGNATION_RANK.get(designationB) : DESIGNATION_ORDER.length;
-
-                return rankA - rankB ||
-                    String(a.employee_name || "").localeCompare(String(b.employee_name || ""));
-            });
-
-            updatePabxSearch();
-        } catch (error) {
-            pabxStatus.textContent = error.message;
-        }
-    }
-    if (pabxDashboardButton && pabxPage) {
-        pabxDashboardButton.addEventListener("click", function () {
-            hideDashboardPages();
-            pabxPage.style.display = "block";
-            loadPabxList("headoffice");
-            window.scrollTo(0, 0);
-        });
-    }
-
-    headOfficeButton?.addEventListener("click", function () {
-        loadPabxList("headoffice");
-    });
-
-    factoryButton?.addEventListener("click", function () {
-        loadPabxList("factory");
-    });
-
-    document.getElementById("employeePabxListBackButton")?.addEventListener("click", function () {
-        if (pabxPage) pabxPage.style.display = "none";
-        document.getElementById("listPage").style.display = "block";
-        window.scrollTo(0, 0);
-    });
-
-    if (createButton) {
-        createButton.addEventListener("click", async function () {
-            const allowed = await verifyEmployeeAdminAccess();
-
-            if (!allowed) {
-                window.__openCreateEmployeeAfterLogin = true;
-                setEmployeeAdminPanelVisible(false);
-                hideDashboardPages();
-
-                const login = document.getElementById("loginPage");
-                if (login) login.style.display = "block";
-
-                const status = document.getElementById("loginStatus");
-                if (status) {
-                    status.textContent = "Please log in as the designated Admin to create employees.";
-                }
-
-                window.scrollTo(0, 0);
-                return;
-            }
-
-            setEmployeeAdminPanelVisible(true);
-            hideDashboardPages();
-
-            const admin = document.getElementById("adminPage");
-            if (admin) admin.style.display = "block";
-
-            const panel = document.getElementById("employeeAddAdminOnly");
-            panel?.scrollIntoView({ behavior: "smooth", block: "start" });
-        });
-    }
-
-    // After successful Admin login, open the existing protected employee forms.
-    const adminPage = document.getElementById("adminPage");
-    if (adminPage && window.MutationObserver) {
-        const observer = new MutationObserver(function () {
-            if (
-                window.__openCreateEmployeeAfterLogin &&
-                adminPage.style.display === "block"
-            ) {
-                window.__openCreateEmployeeAfterLogin = false;
-
-                const panel = document.getElementById("employeeAddAdminOnly");
-                if (panel) {
-                    panel.style.display = "block";
-                    panel.scrollIntoView({ behavior: "smooth", block: "start" });
-                }
-            }
-        });
-
-        observer.observe(adminPage, {
-            attributes: true,
-            attributeFilter: ["style"]
-        });
-    }
 })();

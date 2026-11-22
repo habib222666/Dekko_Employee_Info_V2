@@ -134,22 +134,10 @@
 
         <section id="headOfficeLayoutSlots" class="head-office-layout-slots" style="display:none;">
             <h2 id="headOfficeLayoutSlotsTitle">Select a Layout</h2>
-            <div class="head-office-layout-slot-grid">
-                <button type="button" class="head-office-layout-slot-card" data-layout="1">
-                    <span class="head-office-layout-slot-icon">📐</span>
-                    <span class="head-office-layout-slot-title">Layout 1</span>
-                    <span class="head-office-layout-slot-subtitle">View Seating Plan</span>
-                </button>
-                <button type="button" class="head-office-layout-slot-card" data-layout="2">
-                    <span class="head-office-layout-slot-icon">📐</span>
-                    <span class="head-office-layout-slot-title">Layout 2</span>
-                    <span class="head-office-layout-slot-subtitle">View Seating Plan</span>
-                </button>
-                <button type="button" class="head-office-layout-slot-card" data-layout="3">
-                    <span class="head-office-layout-slot-icon">📐</span>
-                    <span class="head-office-layout-slot-title">Layout 3</span>
-                    <span class="head-office-layout-slot-subtitle">View Seating Plan</span>
-                </button>
+            <div id="headOfficeLayoutSlotGrid" class="head-office-layout-slot-grid"></div>
+            <div class="head-office-layout-manage-actions">
+                <button id="headOfficeLayoutAddButton" type="button" style="display:none;">+ Add New Layout</button>
+                <p id="headOfficeLayoutManageStatus" role="status" aria-live="polite"></p>
             </div>
             <button id="headOfficeLayoutBackToFloors" type="button">All Floors</button>
         </section>
