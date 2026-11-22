@@ -8650,3 +8650,22 @@ html[data-theme="dark"] #headOfficeLayoutManageStatus {
         font-size: 12px !important;
     }
 }
+
+/* BIRTHDAY TABLE: WHITE HEADER TEXT AND VISIBLE HEADER DIVIDERS */
+#birthdayPage .birthday-table thead th {
+    background-color: #1976d2 !important;
+    color: #ffffff !important;
+    border: 1px solid #ffffff !important;
+}
+
+/* FORCE WHITE HEADER TEXT IN DARK MODE */
+html[data-theme="dark"] #birthdayPage .birthday-table thead th {
+    background-color: #1976d2 !important;
+    color: #ffffff !important;
+    border-color: #ffffff !important;
+}
+
+/* KEEP BLUE BODY TABLE LINES */
+#birthdayPage .birthday-table tbody td {
+    border: 1px solid #1976d2 !important;
+}
