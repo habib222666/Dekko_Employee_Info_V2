@@ -8542,3 +8542,12 @@ html[data-theme="dark"] .head-office-zoom-controls button {
         border: 1px solid #1976d2 !important;
     }
 }
+
+
+/* BIRTHDAY TABLE HEADER: WHITE TEXT ON BLUE */
+#birthdayPage .birthday-table thead th,
+#birthdayPage .birthday-table th {
+    background-color: #1976d2 !important;
+    color: #ffffff !important;
+    border: 1px solid #1976d2 !important;
+}
