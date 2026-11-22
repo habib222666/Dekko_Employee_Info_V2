@@ -8643,3 +8643,10 @@ html[data-theme="dark"] #headOfficeLayoutManageStatus {
         width: 100%;
     }
 }
+
+/* BIRTHDAY: MOBILE ONLY - REDUCE DEPARTMENT HEADER BY 1PX */
+@media (max-width: 600px) {
+    #birthdayPage .birthday-table thead th:nth-child(4) {
+        font-size: 12px !important;
+    }
+}
