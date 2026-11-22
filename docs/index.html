@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LIVE TEST - Employee App</title>
-<link rel="stylesheet" href="style.css?v=20261118headofficemultilayout1">
+<link rel="stylesheet" href="style.css?v=20261122birthdayexport2">
 <link rel="stylesheet" href="salary-layout.css?v=20261112payslipscreenmatch1">
 <link rel="stylesheet" href="theme.css?v=20261108darkcalendar3">
 </head>
@@ -517,6 +517,12 @@
     <button data-month="12">December</button>
 </div>
 
+<div id="birthdayExportActions" class="birthday-export-actions" style="display:none;">
+    <button type="button" id="birthdayPrintButton" class="birthday-print-btn">🖨️ Print</button>
+    <button type="button" id="birthdayExcelButton" class="birthday-excel-btn">📊 Download Excel</button>
+    <button type="button" id="birthdayPdfButton" class="birthday-pdf-btn">📄 Download PDF</button>
+</div>
+
 <div id="birthdayEmployeeList"></div>
 </div>
 
@@ -922,13 +928,27 @@ View Employee Details &amp; Edit
         <button type="button" id="factoryPabxButton">Factory</button>
     </div>
 
+
+    <div class="pabx-search-wrap">
+        <label for="employeePabxSearch">Search by Employee EPMP / ID or Name</label>
+        <div class="pabx-search-controls">
+            <input type="search" id="employeePabxSearch"
+                placeholder="Enter Employee Name / ID"
+                autocomplete="off" aria-autocomplete="list"
+                aria-controls="employeePabxSuggestions" aria-expanded="false">
+            <button type="button" id="employeePabxSearchClear">Clear</button>
+        </div>
+        <div id="employeePabxSuggestions" class="pabx-suggestions"
+            role="listbox" aria-label="Employee suggestions" hidden></div>
+    </div>
+
     <p id="employeePabxListStatus" role="status" aria-live="polite"></p>
     <div id="employeePabxListContent"></div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script defer src="theme.js?v=20261101theme1"></script>
-<script defer src="app.js?v=20261118headofficemultilayout2"></script>
+<script defer src="app.js?v=20261122birthdayexport2"></script>
 
 
 <div id="salaryPage" style="display:none;">

@@ -6748,3 +6748,215 @@ button.department-card.department-color-30 { background-color: #ede9fe !importan
         font-size: 11px !important;
     }
 }
+
+
+/* PABX EMPLOYEE ID SEARCH + AUTOCOMPLETE */
+.pabx-search-wrap {
+    position: relative;
+    width: 100%;
+    margin: 16px 0;
+}
+.pabx-search-wrap > label {
+    display: block;
+    margin-bottom: 7px;
+    color: #263445;
+    font-size: 14px;
+    font-weight: 700;
+}
+.pabx-search-controls {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+}
+.pabx-search-controls input {
+    flex: 1;
+    min-width: 0;
+    min-height: 44px;
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 9px;
+    background: #fff;
+    color: #1e293b;
+    font-size: 15px;
+}
+.pabx-search-controls input:focus {
+    outline: 2px solid #0f766e;
+    outline-offset: 1px;
+    border-color: #0f766e;
+}
+.pabx-search-controls button {
+    min-height: 44px;
+    padding: 8px 14px;
+    border: 1px solid #0f766e;
+    border-radius: 9px;
+    background: #f0fdfa;
+    color: #0f766e;
+    font-weight: 700;
+    cursor: pointer;
+}
+.pabx-suggestions {
+    position: absolute;
+    z-index: 100;
+    top: calc(100% - 1px);
+    left: 0;
+    right: 0;
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid #cbd5e1;
+    border-radius: 0 0 10px 10px;
+    background: #fff;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, .14);
+}
+.pabx-suggestions[hidden] {
+    display: none !important;
+}
+.pabx-suggestion {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    width: 100%;
+    padding: 10px 12px;
+    border: 0;
+    border-bottom: 1px solid #e2e8f0;
+    background: #fff;
+    color: #1e293b;
+    text-align: left;
+    cursor: pointer;
+}
+.pabx-suggestion:last-child {
+    border-bottom: 0;
+}
+.pabx-suggestion:hover,
+.pabx-suggestion:focus {
+    background: #ecfdf5;
+    outline: none;
+}
+.pabx-suggestion-identity {
+    font-size: 14px;
+    font-weight: 700;
+}
+.pabx-suggestion small {
+    color: #64748b;
+    font-size: 12px;
+}
+@media (max-width: 600px) {
+    .pabx-search-controls input {
+        font-size: 14px;
+    }
+    .pabx-search-controls button {
+        padding-left: 11px;
+        padding-right: 11px;
+    }
+}
+
+
+/* Birthday Calendar export actions */
+.birthday-export-actions {
+    display: none;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 16px 0;
+}
+
+.birthday-export-actions button {
+    min-width: 120px;
+    padding: 10px 16px;
+    border: 0;
+    border-radius: 6px;
+    background: #e91e63;
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.birthday-export-actions button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.birthday-export-heading {
+    display: none;
+}
+
+@media print {
+    @page {
+        size: A4 landscape;
+        margin: 12mm;
+    }
+
+    body * {
+        visibility: hidden !important;
+    }
+
+    #birthdayPage,
+    #birthdayPage * {
+        visibility: visible !important;
+    }
+
+    #birthdayPage {
+        display: block !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #fff !important;
+        color: #000 !important;
+    }
+
+    #birthdayBackButton,
+    #birthdayMonths,
+    .birthday-export-actions {
+        display: none !important;
+    }
+
+    .birthday-export-heading {
+        display: block !important;
+        text-align: center;
+        margin: 0 0 16px;
+        color: #000 !important;
+    }
+
+    .birthday-table-wrapper {
+        overflow: visible !important;
+    }
+
+    .birthday-table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        background: #fff !important;
+    }
+
+    .birthday-table th,
+    .birthday-table td {
+        border: 1px solid #555 !important;
+        padding: 8px !important;
+        color: #000 !important;
+        font-size: 10pt !important;
+    }
+
+    .birthday-table th {
+        background: #e8edf5 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}
+
+
+/* Individual Birthday Calendar export button colors */
+.birthday-export-actions .birthday-print-btn {
+    background: #1976d2;
+}
+
+.birthday-export-actions .birthday-excel-btn {
+    background: #218838;
+}
+
+.birthday-export-actions .birthday-pdf-btn {
+    background: #d32f2f;
+}
+
+.birthday-export-actions button:not(:disabled):hover {
+    filter: brightness(0.9);
+}

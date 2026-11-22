@@ -2756,12 +2756,27 @@ function renderHomeBirthdayCelebrations() {
     }).join("");
 }
 
+let selectedBirthdayMonth = null;
+let selectedBirthdayEmployees = [];
+
+const birthdayExportActions = document.getElementById("birthdayExportActions");
+const birthdayPrintButton = document.getElementById("birthdayPrintButton");
+const birthdayExcelButton = document.getElementById("birthdayExcelButton");
+const birthdayPdfButton = document.getElementById("birthdayPdfButton");
+
+const birthdayMonthNames = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+];
+
 function showBirthdayEmployees(month) {
     if (!birthdayEmployeeList) return;
 
+    selectedBirthdayMonth = Number(month);
     const monthNumber = String(month).padStart(2, "0");
+    const monthName = birthdayMonthNames[selectedBirthdayMonth - 1] || "";
 
-    const birthdayEmployees = employees
+    selectedBirthdayEmployees = employees
         .filter(employee => {
             const birthday = String(employee.birthday_text || "").trim();
             return /^\d{1,2}-\d{1,2}$/.test(birthday) &&
@@ -2773,7 +2788,14 @@ function showBirthdayEmployees(month) {
             return dayA - dayB;
         });
 
-    if (birthdayEmployees.length === 0) {
+    if (birthdayExportActions) birthdayExportActions.style.display = "flex";
+
+    const hasData = selectedBirthdayEmployees.length > 0;
+    [birthdayPrintButton, birthdayExcelButton, birthdayPdfButton].forEach(button => {
+        if (button) button.disabled = !hasData;
+    });
+
+    if (!hasData) {
         birthdayEmployeeList.innerHTML =
             '<p class="no-birthday">No birthdays in this month.</p>';
         return;
@@ -2781,6 +2803,7 @@ function showBirthdayEmployees(month) {
 
     birthdayEmployeeList.innerHTML = `
         <div class="birthday-table-wrapper">
+            <h2 class="birthday-export-heading">Birthday List - ${monthName}</h2>
             <table class="birthday-table">
                 <thead>
                     <tr>
@@ -2792,7 +2815,7 @@ function showBirthdayEmployees(month) {
                     </tr>
                 </thead>
                 <tbody>
-                    ${birthdayEmployees.map((employee, index) => `
+                    ${selectedBirthdayEmployees.map((employee, index) => `
                         <tr>
                             <td>${index + 1}</td>
                             <td>${employee.name || employee.employee_name || ""}</td>
@@ -2800,11 +2823,10 @@ function showBirthdayEmployees(month) {
                             <td>${employee.department || ""}</td>
                             <td>${(() => {
                                 const parts = String(employee.birthday_text || "").split("-");
-                                const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
                                 if (parts.length === 2) {
                                     const day = parts[0].padStart(2, "0");
-                                    const month = months[parseInt(parts[1], 10) - 1];
-                                    return month ? `${day} ${month}` : employee.birthday_text || "";
+                                    const monthLabel = birthdayMonthNames[parseInt(parts[1], 10) - 1];
+                                    return monthLabel ? `${day} ${monthLabel}` : employee.birthday_text || "";
                                 }
                                 return employee.birthday_text || "";
                             })()}</td>
@@ -2814,6 +2836,60 @@ function showBirthdayEmployees(month) {
             </table>
         </div>
     `;
+}
+
+function exportBirthdayExcel() {
+    if (!selectedBirthdayEmployees.length || !selectedBirthdayMonth) return;
+
+    const monthName = birthdayMonthNames[selectedBirthdayMonth - 1];
+    const table = birthdayEmployeeList.querySelector(".birthday-table");
+    if (!table) return;
+
+    const workbookHtml = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <style>
+                body { font-family: Arial, sans-serif; }
+                h2 { text-align: center; }
+                table { border-collapse: collapse; width: 100%; }
+                th, td { border: 1px solid #777; padding: 8px; text-align: left; }
+                th { background: #e8edf5; font-weight: bold; }
+            </style>
+        </head>
+        <body>
+            <h2>Birthday List - ${monthName}</h2>
+            ${table.outerHTML}
+        </body>
+        </html>`;
+
+    const blob = new Blob(["\ufeff", workbookHtml], {
+        type: "application/vnd.ms-excel;charset=utf-8;"
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `Birthday_List_${monthName}.xls`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function printBirthdayList() {
+    if (!selectedBirthdayEmployees.length) return;
+    window.print();
+}
+
+if (birthdayPrintButton) {
+    birthdayPrintButton.addEventListener("click", printBirthdayList);
+}
+if (birthdayExcelButton) {
+    birthdayExcelButton.addEventListener("click", exportBirthdayExcel);
+}
+if (birthdayPdfButton) {
+    birthdayPdfButton.addEventListener("click", printBirthdayList);
 }
 
 function openBirthdayPage() {
@@ -2826,6 +2902,10 @@ function openBirthdayPage() {
     favoritePage.style.display = "none";
     detailsPage.style.display = "none";
     birthdayPage.style.display = "block";
+
+    selectedBirthdayMonth = null;
+    selectedBirthdayEmployees = [];
+    if (birthdayExportActions) birthdayExportActions.style.display = "none";
 
     birthdayEmployeeList.innerHTML =
         '<p class="birthday-instruction">Select a month to view birthdays.</p>';
@@ -5947,23 +6027,182 @@ function renderTree() {
         });
     }
 
+
+    const pabxSearchInput = document.getElementById("employeePabxSearch");
+    const pabxSuggestions = document.getElementById("employeePabxSuggestions");
+    const pabxSearchClear = document.getElementById("employeePabxSearchClear");
+    let pabxEmployees = [];
+    let pabxSourceName = "Head Office";
+
+    function pabxDepartment(employee) {
+        return String(employee.department || "-").trim();
+    }
+
+    function renderPabxSuggestions(matches) {
+        if (!pabxSuggestions || !pabxSearchInput) return;
+        pabxSuggestions.replaceChildren();
+
+        matches.slice(0, 8).forEach(employee => {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "pabx-suggestion";
+            button.setAttribute("role", "option");
+
+            const identity = document.createElement("span");
+            identity.className = "pabx-suggestion-identity";
+            identity.textContent = `${employee.employee_no || "-"} — ${employee.employee_name || "-"}`;
+
+            const department = document.createElement("small");
+            department.textContent = pabxDepartment(employee);
+
+            button.append(identity, department);
+            button.addEventListener("click", () => {
+                pabxSearchInput.value = String(employee.employee_no || employee.employee_name || "");
+                pabxSuggestions.hidden = true;
+                pabxSearchInput.setAttribute("aria-expanded", "false");
+                renderPabxTable([employee]);
+                pabxStatus.textContent = `${pabxSourceName}: ${employee.employee_name || "Employee"} (${employee.employee_no || "No ID"})`;
+            });
+            pabxSuggestions.appendChild(button);
+        });
+
+        pabxSuggestions.hidden = matches.length === 0;
+        pabxSearchInput.setAttribute("aria-expanded", matches.length ? "true" : "false");
+    }
+
+    function renderPabxTable(employees) {
+        pabxContent.replaceChildren();
+        if (!employees.length) return;
+
+        const wrapper = document.createElement("div");
+        wrapper.className = "pabx-table-wrapper";
+        const table = document.createElement("table");
+        table.className = "employee-pabx-table";
+        const thead = document.createElement("thead");
+        const headerRow = document.createElement("tr");
+
+        ["Sl.", "Department", "Name", "Designation", "PABX No."].forEach(label => {
+            const th = document.createElement("th");
+            th.textContent = label;
+            headerRow.appendChild(th);
+        });
+
+        thead.appendChild(headerRow);
+        table.appendChild(thead);
+        const tbody = document.createElement("tbody");
+        let departmentSerial = 0;
+
+        employees.forEach((employee, index) => {
+            const row = document.createElement("tr");
+            const department = pabxDepartment(employee);
+            const previousDepartment = index > 0
+                ? pabxDepartment(employees[index - 1]) : null;
+            const isNewDepartment = department !== previousDepartment;
+            departmentSerial = isNewDepartment ? 1 : departmentSerial + 1;
+
+            const serialCell = document.createElement("td");
+            serialCell.textContent = String(departmentSerial);
+            row.appendChild(serialCell);
+
+            if (isNewDepartment) {
+                const nextDifferent = employees.slice(index).findIndex(
+                    item => pabxDepartment(item) !== department
+                );
+                const departmentCell = document.createElement("td");
+                departmentCell.textContent = department;
+                departmentCell.rowSpan = nextDifferent === -1
+                    ? employees.length - index : nextDifferent;
+                departmentCell.className = "pabx-department-cell";
+                row.appendChild(departmentCell);
+            }
+
+            [
+                employee.employee_name || "-",
+                employee.designation || "-",
+                employee.pabx_number || "-"
+            ].forEach(value => {
+                const cell = document.createElement("td");
+                cell.textContent = String(value);
+                row.appendChild(cell);
+            });
+            tbody.appendChild(row);
+        });
+
+        table.appendChild(tbody);
+        wrapper.appendChild(table);
+        pabxContent.appendChild(wrapper);
+    }
+
+    function updatePabxSearch() {
+        if (!pabxSearchInput) return;
+        const query = pabxSearchInput.value.trim().toLocaleLowerCase();
+
+        if (!query) {
+            if (pabxSuggestions) {
+                pabxSuggestions.replaceChildren();
+                pabxSuggestions.hidden = true;
+            }
+            pabxSearchInput.setAttribute("aria-expanded", "false");
+            renderPabxTable(pabxEmployees);
+            pabxStatus.textContent = pabxEmployees.length
+                ? `${pabxSourceName}: ${pabxEmployees.length} employees`
+                : "No employees found.";
+            return;
+        }
+
+        const matches = pabxEmployees.filter(employee =>
+            String(employee.employee_no || "").toLocaleLowerCase().includes(query) ||
+            String(employee.employee_name || "").toLocaleLowerCase().includes(query)
+        );
+        renderPabxSuggestions(matches);
+        renderPabxTable(matches);
+        pabxStatus.textContent = matches.length
+            ? `Search results: ${matches.length} employees`
+            : "No matching employees found.";
+    }
+
+    pabxSearchInput?.addEventListener("input", updatePabxSearch);
+    pabxSearchInput?.addEventListener("keydown", function (event) {
+        if (event.key === "Escape" && pabxSuggestions) {
+            pabxSuggestions.hidden = true;
+            pabxSearchInput.setAttribute("aria-expanded", "false");
+        }
+        if (event.key === "Enter" && pabxSuggestions && !pabxSuggestions.hidden) {
+            const first = pabxSuggestions.querySelector(".pabx-suggestion");
+            if (first) first.click();
+        }
+    });
+    pabxSearchClear?.addEventListener("click", function () {
+        if (pabxSearchInput) pabxSearchInput.value = "";
+        updatePabxSearch();
+        pabxSearchInput?.focus();
+    });
+
     async function loadPabxList(source) {
         if (!pabxContent || !pabxStatus) return;
-
         const isFactory = source === "factory";
         const viewName = isFactory
             ? "employee_directory_factory_public"
             : "employee_directory_public";
 
+        pabxSourceName = isFactory ? "Factory" : "Head Office";
         headOfficeButton?.classList.toggle("active", !isFactory);
         factoryButton?.classList.toggle("active", isFactory);
-
+        if (pabxSearchInput) pabxSearchInput.value = "";
+        if (pabxSuggestions) {
+            pabxSuggestions.replaceChildren();
+            pabxSuggestions.hidden = true;
+        }
         pabxStatus.textContent = "Loading employees...";
         pabxContent.replaceChildren();
 
         try {
+            const fields = isFactory
+                ? "employee_no,department,employee_name,designation,pabx_number"
+                : "employee_no,department,employee_name,designation,pabx_number";
+
             const response = await fetch(
-                `${SUPABASE_URL}/rest/v1/${viewName}?select=department,employee_name,designation,pabx_number&order=department.asc,employee_name.asc`,
+                `${SUPABASE_URL}/rest/v1/${viewName}?select=${fields}&order=department.asc,employee_name.asc`,
                 {
                     headers: {
                         apikey: SUPABASE_KEY,
@@ -5976,109 +6215,29 @@ function renderTree() {
                 throw new Error("Employee list could not load (" + response.status + ").");
             }
 
-            const employees = await response.json();
-
-            employees.sort(function (a, b) {
-                const deptA = String(a.department || "-").trim();
-                const deptB = String(b.department || "-").trim();
-                const deptCompare = deptA.localeCompare(deptB, undefined, {
-                    sensitivity: "base"
-                });
-
+            pabxEmployees = await response.json();
+            pabxEmployees.sort(function (a, b) {
+                const deptCompare = pabxDepartment(a).localeCompare(
+                    pabxDepartment(b), undefined, { sensitivity: "base" }
+                );
                 if (deptCompare !== 0) return deptCompare;
 
                 const designationA = normalizeDesignation(a.designation);
                 const designationB = normalizeDesignation(b.designation);
-
                 const rankA = DESIGNATION_RANK.has(designationA)
-                    ? DESIGNATION_RANK.get(designationA)
-                    : DESIGNATION_ORDER.length;
-
+                    ? DESIGNATION_RANK.get(designationA) : DESIGNATION_ORDER.length;
                 const rankB = DESIGNATION_RANK.has(designationB)
-                    ? DESIGNATION_RANK.get(designationB)
-                    : DESIGNATION_ORDER.length;
+                    ? DESIGNATION_RANK.get(designationB) : DESIGNATION_ORDER.length;
 
                 return rankA - rankB ||
-                    String(a.employee_name || "").localeCompare(
-                        String(b.employee_name || "")
-                    );
+                    String(a.employee_name || "").localeCompare(String(b.employee_name || ""));
             });
 
-            const wrapper = document.createElement("div");
-            wrapper.className = "pabx-table-wrapper";
-
-            const table = document.createElement("table");
-            table.className = "employee-pabx-table";
-
-            const thead = document.createElement("thead");
-            const headerRow = document.createElement("tr");
-
-            ["Sl.", "Department", "Name", "Designation", "PABX No."].forEach(function (label) {
-                const th = document.createElement("th");
-                th.textContent = label;
-                headerRow.appendChild(th);
-            });
-
-            thead.appendChild(headerRow);
-            table.appendChild(thead);
-
-            const tbody = document.createElement("tbody");
-            let departmentSerial = 0;
-
-            employees.forEach(function (employee, index) {
-                const row = document.createElement("tr");
-                const department = String(employee.department || "-").trim();
-                const previousDepartment = index > 0
-                    ? String(employees[index - 1].department || "-").trim()
-                    : null;
-                const isNewDepartment = department !== previousDepartment;
-
-                departmentSerial = isNewDepartment ? 1 : departmentSerial + 1;
-
-                const serialCell = document.createElement("td");
-                serialCell.textContent = String(departmentSerial);
-                row.appendChild(serialCell);
-
-                if (isNewDepartment) {
-                    const nextDifferent = employees.slice(index).findIndex(function (item) {
-                        return String(item.department || "-").trim() !== department;
-                    });
-
-                    const departmentCell = document.createElement("td");
-                    departmentCell.textContent = department;
-                    departmentCell.rowSpan = nextDifferent === -1
-                        ? employees.length - index
-                        : nextDifferent;
-                    departmentCell.className = "pabx-department-cell";
-                    row.appendChild(departmentCell);
-                }
-
-                [
-                    employee.employee_name || "-",
-                    employee.designation || "-",
-                    employee.pabx_number || "-"
-                ].forEach(function (value) {
-                    const cell = document.createElement("td");
-                    cell.textContent = String(value);
-                    row.appendChild(cell);
-                });
-
-                tbody.appendChild(row);
-            });
-
-            table.appendChild(tbody);
-            wrapper.appendChild(table);
-            pabxContent.appendChild(wrapper);
-
-            pabxStatus.textContent = employees.length
-                ? `${isFactory ? "Factory" : "Head Office"}: ${employees.length} employees`
-                : "No employees found.";
-
+            updatePabxSearch();
         } catch (error) {
             pabxStatus.textContent = error.message;
         }
     }
-
     if (pabxDashboardButton && pabxPage) {
         pabxDashboardButton.addEventListener("click", function () {
             hideDashboardPages();
