@@ -3280,7 +3280,6 @@ function showBirthdayEmployees(month) {
 
 function exportBirthdayExcel() {
     if (!selectedBirthdayEmployees.length || !selectedBirthdayMonth) return;
-
     const monthName = birthdayMonthNames[selectedBirthdayMonth - 1];
     const table = birthdayEmployeeList.querySelector(".birthday-table");
     if (!table) return;
@@ -3294,7 +3293,7 @@ function exportBirthdayExcel() {
                 body { font-family: Arial, sans-serif; }
                 h2 { text-align: center; }
                 table { border-collapse: collapse; width: 100%; }
-                th, td { border: 1px solid #777; padding: 8px; text-align: left; }
+                th, td { border: 1px solid #1976d2; padding: 8px; text-align: left; }
                 th { background: #e8edf5; font-weight: bold; }
             </style>
         </head>
@@ -3304,13 +3303,24 @@ function exportBirthdayExcel() {
         </body>
         </html>`;
 
+    const fileName = `Birthday_List_${monthName}.xls`;
+
+    if (
+        window.AndroidBirthdayExport &&
+        typeof window.AndroidBirthdayExport.saveBirthdayExcel === "function"
+    ) {
+        const base64Html = btoa(unescape(encodeURIComponent("\ufeff" + workbookHtml)));
+        window.AndroidBirthdayExport.saveBirthdayExcel(base64Html, fileName);
+        return;
+    }
+
     const blob = new Blob(["\ufeff", workbookHtml], {
         type: "application/vnd.ms-excel;charset=utf-8;"
     });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `Birthday_List_${monthName}.xls`;
+    link.download = fileName;
     document.body.appendChild(link);
     link.click();
     link.remove();
@@ -3319,6 +3329,15 @@ function exportBirthdayExcel() {
 
 function printBirthdayList() {
     if (!selectedBirthdayEmployees.length) return;
+
+    if (
+        window.AndroidBirthdayExport &&
+        typeof window.AndroidBirthdayExport.printBirthdayList === "function"
+    ) {
+        window.AndroidBirthdayExport.printBirthdayList();
+        return;
+    }
+
     window.print();
 }
 

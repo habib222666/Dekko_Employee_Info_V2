@@ -8526,3 +8526,19 @@ html[data-theme="dark"] .head-office-zoom-controls button {
 .birthday-export-actions button:not(:disabled):hover {
     filter: brightness(0.9);
 }
+
+
+/* BIRTHDAY TABLE: BLUE BORDERS */
+#birthdayPage .birthday-table,
+#birthdayPage .birthday-table th,
+#birthdayPage .birthday-table td {
+    border: 1px solid #1976d2 !important;
+}
+
+@media print {
+    #birthdayPage .birthday-table,
+    #birthdayPage .birthday-table th,
+    #birthdayPage .birthday-table td {
+        border: 1px solid #1976d2 !important;
+    }
+}
