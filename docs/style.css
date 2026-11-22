@@ -8420,17 +8420,18 @@ html[data-theme="dark"] .head-office-zoom-controls button {
 .birthday-export-actions {
     display: none;
     flex-wrap: wrap;
-    gap: 10px;
-    margin: 16px 0;
+    gap: 7px;
+    margin: 12px 0;
 }
 
 .birthday-export-actions button {
-    min-width: 120px;
-    padding: 10px 16px;
+    min-width: 100px;
+    padding: 7px 11px;
     border: 0;
-    border-radius: 6px;
+    border-radius: 5px;
     background: #e91e63;
     color: #fff;
+    font-size: 12px;
     font-weight: 600;
     cursor: pointer;
 }
