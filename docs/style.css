@@ -8669,3 +8669,15 @@ html[data-theme="dark"] #birthdayPage .birthday-table thead th {
 #birthdayPage .birthday-table tbody td {
     border: 1px solid #1976d2 !important;
 }
+
+
+/* Dashboard: Create New Employee title 1px smaller */
+#createNewEmployeeButton .dashboard-title {
+    font-size: 15px !important;
+}
+
+@media (max-width: 520px) {
+    #createNewEmployeeButton .dashboard-title {
+        font-size: 13px !important;
+    }
+}
