@@ -63,7 +63,7 @@ body:not(.admin-mode) .actions button:first-child {
 <div id="cropbox" class="cropbox"><b>Photo Crop</b><p class="note">Drag the photo to adjust its position and use Zoom to adjust the crop.</p><div class="cropstage"><canvas id="cropCanvas" width="420" height="420"></canvas></div><div class="cropcontrols"><label>Zoom <input id="zoom" type="range" min="0.05" max="3" step=".01" value="1"></label><button class="primary" id="applyCrop">Apply Crop</button><button class="gray" id="cancelCrop">Cancel</button></div></div>
 <div class="actions"><button class="primary" id="update">🔄 Update Signature</button><button class="green" id="download">📥 Download PNG</button><button class="gray" id="reset">↩️ Reset</button><button class="primary" id="googleSignIn">🔐 Sign in with Google</button><button class="green" id="gmailSend">✉️ Send via Gmail</button><button class="primary" id="outlookCompose">📧 Open Outlook Compose</button></div><div id="gmailStatus" class="note" style="margin-top:10px">Gmail: Not signed in</div>
 </section>
-<section class="preview-area"><div class="preview-card"><div class="preview-head"><h3>Signature Preview</h3><span>Live preview</span></div><div class="preview"><canvas id="signature"></canvas></div><div class="note" style="text-align:center">Please check your employee details in the preview. If everything is correct, click Download PNG to save your email signature.</div></div></section>
+<section class="preview-area"><div class="preview-card"><div class="preview-head"><h3>Signature Preview</h3><span><span style="color:#dc2626;font-style:normal">●</span> <em style="font-style:italic">Live preview</em><br><em style="display:block;font-style:italic;font-size:10px;color:#6b7280;margin-top:3px">Prepared by Md. Habibur Rahman</em></span></div><div class="preview"><canvas id="signature"></canvas></div><div class="note" style="text-align:center">Please check your employee details in the preview. If everything is correct, click Download PNG to save your email signature.</div></div></section>
 </div></div></div>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
@@ -450,15 +450,15 @@ function draw(){
  if(!base.complete||!base.naturalWidth)return;
  sctx.clearRect(0,0,sig.width,sig.height);
 sctx.drawImage(base,0,0);
-// Shift the complete right-side group 40px left from v14:
+// Shift the complete right-side group 15px right from its previous position:
 // editable text/contact + logo-side separator + all three logos.
-// The original source group is copied from x=1090 to x=1040 (50px total from source),
+// The original source group is copied from x=1090 to x=1055 (35px total from source),
 // because v14 had already moved this group 10px left.
 // Clear the editable text area first, then clear the old logo area, then redraw the group.
  sctx.fillStyle='#fff';
  sctx.fillRect(430,135,610,sig.height-135);
  sctx.fillRect(1040,0,sig.width-1040,sig.height);
- sctx.drawImage(base,1090,0,sig.width-1090,sig.height,1040,0,sig.width-1090,sig.height);
+ sctx.drawImage(base,1090,0,sig.width-1090,sig.height,1055,0,sig.width-1090,sig.height);
 
  // Remove the complete old photo and keep one demo photo until the user uploads a new one.
  sctx.save();sctx.fillStyle='#fff';sctx.fillRect(20,255,345,410);sctx.restore();
@@ -522,8 +522,10 @@ sctx.drawImage(base,0,0);
 
  // Office phone + PABX. Only PABX is bold; its number is regular.
  write(value('telephone'),516,394,300,28);
- sctx.font='700 29px "Trebuchet MS"';sctx.fillStyle='#111';sctx.fillText('PABX:',826,394);
- sctx.font='400 29px "Trebuchet MS"';sctx.fillText('  '+value('pabx'),905,394);
+ if(value('pabx').trim()){
+  sctx.font='700 29px "Trebuchet MS"';sctx.fillStyle='#111';sctx.fillText('PABX:',826,394);
+  sctx.font='400 29px "Trebuchet MS"';sctx.fillText('  '+value('pabx').trim(),905,394);
+ }
 
  // Two editable addresses. Each line remains editable from the dashboard.
  function writeAddress(text,x,y,maxWidth,font,color='#111',lineGap=26){
@@ -679,7 +681,11 @@ $('outlookCompose').onclick=()=>{
  const to=prompt('Recipient email address:','');
  if(!to) return;
  const subject=encodeURIComponent('Email Signature');
- const body=encodeURIComponent('Hello,\n\nPlease find my email signature below.\n\n'+value('name')+'\n'+value('designation')+'\n'+value('department')+'\n'+value('email')+'\n'+value('phone')+'\n'+value('telephone')+'\n'+value('pabx')+'\n'+value('address1').replace(/\n/g,'\n')+'\n'+value('address2').replace(/\n/g,'\n'));
+ const bodyLines=['Hello,','','Please find my email signature below.','',value('name'),value('designation'),value('department'),value('email'),value('phone'),value('telephone')];
+ const pabxValue=value('pabx').trim();
+ if(pabxValue) bodyLines.push('PABX: '+pabxValue);
+ bodyLines.push(value('address1'),value('address2'));
+ const body=encodeURIComponent(bodyLines.join('\n'));
  const url='https://outlook.office.com/mail/deeplink/compose?to='+encodeURIComponent(to)+'&subject='+subject+'&body='+body;
  window.open(url,'_blank','noopener');
 };
