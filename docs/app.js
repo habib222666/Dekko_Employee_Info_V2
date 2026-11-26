@@ -1277,10 +1277,12 @@ async function setupDetailsEdit(employee, source, previousPage) {
 }
 
 let detailsPreviousPage = "list";
+let detailsPreviousScrollY = 0;
 
 function showDetails(employee, previousPage = "list") {
 
     detailsPreviousPage = previousPage;
+    if (previousPage === "allEmployees") detailsPreviousScrollY = window.scrollY;
 
     listPage.style.display =
         "none";
@@ -2838,7 +2840,6 @@ backButton.addEventListener(
             allEmployeesPage.style.display =
                 "block";
 
-            showEmployees(employees);
 
         } else {
 
@@ -2859,7 +2860,7 @@ backButton.addEventListener(
         }
 
         window.scrollTo({
-            top: 0,
+            top: detailsPreviousPage === "allEmployees" ? detailsPreviousScrollY : 0,
             behavior: "smooth"
         });
 
